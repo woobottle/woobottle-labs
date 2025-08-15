@@ -1,0 +1,277 @@
+# WooBottle Labs - Feature-Sliced Design (FSD) Architecture Rules
+
+## 🏗️ Project Architecture
+
+This project follows Feature-Sliced Design (FSD) methodology for maintainable and scalable frontend architecture.
+
+### 📁 Folder Structure
+
+```
+src/
+├── app/           # Application initialization, providers, routing
+├── pages/         # Page components and routing logic
+├── widgets/       # Composite UI blocks (Header, Sidebar, Layout)
+├── features/      # Business features (Text Analysis, Icon Generation)
+├── entities/      # Business entities (User, Text, Icon, Calculation)
+├── shared/        # Reusable code (UI kit, utilities, configs)
+```
+
+### 🎯 Layer Dependencies
+
+**Dependency Direction (Top → Bottom):**
+```
+app → pages → widgets → features → entities → shared
+```
+
+**Rules:**
+- Higher layers CAN import from lower layers
+- Lower layers CANNOT import from higher layers
+- Same-layer imports are FORBIDDEN (use shared layer instead)
+- Cross-imports within same layer should go through shared
+
+### 📋 Layer Responsibilities
+
+#### **`app/`** - Application Layer
+- Application initialization
+- Global providers (Theme, Router, Store)
+- Global styles and configuration
+- Root layout and error boundaries
+
+**Example:**
+```typescript
+// app/layout.tsx - Root layout
+// app/providers.tsx - Global providers
+```
+
+#### **`pages/`** - Pages Layer
+- Page components
+- Route-specific logic
+- Page-level data fetching
+- SEO metadata
+
+**Example:**
+```typescript
+// pages/home/ui/home-page.tsx
+// pages/text-counter/ui/text-counter-page.tsx
+// pages/icon-generator/ui/icon-generator-page.tsx
+```
+
+#### **`widgets/`** - Widgets Layer
+- Composite UI blocks
+- Layout components
+- Navigation components
+- Complex reusable components
+
+**Example:**
+```typescript
+// widgets/sidebar/ui/sidebar.tsx
+// widgets/header/ui/header.tsx
+// widgets/app-layout/ui/app-layout.tsx
+```
+
+#### **`features/`** - Features Layer
+- Business features and use cases
+- User interactions and workflows
+- Feature-specific state management
+- Integration with external APIs
+
+**Example:**
+```typescript
+// features/text-analysis/
+//   ├── ui/text-analyzer.tsx
+//   ├── model/text-stats.ts
+//   └── lib/text-utils.ts
+
+// features/icon-generation/
+//   ├── ui/icon-generator.tsx
+//   ├── model/icon-store.ts
+//   └── lib/image-processor.ts
+```
+
+#### **`entities/`** - Entities Layer
+- Business entities and domain models
+- Entity-specific operations
+- Data transformation logic
+- Entity state management
+
+**Example:**
+```typescript
+// entities/text/
+//   ├── model/text-entity.ts
+//   ├── ui/text-preview.tsx
+//   └── lib/text-validation.ts
+
+// entities/icon/
+//   ├── model/icon-sizes.ts
+//   ├── ui/icon-preview.tsx
+//   └── lib/icon-utils.ts
+```
+
+#### **`shared/`** - Shared Layer
+- Reusable UI components
+- Utility functions
+- Constants and configurations
+- Type definitions
+- Third-party integrations
+
+**Example:**
+```typescript
+// shared/ui/          - UI Kit components
+// shared/lib/         - Utility functions
+// shared/config/      - App configuration
+// shared/types/       - TypeScript types
+// shared/api/         - API clients
+```
+
+### 🎨 Naming Conventions
+
+#### **Folders:**
+- Use kebab-case: `text-counter`, `icon-generator`
+- Be descriptive and specific
+- Avoid abbreviations
+
+#### **Files:**
+- Use kebab-case: `text-analyzer.tsx`, `icon-utils.ts`
+- Include layer suffix for clarity: `text-counter-page.tsx`, `sidebar-widget.tsx`
+
+#### **Components:**
+- Use PascalCase: `TextAnalyzer`, `IconGenerator`
+- Include semantic suffix: `TextCounterPage`, `SidebarWidget`
+
+### 📦 Module Organization
+
+Each feature/entity should have this structure:
+```
+feature-name/
+├── ui/           # React components
+├── model/        # State management, types
+├── lib/          # Pure functions, utilities
+├── config/       # Feature-specific configuration
+└── index.ts      # Public API exports
+```
+
+### 🔒 Import Rules
+
+#### **Allowed Imports:**
+```typescript
+// ✅ Import from lower layers
+import { Button } from 'shared/ui/button'
+import { TextEntity } from 'entities/text'
+import { TextAnalyzer } from 'features/text-analysis'
+
+// ✅ Import from same layer through shared
+import { validateText } from 'shared/lib/validation'
+```
+
+#### **Forbidden Imports:**
+```typescript
+// ❌ Import from higher layers
+import { HomePage } from 'pages/home' // from features
+import { TextAnalyzer } from 'features/text-analysis' // from entities
+
+// ❌ Direct same-layer imports
+import { IconGenerator } from '../icon-generation' // from features to features
+```
+
+### 🧩 Segment Organization
+
+Within each slice, organize by segments:
+
+- **`ui/`** - React components and UI logic
+- **`model/`** - Business logic, state, types
+- **`lib/`** - Pure functions and utilities
+- **`config/`** - Configuration and constants
+
+### 📝 Code Style Guidelines
+
+#### **Component Structure:**
+```typescript
+'use client';
+
+import React from 'react';
+// External imports first
+import { Button } from 'shared/ui/button';
+import { useTextAnalysis } from 'features/text-analysis';
+// Local imports last
+import { TextStats } from '../model/types';
+
+interface TextAnalyzerProps {
+  text: string;
+  onAnalyze: (stats: TextStats) => void;
+}
+
+export const TextAnalyzer: React.FC<TextAnalyzerProps> = ({ text, onAnalyze }) => {
+  // Component logic
+  return (
+    <div>
+      {/* Component JSX */}
+    </div>
+  );
+};
+```
+
+#### **Index Exports:**
+```typescript
+// features/text-analysis/index.ts
+export { TextAnalyzer } from './ui/text-analyzer';
+export { useTextAnalysis } from './model/use-text-analysis';
+export type { TextStats } from './model/types';
+```
+
+### 🔧 Implementation Guidelines
+
+1. **Start with shared/** - Create reusable components first
+2. **Build entities/** - Define domain models
+3. **Implement features/** - Add business logic
+4. **Compose widgets/** - Combine features into UI blocks
+5. **Connect pages/** - Wire everything together
+
+### 🚀 Migration Strategy
+
+When refactoring existing code:
+
+1. **Identify dependencies** - Map current component relationships
+2. **Extract shared code** - Move utilities to shared/
+3. **Create entities** - Extract domain models
+4. **Split features** - Separate business logic
+5. **Update imports** - Fix all import paths
+6. **Test thoroughly** - Ensure everything works
+
+### 💡 Best Practices
+
+- **Single Responsibility** - Each slice should have one clear purpose
+- **Explicit Dependencies** - Make all dependencies obvious through imports
+- **Loose Coupling** - Minimize dependencies between slices
+- **High Cohesion** - Related code should be in the same slice
+- **Public API** - Export only what's needed through index.ts
+
+### 🔍 Code Review Checklist
+
+- [ ] Follows FSD layer structure
+- [ ] Respects dependency direction
+- [ ] No cross-layer imports
+- [ ] Proper naming conventions
+- [ ] Clean public API through index.ts
+- [ ] Single responsibility principle
+- [ ] Appropriate layer placement
+
+---
+
+## Next.js Specific Rules
+
+### App Router Integration
+- Use `app/` for Next.js App Router configuration
+- Place page components in `pages/` layer, not `app/`
+- Keep routing logic separate from business logic
+
+### File Conventions
+```
+pages/text-counter/
+├── ui/
+│   └── text-counter-page.tsx    # Page component
+├── model/
+│   └── page-meta.ts            # SEO metadata
+└── index.ts                     # Public exports
+```
+
+Remember: FSD is about **scalability** and **maintainability**. When in doubt, prefer explicit structure over convenience.
