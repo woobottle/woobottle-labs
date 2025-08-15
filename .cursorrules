@@ -9,20 +9,21 @@
 ```
 src/
 ├── app/               # 애플리케이션 초기화, 프로바이더, 라우팅
-├── page-components/   # 페이지 컴포넌트 및 라우팅 로직  
+├── components/
+│   └── pages/         # 페이지 컴포넌트 및 라우팅 로직  
 ├── widgets/           # 복합 UI 블록 (헤더, 사이드바, 레이아웃)
 ├── features/          # 비즈니스 기능 (텍스트 분석, 아이콘 생성)
 ├── entities/          # 비즈니스 엔티티 (사용자, 텍스트, 아이콘, 계산)
 ├── shared/            # 재사용 코드 (UI 킷, 유틸리티, 설정)
 ```
 
-**참고:** Next.js App Router 프로젝트에서는 Next.js 라우팅 시스템과의 충돌을 피하기 위해 `pages/` 대신 `page-components/`를 사용합니다.
+**참고:** Next.js App Router 프로젝트에서는 Next.js 라우팅 시스템과의 충돌을 피하기 위해 페이지 컴포넌트를 `components/pages/`에 배치합니다.
 
 ### 🎯 계층 의존성
 
 **의존성 방향 (상위 → 하위):**
 ```
-app → page-components → widgets → features → entities → shared
+app → components/pages → widgets → features → entities → shared
 ```
 
 **규칙:**
@@ -45,7 +46,7 @@ app → page-components → widgets → features → entities → shared
 // app/providers.tsx - 글로벌 프로바이더
 ```
 
-#### **`page-components/`** - 페이지 컴포넌트 계층
+#### **`components/pages/`** - 페이지 컴포넌트 계층
 - 페이지 컴포넌트
 - 라우트별 로직
 - 페이지 레벨 데이터 페칭
@@ -53,9 +54,9 @@ app → page-components → widgets → features → entities → shared
 
 **예시:**
 ```typescript
-// page-components/home/ui/home-page.tsx
-// page-components/text-counter/ui/text-counter-page.tsx
-// page-components/icon-generator/ui/icon-generator-page.tsx
+// components/pages/home/ui/home-page.tsx
+// components/pages/text-counter/ui/text-counter-page.tsx
+// components/pages/icon-generator/ui/icon-generator-page.tsx
 ```
 
 #### **`widgets/`** - 위젯 계층
@@ -263,12 +264,12 @@ export type { TextStats } from './model/types';
 
 ### App Router 통합
 - Next.js App Router 설정에는 `app/` 사용
-- 페이지 컴포넌트는 `app/`가 아닌 `page-components/` 계층에 배치
+- 페이지 컴포넌트는 `app/`가 아닌 `components/pages/` 계층에 배치
 - 라우팅 로직과 비즈니스 로직 분리
 
 ### 파일 컨벤션
 ```
-page-components/text-counter/
+components/pages/text-counter/
 ├── ui/
 │   └── text-counter-page.tsx    # 페이지 컴포넌트
 ├── model/
