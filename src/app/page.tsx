@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { FileText, Calculator, BarChart3, Clock, Settings, Info, ArrowRight, Smartphone } from 'lucide-react';
+import { FileText, Calculator, BarChart3, Clock, Settings, Info, ArrowRight, Smartphone, Home } from 'lucide-react';
 import AppLayout from '../components/AppLayout';
 
 export default function HomePage() {
@@ -24,6 +24,15 @@ export default function HomePage() {
       href: '/calculator',
       color: 'from-green-500 to-green-600',
       stats: '사칙연산'
+    },
+    {
+      id: 'area-converter',
+      title: '평수 변환기',
+      description: '아파트 평수를 제곱미터로, 제곱미터를 평수로 변환합니다',
+      icon: Home,
+      href: '/area-converter',
+      color: 'from-teal-500 to-teal-600',
+      stats: '부동산 전문'
     },
     {
       id: 'icon-generator',
@@ -127,7 +136,7 @@ export default function HomePage() {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center">
-          <div className="text-3xl font-bold text-blue-600 mb-2">7</div>
+          <div className="text-3xl font-bold text-blue-600 mb-2">8</div>
           <p className="text-gray-600">생산성 도구</p>
         </div>
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center">
