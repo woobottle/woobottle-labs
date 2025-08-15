@@ -14,7 +14,8 @@ import {
   Hash,
   Clock,
   BarChart3,
-  Smartphone
+  Smartphone,
+  Home as HomeIcon
 } from 'lucide-react';
 
 interface MenuItem {
@@ -53,6 +54,13 @@ const menuItems: MenuItem[] = [
     href: '/icon-generator',
     icon: Smartphone,
     description: '앱 아이콘 자동 생성'
+  },
+  {
+    id: 'area-converter',
+    label: '평수 변환기',
+    href: '/area-converter',
+    icon: HomeIcon,
+    description: '평수 ↔ 제곱미터 변환'
   },
   {
     id: 'statistics',
