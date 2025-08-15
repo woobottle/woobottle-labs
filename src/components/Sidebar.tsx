@@ -13,7 +13,8 @@ import {
   Home,
   Hash,
   Clock,
-  BarChart3
+  BarChart3,
+  Smartphone
 } from 'lucide-react';
 
 interface MenuItem {
@@ -45,6 +46,13 @@ const menuItems: MenuItem[] = [
     href: '/calculator',
     icon: Calculator,
     description: '간단한 계산기'
+  },
+  {
+    id: 'icon-generator',
+    label: '아이콘 생성기',
+    href: '/icon-generator',
+    icon: Smartphone,
+    description: '앱 아이콘 자동 생성'
   },
   {
     id: 'statistics',

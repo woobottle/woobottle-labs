@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { FileText, Calculator, BarChart3, Clock, Settings, Info, ArrowRight } from 'lucide-react';
+import { FileText, Calculator, BarChart3, Clock, Settings, Info, ArrowRight, Smartphone } from 'lucide-react';
 import AppLayout from '../components/AppLayout';
 
 export default function HomePage() {
@@ -24,6 +24,15 @@ export default function HomePage() {
       href: '/calculator',
       color: 'from-green-500 to-green-600',
       stats: '사칙연산'
+    },
+    {
+      id: 'icon-generator',
+      title: '아이콘 생성기',
+      description: '하나의 이미지로 모든 플랫폼용 아이콘을 생성합니다',
+      icon: Smartphone,
+      href: '/icon-generator',
+      color: 'from-pink-500 to-pink-600',
+      stats: 'iOS/Android/Web'
     },
     {
       id: 'statistics',
@@ -118,7 +127,7 @@ export default function HomePage() {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center">
-          <div className="text-3xl font-bold text-blue-600 mb-2">6</div>
+          <div className="text-3xl font-bold text-blue-600 mb-2">7</div>
           <p className="text-gray-600">생산성 도구</p>
         </div>
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center">
