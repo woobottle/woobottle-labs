@@ -86,19 +86,19 @@ export default function HomePage() {
     
     return (
       <Link href={tool.href} className="group">
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] dark:bg-gray-800/80 dark:border-gray-700/20">
           <div className="flex items-start justify-between mb-4">
             <div className={`p-3 rounded-lg bg-gradient-to-br ${tool.color}`}>
               <Icon className="w-6 h-6 text-white" />
             </div>
-            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300 transition-colors" />
           </div>
           
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">{tool.title}</h3>
-          <p className="text-gray-600 text-sm mb-3">{tool.description}</p>
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">{tool.title}</h3>
+          <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">{tool.description}</p>
           
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+            <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
               {tool.stats}
             </span>
           </div>
@@ -111,23 +111,23 @@ export default function HomePage() {
     <AppLayout>
       {/* Hero Section */}
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold text-gray-800 mb-4">
+        <h1 className="text-5xl font-bold text-gray-800 dark:text-gray-100 mb-4">
           WooBottle Labs
         </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+        <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
           일상과 업무에서 필요한 다양한 생산성 도구들을 한 곳에서 만나보세요. 
           간단하고 직관적인 인터페이스로 누구나 쉽게 사용할 수 있습니다.
         </p>
         
         <div className="flex flex-wrap justify-center gap-4">
-          <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full">
+          <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full">
             <span className="w-2 h-2 bg-green-500 rounded-full"></span>
             <span className="text-sm font-medium">온라인</span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full">
+          <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded-full">
             <span className="text-sm font-medium">무료 사용</span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full">
+          <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-full">
             <span className="text-sm font-medium">설치 불필요</span>
           </div>
         </div>
@@ -135,23 +135,23 @@ export default function HomePage() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center dark:bg-gray-800/80 dark:border-gray-700/20">
           <div className="text-3xl font-bold text-blue-600 mb-2">8</div>
-          <p className="text-gray-600">생산성 도구</p>
+          <p className="text-gray-600 dark:text-gray-300">생산성 도구</p>
         </div>
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center dark:bg-gray-800/80 dark:border-gray-700/20">
           <div className="text-3xl font-bold text-green-600 mb-2">0</div>
-          <p className="text-gray-600">설치 과정</p>
+          <p className="text-gray-600 dark:text-gray-300">설치 과정</p>
         </div>
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center dark:bg-gray-800/80 dark:border-gray-700/20">
           <div className="text-3xl font-bold text-purple-600 mb-2">100%</div>
-          <p className="text-gray-600">무료 사용</p>
+          <p className="text-gray-600 dark:text-gray-300">무료 사용</p>
         </div>
       </div>
 
       {/* Tools Grid */}
       <div className="mb-12">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-8 text-center">
           사용 가능한 도구들
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -162,38 +162,38 @@ export default function HomePage() {
       </div>
 
       {/* Feature Highlights */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-8 dark:bg-gray-800/80 dark:border-gray-700/30">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">
           왜 WooBottle Labs인가요?
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="text-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
               <span className="text-2xl">⚡</span>
             </div>
-            <h3 className="font-semibold text-gray-800 mb-2">빠른 접근</h3>
-            <p className="text-sm text-gray-600">즉시 사용 가능한 도구들</p>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">빠른 접근</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">즉시 사용 가능한 도구들</p>
           </div>
           <div className="text-center">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
               <span className="text-2xl">🔒</span>
             </div>
-            <h3 className="font-semibold text-gray-800 mb-2">프라이버시</h3>
-            <p className="text-sm text-gray-600">모든 데이터 로컬 처리</p>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">프라이버시</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">모든 데이터 로컬 처리</p>
           </div>
           <div className="text-center">
-            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
               <span className="text-2xl">📱</span>
             </div>
-            <h3 className="font-semibold text-gray-800 mb-2">반응형</h3>
-            <p className="text-sm text-gray-600">모든 기기에서 완벽 동작</p>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">반응형</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">모든 기기에서 완벽 동작</p>
           </div>
           <div className="text-center">
-            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
               <span className="text-2xl">🎨</span>
             </div>
-            <h3 className="font-semibold text-gray-800 mb-2">모던 UI</h3>
-            <p className="text-sm text-gray-600">직관적이고 세련된 디자인</p>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">모던 UI</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">직관적이고 세련된 디자인</p>
           </div>
         </div>
       </div>

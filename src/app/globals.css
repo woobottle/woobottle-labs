@@ -14,22 +14,22 @@
 
 @layer components {
   .glass-morphism {
-    @apply bg-white/80 backdrop-blur-sm border border-white/30;
+    @apply bg-white/80 backdrop-blur-sm border border-white/30 dark:bg-gray-800/80 dark:border-gray-700/30;
   }
   
   .stat-card {
-    @apply bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-white/20 hover:shadow-md transition-all duration-300 hover:bg-white/80;
+    @apply bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-white/20 hover:shadow-md transition-all duration-300 hover:bg-white/80 dark:bg-gray-800/70 dark:border-gray-700/20 dark:hover:bg-gray-800/80;
   }
   
   .button-primary {
-    @apply px-3 py-1.5 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors duration-200 flex items-center gap-1;
+    @apply px-3 py-1.5 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors duration-200 flex items-center gap-1 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-300;
   }
   
   .button-secondary {
-    @apply px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 flex items-center gap-1;
+    @apply px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 flex items-center gap-1 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300;
   }
   
   .button-danger {
-    @apply px-3 py-1.5 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors duration-200 flex items-center gap-1;
+    @apply px-3 py-1.5 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors duration-200 flex items-center gap-1 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-300;
   }
 }
