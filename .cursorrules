@@ -1,83 +1,83 @@
-# WooBottle Labs - Feature-Sliced Design (FSD) Architecture Rules
+# WooBottle Labs - FSD(Feature-Sliced Design) 아키텍처 규칙
 
-## 🏗️ Project Architecture
+## 🏗️ 프로젝트 아키텍처
 
-This project follows Feature-Sliced Design (FSD) methodology for maintainable and scalable frontend architecture.
+이 프로젝트는 유지보수 가능하고 확장 가능한 프론트엔드 아키텍처를 위해 FSD(Feature-Sliced Design) 방법론을 따릅니다.
 
-### 📁 Folder Structure
+### 📁 폴더 구조
 
 ```
 src/
-├── app/               # Application initialization, providers, routing
-├── page-components/   # Page components and routing logic  
-├── widgets/           # Composite UI blocks (Header, Sidebar, Layout)
-├── features/          # Business features (Text Analysis, Icon Generation)
-├── entities/          # Business entities (User, Text, Icon, Calculation)
-├── shared/            # Reusable code (UI kit, utilities, configs)
+├── app/               # 애플리케이션 초기화, 프로바이더, 라우팅
+├── page-components/   # 페이지 컴포넌트 및 라우팅 로직  
+├── widgets/           # 복합 UI 블록 (헤더, 사이드바, 레이아웃)
+├── features/          # 비즈니스 기능 (텍스트 분석, 아이콘 생성)
+├── entities/          # 비즈니스 엔티티 (사용자, 텍스트, 아이콘, 계산)
+├── shared/            # 재사용 코드 (UI 킷, 유틸리티, 설정)
 ```
 
-**Note:** In Next.js App Router projects, we use `page-components/` instead of `pages/` to avoid conflicts with Next.js routing system.
+**참고:** Next.js App Router 프로젝트에서는 Next.js 라우팅 시스템과의 충돌을 피하기 위해 `pages/` 대신 `page-components/`를 사용합니다.
 
-### 🎯 Layer Dependencies
+### 🎯 계층 의존성
 
-**Dependency Direction (Top → Bottom):**
+**의존성 방향 (상위 → 하위):**
 ```
 app → page-components → widgets → features → entities → shared
 ```
 
-**Rules:**
-- Higher layers CAN import from lower layers
-- Lower layers CANNOT import from higher layers
-- Same-layer imports are FORBIDDEN (use shared layer instead)
-- Cross-imports within same layer should go through shared
+**규칙:**
+- 상위 계층은 하위 계층에서 import 가능
+- 하위 계층은 상위 계층에서 import 불가
+- 같은 계층 간 직접 import 금지 (shared 계층 사용)
+- 같은 계층 내에서의 교차 import는 shared를 통해야 함
 
-### 📋 Layer Responsibilities
+### 📋 계층별 역할
 
-#### **`app/`** - Application Layer
-- Application initialization
-- Global providers (Theme, Router, Store)
-- Global styles and configuration
-- Root layout and error boundaries
+#### **`app/`** - 애플리케이션 계층
+- 애플리케이션 초기화
+- 글로벌 프로바이더 (테마, 라우터, 스토어)
+- 글로벌 스타일 및 설정
+- 루트 레이아웃 및 에러 바운더리
 
-**Example:**
+**예시:**
 ```typescript
-// app/layout.tsx - Root layout
-// app/providers.tsx - Global providers
+// app/layout.tsx - 루트 레이아웃
+// app/providers.tsx - 글로벌 프로바이더
 ```
 
-#### **`page-components/`** - Page Components Layer
-- Page components
-- Route-specific logic
-- Page-level data fetching
-- SEO metadata
+#### **`page-components/`** - 페이지 컴포넌트 계층
+- 페이지 컴포넌트
+- 라우트별 로직
+- 페이지 레벨 데이터 페칭
+- SEO 메타데이터
 
-**Example:**
+**예시:**
 ```typescript
 // page-components/home/ui/home-page.tsx
 // page-components/text-counter/ui/text-counter-page.tsx
 // page-components/icon-generator/ui/icon-generator-page.tsx
 ```
 
-#### **`widgets/`** - Widgets Layer
-- Composite UI blocks
-- Layout components
-- Navigation components
-- Complex reusable components
+#### **`widgets/`** - 위젯 계층
+- 복합 UI 블록
+- 레이아웃 컴포넌트
+- 네비게이션 컴포넌트
+- 복잡한 재사용 컴포넌트
 
-**Example:**
+**예시:**
 ```typescript
 // widgets/sidebar/ui/sidebar.tsx
 // widgets/header/ui/header.tsx
 // widgets/app-layout/ui/app-layout.tsx
 ```
 
-#### **`features/`** - Features Layer
-- Business features and use cases
-- User interactions and workflows
-- Feature-specific state management
-- Integration with external APIs
+#### **`features/`** - 기능 계층
+- 비즈니스 기능 및 유스케이스
+- 사용자 상호작용 및 워크플로우
+- 기능별 상태 관리
+- 외부 API와의 통합
 
-**Example:**
+**예시:**
 ```typescript
 // features/text-analysis/
 //   ├── ui/text-analyzer.tsx
@@ -90,13 +90,13 @@ app → page-components → widgets → features → entities → shared
 //   └── lib/image-processor.ts
 ```
 
-#### **`entities/`** - Entities Layer
-- Business entities and domain models
-- Entity-specific operations
-- Data transformation logic
-- Entity state management
+#### **`entities/`** - 엔티티 계층
+- 비즈니스 엔티티 및 도메인 모델
+- 엔티티별 연산
+- 데이터 변환 로직
+- 엔티티 상태 관리
 
-**Example:**
+**예시:**
 ```typescript
 // entities/text/
 //   ├── model/text-entity.ts
@@ -109,92 +109,92 @@ app → page-components → widgets → features → entities → shared
 //   └── lib/icon-utils.ts
 ```
 
-#### **`shared/`** - Shared Layer
-- Reusable UI components
-- Utility functions
-- Constants and configurations
-- Type definitions
-- Third-party integrations
+#### **`shared/`** - 공유 계층
+- 재사용 가능한 UI 컴포넌트
+- 유틸리티 함수
+- 상수 및 설정
+- 타입 정의
+- 서드파티 통합
 
-**Example:**
+**예시:**
 ```typescript
-// shared/ui/          - UI Kit components
-// shared/lib/         - Utility functions
-// shared/config/      - App configuration
-// shared/types/       - TypeScript types
-// shared/api/         - API clients
+// shared/ui/          - UI 킷 컴포넌트
+// shared/lib/         - 유틸리티 함수
+// shared/config/      - 앱 설정
+// shared/types/       - TypeScript 타입
+// shared/api/         - API 클라이언트
 ```
 
-### 🎨 Naming Conventions
+### 🎨 네이밍 컨벤션
 
-#### **Folders:**
-- Use kebab-case: `text-counter`, `icon-generator`
-- Be descriptive and specific
-- Avoid abbreviations
+#### **폴더:**
+- kebab-case 사용: `text-counter`, `icon-generator`
+- 명확하고 구체적으로 명명
+- 축약어 피하기
 
-#### **Files:**
-- Use kebab-case: `text-analyzer.tsx`, `icon-utils.ts`
-- Include layer suffix for clarity: `text-counter-page.tsx`, `sidebar-widget.tsx`
+#### **파일:**
+- kebab-case 사용: `text-analyzer.tsx`, `icon-utils.ts`
+- 명확성을 위해 계층 접미사 포함: `text-counter-page.tsx`, `sidebar-widget.tsx`
 
-#### **Components:**
-- Use PascalCase: `TextAnalyzer`, `IconGenerator`
-- Include semantic suffix: `TextCounterPage`, `SidebarWidget`
+#### **컴포넌트:**
+- PascalCase 사용: `TextAnalyzer`, `IconGenerator`
+- 의미적 접미사 포함: `TextCounterPage`, `SidebarWidget`
 
-### 📦 Module Organization
+### 📦 모듈 구성
 
-Each feature/entity should have this structure:
+각 feature/entity는 다음 구조를 가져야 합니다:
 ```
 feature-name/
-├── ui/           # React components
-├── model/        # State management, types
-├── lib/          # Pure functions, utilities
-├── config/       # Feature-specific configuration
-└── index.ts      # Public API exports
+├── ui/           # React 컴포넌트
+├── model/        # 상태 관리, 타입
+├── lib/          # 순수 함수, 유틸리티
+├── config/       # 기능별 설정
+└── index.ts      # 공개 API 내보내기
 ```
 
-### 🔒 Import Rules
+### 🔒 Import 규칙
 
-#### **Allowed Imports:**
+#### **허용되는 Import:**
 ```typescript
-// ✅ Import from lower layers
+// ✅ 하위 계층에서 import
 import { Button } from 'shared/ui/button'
 import { TextEntity } from 'entities/text'
 import { TextAnalyzer } from 'features/text-analysis'
 
-// ✅ Import from same layer through shared
+// ✅ shared를 통한 같은 계층 import
 import { validateText } from 'shared/lib/validation'
 ```
 
-#### **Forbidden Imports:**
+#### **금지되는 Import:**
 ```typescript
-// ❌ Import from higher layers
-import { HomePage } from 'pages/home' // from features
-import { TextAnalyzer } from 'features/text-analysis' // from entities
+// ❌ 상위 계층에서 import
+import { HomePage } from 'pages/home' // features에서
+import { TextAnalyzer } from 'features/text-analysis' // entities에서
 
-// ❌ Direct same-layer imports
-import { IconGenerator } from '../icon-generation' // from features to features
+// ❌ 직접적인 같은 계층 import
+import { IconGenerator } from '../icon-generation' // features에서 features로
 ```
 
-### 🧩 Segment Organization
+### 🧩 세그먼트 구성
 
-Within each slice, organize by segments:
+각 slice 내에서 세그먼트별로 구성:
 
-- **`ui/`** - React components and UI logic
-- **`model/`** - Business logic, state, types
-- **`lib/`** - Pure functions and utilities
-- **`config/`** - Configuration and constants
+- **`ui/`** - React 컴포넌트 및 UI 로직
+- **`model/`** - 비즈니스 로직, 상태, 타입
+- **`lib/`** - 순수 함수 및 유틸리티
+- **`config/`** - 설정 및 상수
 
-### 📝 Code Style Guidelines
+### 📝 코드 스타일 가이드라인
 
-#### **Component Structure:**
+#### **컴포넌트 구조:**
 ```typescript
 'use client';
 
 import React from 'react';
-// External imports first
+// 외부 import 먼저
 import { Button } from 'shared/ui/button';
 import { useTextAnalysis } from 'features/text-analysis';
-// Local imports last
+// 로컬 import 마지막
 import { TextStats } from '../model/types';
 
 interface TextAnalyzerProps {
@@ -203,16 +203,16 @@ interface TextAnalyzerProps {
 }
 
 export const TextAnalyzer: React.FC<TextAnalyzerProps> = ({ text, onAnalyze }) => {
-  // Component logic
+  // 컴포넌트 로직
   return (
     <div>
-      {/* Component JSX */}
+      {/* 컴포넌트 JSX */}
     </div>
   );
 };
 ```
 
-#### **Index Exports:**
+#### **Index 내보내기:**
 ```typescript
 // features/text-analysis/index.ts
 export { TextAnalyzer } from './ui/text-analyzer';
@@ -220,60 +220,60 @@ export { useTextAnalysis } from './model/use-text-analysis';
 export type { TextStats } from './model/types';
 ```
 
-### 🔧 Implementation Guidelines
+### 🔧 구현 가이드라인
 
-1. **Start with shared/** - Create reusable components first
-2. **Build entities/** - Define domain models
-3. **Implement features/** - Add business logic
-4. **Compose widgets/** - Combine features into UI blocks
-5. **Connect pages/** - Wire everything together
+1. **shared/부터 시작** - 재사용 가능한 컴포넌트 먼저 생성
+2. **entities/ 구축** - 도메인 모델 정의
+3. **features/ 구현** - 비즈니스 로직 추가
+4. **widgets/ 구성** - 기능들을 UI 블록으로 결합
+5. **pages/ 연결** - 모든 것을 연결
 
-### 🚀 Migration Strategy
+### 🚀 마이그레이션 전략
 
-When refactoring existing code:
+기존 코드 리팩토링 시:
 
-1. **Identify dependencies** - Map current component relationships
-2. **Extract shared code** - Move utilities to shared/
-3. **Create entities** - Extract domain models
-4. **Split features** - Separate business logic
-5. **Update imports** - Fix all import paths
-6. **Test thoroughly** - Ensure everything works
+1. **의존성 파악** - 현재 컴포넌트 관계 매핑
+2. **shared 코드 추출** - 유틸리티를 shared/로 이동
+3. **entities 생성** - 도메인 모델 추출
+4. **features 분리** - 비즈니스 로직 분리
+5. **import 업데이트** - 모든 import 경로 수정
+6. **철저한 테스트** - 모든 것이 작동하는지 확인
 
-### 💡 Best Practices
+### 💡 모범 사례
 
-- **Single Responsibility** - Each slice should have one clear purpose
-- **Explicit Dependencies** - Make all dependencies obvious through imports
-- **Loose Coupling** - Minimize dependencies between slices
-- **High Cohesion** - Related code should be in the same slice
-- **Public API** - Export only what's needed through index.ts
+- **단일 책임** - 각 slice는 하나의 명확한 목적을 가져야 함
+- **명시적 의존성** - import를 통해 모든 의존성을 명확히 표현
+- **느슨한 결합** - slice 간 의존성 최소화
+- **높은 응집도** - 관련 코드는 같은 slice에 위치
+- **공개 API** - index.ts를 통해 필요한 것만 내보내기
 
-### 🔍 Code Review Checklist
+### 🔍 코드 리뷰 체크리스트
 
-- [ ] Follows FSD layer structure
-- [ ] Respects dependency direction
-- [ ] No cross-layer imports
-- [ ] Proper naming conventions
-- [ ] Clean public API through index.ts
-- [ ] Single responsibility principle
-- [ ] Appropriate layer placement
+- [ ] FSD 계층 구조를 따르는가
+- [ ] 의존성 방향을 준수하는가
+- [ ] 교차 계층 import가 없는가
+- [ ] 적절한 네이밍 컨벤션을 사용하는가
+- [ ] index.ts를 통한 깔끔한 공개 API가 있는가
+- [ ] 단일 책임 원칙을 따르는가
+- [ ] 적절한 계층에 배치되었는가
 
 ---
 
-## Next.js Specific Rules
+## Next.js 특정 규칙
 
-### App Router Integration
-- Use `app/` for Next.js App Router configuration
-- Place page components in `pages/` layer, not `app/`
-- Keep routing logic separate from business logic
+### App Router 통합
+- Next.js App Router 설정에는 `app/` 사용
+- 페이지 컴포넌트는 `app/`가 아닌 `page-components/` 계층에 배치
+- 라우팅 로직과 비즈니스 로직 분리
 
-### File Conventions
+### 파일 컨벤션
 ```
-pages/text-counter/
+page-components/text-counter/
 ├── ui/
-│   └── text-counter-page.tsx    # Page component
+│   └── text-counter-page.tsx    # 페이지 컴포넌트
 ├── model/
-│   └── page-meta.ts            # SEO metadata
-└── index.ts                     # Public exports
+│   └── page-meta.ts            # SEO 메타데이터
+└── index.ts                     # 공개 내보내기
 ```
 
-Remember: FSD is about **scalability** and **maintainability**. When in doubt, prefer explicit structure over convenience.
+기억하세요: FSD는 **확장성**과 **유지보수성**에 관한 것입니다. 확실하지 않을 때는 편의성보다 명시적 구조를 선호하세요.
