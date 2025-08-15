@@ -8,19 +8,21 @@ This project follows Feature-Sliced Design (FSD) methodology for maintainable an
 
 ```
 src/
-├── app/           # Application initialization, providers, routing
-├── pages/         # Page components and routing logic
-├── widgets/       # Composite UI blocks (Header, Sidebar, Layout)
-├── features/      # Business features (Text Analysis, Icon Generation)
-├── entities/      # Business entities (User, Text, Icon, Calculation)
-├── shared/        # Reusable code (UI kit, utilities, configs)
+├── app/               # Application initialization, providers, routing
+├── page-components/   # Page components and routing logic  
+├── widgets/           # Composite UI blocks (Header, Sidebar, Layout)
+├── features/          # Business features (Text Analysis, Icon Generation)
+├── entities/          # Business entities (User, Text, Icon, Calculation)
+├── shared/            # Reusable code (UI kit, utilities, configs)
 ```
+
+**Note:** In Next.js App Router projects, we use `page-components/` instead of `pages/` to avoid conflicts with Next.js routing system.
 
 ### 🎯 Layer Dependencies
 
 **Dependency Direction (Top → Bottom):**
 ```
-app → pages → widgets → features → entities → shared
+app → page-components → widgets → features → entities → shared
 ```
 
 **Rules:**
@@ -43,7 +45,7 @@ app → pages → widgets → features → entities → shared
 // app/providers.tsx - Global providers
 ```
 
-#### **`pages/`** - Pages Layer
+#### **`page-components/`** - Page Components Layer
 - Page components
 - Route-specific logic
 - Page-level data fetching
@@ -51,9 +53,9 @@ app → pages → widgets → features → entities → shared
 
 **Example:**
 ```typescript
-// pages/home/ui/home-page.tsx
-// pages/text-counter/ui/text-counter-page.tsx
-// pages/icon-generator/ui/icon-generator-page.tsx
+// page-components/home/ui/home-page.tsx
+// page-components/text-counter/ui/text-counter-page.tsx
+// page-components/icon-generator/ui/icon-generator-page.tsx
 ```
 
 #### **`widgets/`** - Widgets Layer
