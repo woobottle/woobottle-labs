@@ -1,0 +1,179 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { 
+  FileText, 
+  Calculator, 
+  Settings, 
+  Info, 
+  Menu, 
+  X,
+  Home,
+  Hash,
+  Clock,
+  BarChart3
+} from 'lucide-react';
+
+interface MenuItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: React.ComponentType<any>;
+  description?: string;
+}
+
+const menuItems: MenuItem[] = [
+  {
+    id: 'home',
+    label: '홈',
+    href: '/',
+    icon: Home,
+    description: '대시보드'
+  },
+  {
+    id: 'text-counter',
+    label: '글자수 카운터',
+    href: '/text-counter',
+    icon: FileText,
+    description: '실시간 텍스트 분석'
+  },
+  {
+    id: 'calculator',
+    label: '계산기',
+    href: '/calculator',
+    icon: Calculator,
+    description: '간단한 계산기'
+  },
+  {
+    id: 'statistics',
+    label: '통계 분석',
+    href: '/statistics',
+    icon: BarChart3,
+    description: '텍스트 통계 상세'
+  },
+  {
+    id: 'timer',
+    label: '타이머',
+    href: '/timer',
+    icon: Clock,
+    description: '작업 시간 측정'
+  },
+  {
+    id: 'settings',
+    label: '설정',
+    href: '/settings',
+    icon: Settings,
+    description: '앱 설정'
+  },
+  {
+    id: 'about',
+    label: '정보',
+    href: '/about',
+    icon: Info,
+    description: '앱 정보'
+  }
+];
+
+export default function Sidebar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={toggleSidebar}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white/80 backdrop-blur-sm border border-white/30 shadow-lg hover:bg-white/90 transition-all duration-200"
+      >
+        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        fixed left-0 top-0 h-full w-64 bg-white/90 backdrop-blur-lg border-r border-white/30 shadow-xl z-40
+        transform transition-transform duration-300 ease-in-out
+        lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200/50">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600">
+              <Hash className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-gray-800">WooBottle</h1>
+              <p className="text-sm text-gray-600">생산성 도구</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="p-4">
+          <div className="space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)} // Close sidebar on mobile after selection
+                  className={`
+                    w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-[1.02]' 
+                      : 'text-gray-700 hover:bg-white/60 hover:shadow-md'
+                    }
+                  `}
+                >
+                  <div className={`
+                    p-2 rounded-lg transition-colors duration-200
+                    ${isActive 
+                      ? 'bg-white/20' 
+                      : 'bg-gray-100'
+                    }
+                  `}>
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-600'}`} />
+                  </div>
+                  <div className="text-left">
+                    <p className={`font-medium ${isActive ? 'text-white' : 'text-gray-800'}`}>
+                      {item.label}
+                    </p>
+                    {item.description && (
+                      <p className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* Footer */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200/50">
+          <div className="text-center text-xs text-gray-500">
+            <p>Version 1.0.0</p>
+            <p className="mt-1">© 2024 WooBottle Labs</p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

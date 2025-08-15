@@ -1,256 +1,184 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Copy, Trash2, FileText, Type, Hash, AlignLeft, Clock, Clipboard } from 'lucide-react';
+import React from 'react';
+import Link from 'next/link';
+import { FileText, Calculator, BarChart3, Clock, Settings, Info, ArrowRight } from 'lucide-react';
+import AppLayout from '../components/AppLayout';
 
-export default function Home() {
-  const [text, setText] = useState('');
-  const [stats, setStats] = useState({
-    characters: 0,
-    charactersNoSpaces: 0,
-    words: 0,
-    lines: 0,
-    paragraphs: 0,
-    koreanChars: 0,
-    englishChars: 0
-  });
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    const characters = text.length;
-    const charactersNoSpaces = text.replace(/\s/g, '').length;
-    
-    // Korean character detection (Hangul range)
-    const koreanChars = (text.match(/[\u3131-\u3163\uac00-\ud7af]/g) || []).length;
-    const englishChars = (text.match(/[a-zA-Z]/g) || []).length;
-    
-    // Word counting - considering Korean spacing
-    const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-    
-    // Line counting
-    const lines = text === '' ? 0 : text.split('\n').length;
-    
-    // Paragraph counting
-    const paragraphs = text.trim() === '' ? 0 : text.trim().split(/\n\s*\n/).filter(p => p.trim()).length;
-
-    setStats({
-      characters,
-      charactersNoSpaces,
-      words,
-      lines,
-      paragraphs,
-      koreanChars,
-      englishChars
-    });
-  }, [text]);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
+export default function HomePage() {
+  const tools = [
+    {
+      id: 'text-counter',
+      title: '글자수 카운터',
+      description: '실시간으로 글자, 단어, 줄 수를 계산합니다',
+      icon: FileText,
+      href: '/text-counter',
+      color: 'from-blue-500 to-blue-600',
+      stats: '실시간 분석'
+    },
+    {
+      id: 'calculator',
+      title: '계산기',
+      description: '간단한 사칙연산을 수행할 수 있습니다',
+      icon: Calculator,
+      href: '/calculator',
+      color: 'from-green-500 to-green-600',
+      stats: '사칙연산'
+    },
+    {
+      id: 'statistics',
+      title: '통계 분석',
+      description: '상세한 텍스트 및 사용 통계를 확인하세요',
+      icon: BarChart3,
+      href: '/statistics',
+      color: 'from-purple-500 to-purple-600',
+      stats: '데이터 시각화'
+    },
+    {
+      id: 'timer',
+      title: '타이머',
+      description: '작업 시간을 측정하고 관리하세요',
+      icon: Clock,
+      href: '/timer',
+      color: 'from-orange-500 to-orange-600',
+      stats: '시간 관리'
+    },
+    {
+      id: 'settings',
+      title: '설정',
+      description: '앱 환경을 원하는 대로 설정하세요',
+      icon: Settings,
+      href: '/settings',
+      color: 'from-gray-500 to-gray-600',
+      stats: '개인화'
+    },
+    {
+      id: 'about',
+      title: '정보',
+      description: '앱에 대한 자세한 정보를 확인하세요',
+      icon: Info,
+      href: '/about',
+      color: 'from-indigo-500 to-indigo-600',
+      stats: '프로젝트 소개'
     }
-  };
+  ];
 
-  const handleClear = () => {
-    setText('');
-  };
-
-  const handlePaste = async () => {
-    try {
-      const clipboardText = await navigator.clipboard.readText();
-      setText(clipboardText);
-    } catch (err) {
-      console.error('Failed to paste text: ', err);
-    }
-  };
-
-  const getCharacterLimitColor = (count: number) => {
-    if (count < 100) return 'text-gray-600';
-    if (count < 500) return 'text-blue-600';
-    if (count < 1000) return 'text-green-600';
-    if (count < 2000) return 'text-amber-600';
-    return 'text-red-600';
-  };
-
-  const StatCard = ({ icon: Icon, label, value, color = "text-gray-700" }: {
-    icon: React.ComponentType<any>;
-    label: string;
-    value: number;
-    color?: string;
-  }) => (
-    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-white/20 hover:shadow-md transition-all duration-300 hover:bg-white/80">
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-          <Icon className="w-5 h-5 text-blue-600" />
+  const ToolCard = ({ tool }: { tool: typeof tools[0] }) => {
+    const Icon = tool.icon;
+    
+    return (
+      <Link href={tool.href} className="group">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]">
+          <div className="flex items-start justify-between mb-4">
+            <div className={`p-3 rounded-lg bg-gradient-to-br ${tool.color}`}>
+              <Icon className="w-6 h-6 text-white" />
+            </div>
+            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+          </div>
+          
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">{tool.title}</h3>
+          <p className="text-gray-600 text-sm mb-3">{tool.description}</p>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+              {tool.stats}
+            </span>
+          </div>
         </div>
-        <div>
-          <p className="text-sm text-gray-600 font-medium">{label}</p>
-          <p className={`text-2xl font-bold ${color}`}>{value.toLocaleString()}</p>
-        </div>
-      </div>
-    </div>
-  );
+      </Link>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            글자수 카운터
-          </h1>
-          <p className="text-gray-600 text-lg">
-            실시간으로 글자, 단어, 줄 수를 계산합니다
-          </p>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Text Input Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    텍스트 입력
-                  </h2>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleCopy}
-                      className="px-3 py-1.5 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors duration-200 flex items-center gap-1"
-                    >
-                      <Copy className="w-4 h-4" />
-                      {copied ? '복사됨!' : '복사'}
-                    </button>
-                    <button
-                      onClick={handleClear}
-                      className="px-3 py-1.5 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors duration-200 flex items-center gap-1"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      지우기
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-6">
-                <textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  className="w-full h-96 p-4 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800 placeholder-gray-400"
-                  placeholder="여기에 텍스트를 입력하거나 붙여넣어 주세요...
-                  
-한글, 영어, 숫자 등 모든 문자를 지원합니다.
-실시간으로 글자수가 계산됩니다."
-                  style={{ 
-                    lineHeight: '1.6',
-                    fontSize: '16px',
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif'
-                  }}
-                />
-                
-                {/* Character count indicator */}
-                <div className="mt-3 text-right">
-                  <span className={`text-sm font-medium ${getCharacterLimitColor(stats.characters)}`}>
-                    {stats.characters.toLocaleString()} 글자
-                  </span>
-                </div>
-              </div>
-            </div>
+    <AppLayout>
+      {/* Hero Section */}
+      <div className="text-center mb-12">
+        <h1 className="text-5xl font-bold text-gray-800 mb-4">
+          WooBottle Labs
+        </h1>
+        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          일상과 업무에서 필요한 다양한 생산성 도구들을 한 곳에서 만나보세요. 
+          간단하고 직관적인 인터페이스로 누구나 쉽게 사용할 수 있습니다.
+        </p>
+        
+        <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full">
+            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+            <span className="text-sm font-medium">온라인</span>
           </div>
-
-          {/* Statistics Section */}
-          <div className="space-y-6">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                <Hash className="w-5 h-5" />
-                통계
-              </h3>
-              
-              <div className="space-y-4">
-                <StatCard 
-                  icon={Type} 
-                  label="전체 글자" 
-                  value={stats.characters}
-                  color={getCharacterLimitColor(stats.characters)}
-                />
-                
-                <StatCard 
-                  icon={Type} 
-                  label="공백 제외" 
-                  value={stats.charactersNoSpaces}
-                />
-                
-                <StatCard 
-                  icon={FileText} 
-                  label="단어" 
-                  value={stats.words}
-                />
-                
-                <StatCard 
-                  icon={AlignLeft} 
-                  label="줄" 
-                  value={stats.lines}
-                />
-                
-                <StatCard 
-                  icon={FileText} 
-                  label="문단" 
-                  value={stats.paragraphs}
-                />
-              </div>
-            </div>
-
-            {/* Language Statistics */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                언어별 통계
-              </h3>
-              
-              <div className="space-y-4">
-                <StatCard 
-                  icon={Type} 
-                  label="한글" 
-                  value={stats.koreanChars}
-                  color="text-blue-600"
-                />
-                
-                <StatCard 
-                  icon={Type} 
-                  label="영어" 
-                  value={stats.englishChars}
-                  color="text-green-600"
-                />
-              </div>
-            </div>
-
-            {/* Reading Time Estimate */}
-            {text.length > 0 && (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  읽기 시간 예상
-                </h3>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">
-                    빠르게: <span className="font-semibold text-blue-600">
-                      {Math.ceil(stats.characters / 500)}분
-                    </span>
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    보통: <span className="font-semibold text-green-600">
-                      {Math.ceil(stats.characters / 300)}분
-                    </span>
-                  </p>
-                </div>
-              </div>
-            )}
+          <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full">
+            <span className="text-sm font-medium">무료 사용</span>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full">
+            <span className="text-sm font-medium">설치 불필요</span>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center">
+          <div className="text-3xl font-bold text-blue-600 mb-2">6</div>
+          <p className="text-gray-600">생산성 도구</p>
+        </div>
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center">
+          <div className="text-3xl font-bold text-green-600 mb-2">0</div>
+          <p className="text-gray-600">설치 과정</p>
+        </div>
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center">
+          <div className="text-3xl font-bold text-purple-600 mb-2">100%</div>
+          <p className="text-gray-600">무료 사용</p>
+        </div>
+      </div>
+
+      {/* Tools Grid */}
+      <div className="mb-12">
+        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+          사용 가능한 도구들
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tools.map((tool) => (
+            <ToolCard key={tool.id} tool={tool} />
+          ))}
+        </div>
+      </div>
+
+      {/* Feature Highlights */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+          왜 WooBottle Labs인가요?
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">⚡</span>
+            </div>
+            <h3 className="font-semibold text-gray-800 mb-2">빠른 접근</h3>
+            <p className="text-sm text-gray-600">즉시 사용 가능한 도구들</p>
+          </div>
+          <div className="text-center">
+            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">🔒</span>
+            </div>
+            <h3 className="font-semibold text-gray-800 mb-2">프라이버시</h3>
+            <p className="text-sm text-gray-600">모든 데이터 로컬 처리</p>
+          </div>
+          <div className="text-center">
+            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">📱</span>
+            </div>
+            <h3 className="font-semibold text-gray-800 mb-2">반응형</h3>
+            <p className="text-sm text-gray-600">모든 기기에서 완벽 동작</p>
+          </div>
+          <div className="text-center">
+            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">🎨</span>
+            </div>
+            <h3 className="font-semibold text-gray-800 mb-2">모던 UI</h3>
+            <p className="text-sm text-gray-600">직관적이고 세련된 디자인</p>
+          </div>
+        </div>
+      </div>
+    </AppLayout>
   );
 }
