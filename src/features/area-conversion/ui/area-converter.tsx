@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Card } from 'shared/ui/card';
 import { Input } from 'shared/ui/input';
 import { Button } from 'shared/ui/button';
 import { APARTMENT_TYPES } from 'entities/area';
@@ -32,17 +31,9 @@ export const AreaConverter: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="space-y-8">
       {/* 메인 변환기 */}
-      <Card variant="elevated" padding="lg">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            아파트 평수 변환기
-          </h2>
-          <p className="text-gray-600">
-            평수와 제곱미터를 상호 변환해보세요
-          </p>
-        </div>
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-8">
 
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           {/* 평수 입력 */}
@@ -99,10 +90,10 @@ export const AreaConverter: React.FC = () => {
             🗑 전체 지우기
           </Button>
         </div>
-      </Card>
+      </div>
 
       {/* 빠른 선택 */}
-      <Card variant="bordered" padding="lg">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-8">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
           일반적인 아파트 평수
         </h3>
@@ -111,7 +102,7 @@ export const AreaConverter: React.FC = () => {
             <button
               key={pyeong}
               onClick={() => handlePresetClick(pyeong)}
-              className="p-3 text-left border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              className="p-4 text-left bg-white/70 backdrop-blur-sm rounded-xl border border-white/20 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 hover:shadow-md"
             >
               <div className="font-semibold text-blue-600">{pyeong}평</div>
               <div className="text-sm text-gray-600">{description}</div>
@@ -121,10 +112,10 @@ export const AreaConverter: React.FC = () => {
             </button>
           ))}
         </div>
-      </Card>
+      </div>
 
       {/* 변환 공식 안내 */}
-      <Card variant="default" padding="lg">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-8">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
           변환 공식
         </h3>
@@ -141,7 +132,7 @@ export const AreaConverter: React.FC = () => {
             * 1평 = 3.3058㎡ (정확한 법정 변환 계수)
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
