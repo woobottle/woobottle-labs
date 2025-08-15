@@ -72,10 +72,10 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'timer',
-    label: '타이머',
+    label: '뽀모도로 타이머',
     href: '/timer',
     icon: Clock,
-    description: '작업 시간 측정'
+    description: '집중력 향상 시간 관리'
   },
   {
     id: 'settings',

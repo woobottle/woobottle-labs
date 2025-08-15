@@ -54,12 +54,12 @@ export default function HomePage() {
     },
     {
       id: 'timer',
-      title: '타이머',
-      description: '작업 시간을 측정하고 관리하세요',
+      title: '뽀모도로 타이머',
+      description: '집중력을 높이고 생산성을 향상시키는 시간 관리 기법',
       icon: Clock,
       href: '/timer',
-      color: 'from-orange-500 to-orange-600',
-      stats: '시간 관리'
+      color: 'from-red-500 to-pink-600',
+      stats: '집중력 향상'
     },
     {
       id: 'settings',
