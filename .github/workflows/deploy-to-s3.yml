@@ -3,6 +3,32 @@ name: Deploy to S3
 on:
   workflow_dispatch: # 수동 실행 전용
     inputs:
+      deployment_type:
+        description: '배포 타입'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+      version_type:
+        description: '버전 타입 (자동 생성 시)'
+        required: false
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      custom_version:
+        description: '사용자 정의 버전 (예: v1.2.0)'
+        required: false
+        type: string
+      auto_version:
+        description: '자동 버전 생성'
+        required: false
+        default: false
+        type: boolean
       skip_tests:
         description: '테스트 건너뛰기'
         required: false
@@ -54,23 +80,43 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy to S3
+      - name: Deploy to S3 with Versioning
         run: |
-          aws s3 sync ./out s3://${{ secrets.S3_BUCKET_NAME }} --delete --cache-control "max-age=86400"
-          
-      - name: Invalidate CloudFront (if using CDN)
-        run: |
-          if [ -n "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
-            aws cloudfront create-invalidation \
-              --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-              --paths "/*"
+          # 버전 결정
+          if [[ "${{ inputs.auto_version }}" == "true" ]]; then
+            DEPLOY_ARGS="--auto-version ${{ inputs.version_type }}"
+          elif [[ -n "${{ inputs.custom_version }}" ]]; then
+            DEPLOY_ARGS="--version ${{ inputs.custom_version }}"
           else
-            echo "CloudFront Distribution ID가 설정되지 않아 캐시 무효화를 건너뜁니다."
+            DEPLOY_ARGS=""
           fi
-
+          
+          # 배포 타입 결정
+          if [[ "${{ inputs.deployment_type }}" == "staging" ]]; then
+            DEPLOY_ARGS="$DEPLOY_ARGS --staging"
+          fi
+          
+          # 배포 실행
+          chmod +x ./scripts/deploy.sh
+          ./scripts/deploy.sh $DEPLOY_ARGS
+          
       - name: Deployment Summary
         run: |
           echo "✅ 배포가 완료되었습니다!"
-          echo "🌍 S3 버킷: ${{ secrets.S3_BUCKET_NAME }}"
-          echo "📦 빌드 출력: ./out 디렉토리"
+          echo "🎯 배포 타입: ${{ inputs.deployment_type }}"
+          
+          if [[ "${{ inputs.auto_version }}" == "true" ]]; then
+            echo "🏷️ 자동 생성된 ${{ inputs.version_type }} 버전으로 배포"
+          elif [[ -n "${{ inputs.custom_version }}" ]]; then
+            echo "📦 사용자 지정 버전: ${{ inputs.custom_version }}"
+          else
+            echo "📦 최신 버전으로 배포"
+          fi
+          
+          if [[ "${{ inputs.deployment_type }}" == "staging" ]]; then
+            echo "🌍 스테이징 버킷: woo-bottle-staging.com"
+          else
+            echo "🌍 프로덕션 버킷: woo-bottle.com"
+          fi
+          
           echo "🕒 배포 시간: $(date)"
