@@ -8,6 +8,11 @@ on:
         required: false
         default: false
         type: boolean
+      skip_lint:
+        description: '린트 검사 건너뛰기'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build-and-deploy:
@@ -36,6 +41,7 @@ jobs:
         run: pnpm test
 
       - name: Run linting
+        if: ${{ !inputs.skip_lint }}
         run: pnpm lint
 
       - name: Build application
