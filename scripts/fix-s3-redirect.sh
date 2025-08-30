@@ -55,7 +55,7 @@ rm -f /tmp/simple-website-config.json
 
 echo
 echo -e "${GREEN}🎉 문제 해결 완료!${NC}"
-echo -e "${GREEN}🔗 이제 http://woo-bottle.com.s3-website-us-east-1.amazonaws.com 에서 정상 접근 가능합니다.${NC}"
+echo -e "${GREEN}🔗 이제 https://woo-bottle.com 에서 정상 접근 가능합니다.${NC}"
 echo
 echo -e "${BLUE}📋 변경사항:${NC}"
 echo "  1. 무한 리다이렉트 규칙 제거"

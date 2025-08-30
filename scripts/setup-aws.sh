@@ -125,7 +125,7 @@ fi
 
 echo
 echo -e "${BLUE}🔗 웹사이트 URL:${NC}"
-echo -e "   프로덕션: http://$PRODUCTION_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
+echo -e "   프로덕션: https://$PRODUCTION_BUCKET"
 
 echo
 echo -e "${YELLOW}다음 단계:${NC}"

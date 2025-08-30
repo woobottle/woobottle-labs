@@ -18,4 +18,4 @@ echo "aws s3 cp s3://woo-bottle.com/current/deploy-info.json s3://woo-bottle.com
 
 echo
 echo "4. 확인:"
-echo "curl -I http://woo-bottle.com.s3-website-us-east-1.amazonaws.com/"
+echo "curl -I https://woo-bottle.com/"

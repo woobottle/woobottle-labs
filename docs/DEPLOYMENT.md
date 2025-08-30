@@ -288,11 +288,11 @@ npm run rollback:staging
 - **롤백**: 즉시 이전 버전으로 복원 가능
 - **CDN**: CloudFront 권장
 
-### 스테이징 환경
-- **버킷**: `woo-bottle-staging.com` (자동 생성)
-- **URL**: `http://woo-bottle-staging.com.s3-website.ap-northeast-2.amazonaws.com`
-- **용도**: 프로덕션 배포 전 테스트
-- **버전 관리**: 프로덕션과 동일한 버전 시스템
+### 프로덕션 환경
+- **버킷**: `woo-bottle.com`
+- **URL**: `https://woo-bottle.com`
+- **용도**: 실제 서비스 환경
+- **버전 관리**: Git 태그 기반 버전 시스템
 - **배포 방식**: 선택적 사용 (강제하지 않음)
 - **롤백**: 프로덕션과 동일한 롤백 시스템
 

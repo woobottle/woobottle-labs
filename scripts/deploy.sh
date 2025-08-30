@@ -191,7 +191,7 @@ EOF
   rm -f /tmp/website-config.json /tmp/bucket-policy.json
   
   echo -e "${GREEN}✅ 웹사이트 호스팅 설정 완료${NC}"
-  echo -e "${BLUE}🔗 웹사이트 URL: http://$bucket_name.s3-website.$AWS_REGION.amazonaws.com${NC}"
+  echo -e "${BLUE}🔗 웹사이트 URL: https://$bucket_name${NC}"
 }
 
 # 버킷 설정
@@ -331,7 +331,7 @@ echo -e "${GREEN}📅 배포 시간: $(date)${NC}"
 if [[ -n "$DEPLOYMENT_URL" ]]; then
   echo -e "${GREEN}🔗 배포 URL: $DEPLOYMENT_URL${NC}"
 else
-  DEPLOYMENT_URL="http://$PRODUCTION_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
+  DEPLOYMENT_URL="https://$PRODUCTION_BUCKET"
   echo -e "${GREEN}🔗 배포 URL: $DEPLOYMENT_URL${NC}"
 fi
 

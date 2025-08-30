@@ -87,7 +87,7 @@ WooBottle Labs - 버전 정보
 
   const openCommitOnGitHub = () => {
     if (!versionInfo) return;
-    const url = `https://github.com/your-username/woobottle-labs/commit/${versionInfo.git.commitHash}`;
+    const url = `https://github.com/woobottle/woobottle-labs/commit/${versionInfo.git.commitHash}`;
     window.open(url, '_blank');
   };
 

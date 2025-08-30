@@ -264,7 +264,7 @@ echo -e "   롤백 시간: $(date)"
 if [[ -n "$DEPLOYMENT_URL" ]]; then
   echo -e "${GREEN}🔗 배포 URL: $DEPLOYMENT_URL${NC}"
 else
-  ROLLBACK_URL="http://$PRODUCTION_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
+  ROLLBACK_URL="https://$PRODUCTION_BUCKET"
   echo -e "${GREEN}🔗 배포 URL: $ROLLBACK_URL${NC}"
 fi
 

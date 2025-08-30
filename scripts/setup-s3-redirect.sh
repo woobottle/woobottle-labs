@@ -135,7 +135,7 @@ main() {
     echo
     echo -e "${GREEN}🎉 설정 완료!${NC}"
     echo -e "${GREEN}🔗 이제 다음 URL로 접근할 수 있습니다:${NC}"
-    echo -e "${GREEN}   http://$bucket_name.s3-website.$AWS_REGION.amazonaws.com${NC}"
+    echo -e "${GREEN}   https://$bucket_name${NC}"
     echo
     echo -e "${BLUE}💡 참고사항:${NC}"
     echo -e "   - 루트 경로(/) 접근 시 자동으로 current/ 폴더로 리다이렉트됩니다"
