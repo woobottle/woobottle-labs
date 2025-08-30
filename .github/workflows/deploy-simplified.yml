@@ -1,0 +1,350 @@
+name: Simplified S3 Deploy with Versioning
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: '버전 타입'
+        required: false
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      custom_version:
+        description: '사용자 정의 버전 (예: v1.2.0)'
+        required: false
+        type: string
+      auto_version:
+        description: '자동 버전 생성'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      deployment-url: ${{ steps.deploy.outputs.url }}
+    
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Node.js 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3. pnpm 설치
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 'latest'
+
+      # 4. 의존성 설치
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 5. 테스트 실행
+      - name: Run tests
+        run: pnpm test
+
+      # 6. 린트 검사
+      - name: Run linting
+        run: pnpm lint
+
+      # 7. 버전 관리 (GitHub Actions 라이브러리 사용)
+      - name: Determine version
+        id: version
+        uses: paulhatch/semantic-version@v5.4.0
+        with:
+          tag_prefix: "v"
+          major_pattern: "(MAJOR)"
+          minor_pattern: "(MINOR)"
+          version_format: "${major}.${minor}.${patch}"
+          bump_each_commit: false
+          search_commit_body: false
+          user_format_type: "csv"
+          enable_prerelease_mode: false
+
+      # 8. 사용자 정의 버전 처리
+      - name: Handle custom version
+        id: final_version
+        run: |
+          if [[ "${{ inputs.auto_version }}" == "true" ]]; then
+            # 자동 버전 생성
+            case "${{ inputs.version_type }}" in
+              "major")
+                VERSION="v${{ steps.version.outputs.major_version }}"
+                ;;
+              "minor")
+                VERSION="v${{ steps.version.outputs.minor_version }}"
+                ;;
+              "patch")
+                VERSION="v${{ steps.version.outputs.patch_version }}"
+                ;;
+            esac
+          elif [[ -n "${{ inputs.custom_version }}" ]]; then
+            # 사용자 정의 버전
+            VERSION="${{ inputs.custom_version }}"
+          else
+            # 현재 버전 사용
+            VERSION="v${{ steps.version.outputs.version }}"
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "🏷️ 배포 버전: $VERSION"
+
+      # 9. Git 태그 생성 (자동 버전인 경우)
+      - name: Create Git tag
+        if: inputs.auto_version == true
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: ${{ steps.final_version.outputs.version }}
+          tag_exists_error: false
+          message: "Automated release ${{ steps.final_version.outputs.version }}"
+
+      # 10. 빌드
+      - name: Build application
+        run: pnpm build
+
+      # 11. 버전 정보 주입
+      - name: Inject version info
+        run: |
+          VERSION="${{ steps.final_version.outputs.version }}"
+          BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
+          COMMIT_HASH=$(git rev-parse HEAD)
+          SHORT_HASH=$(git rev-parse --short HEAD)
+          BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          COMMIT_DATE=$(git log -1 --format=%cd --date=format:'%Y-%m-%d %H:%M:%S %z')
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B | head -n1)
+          
+          # version.js 파일 생성
+          cat > ./out/version.js << EOF
+          // 자동 생성된 버전 정보 - 수정하지 마세요
+          window.__APP_VERSION__ = {
+            "name": "woobottle-labs",
+            "version": "$VERSION",
+            "packageVersion": "0.1.0",
+            "buildTime": "$BUILD_TIME",
+            "buildNumber": "${{ github.run_number }}",
+            "buildId": "${{ github.run_id }}",
+            "git": {
+              "commitHash": "$COMMIT_HASH",
+              "shortHash": "$SHORT_HASH",
+              "branch": "$BRANCH",
+              "commitDate": "$COMMIT_DATE",
+              "commitMessage": "$COMMIT_MESSAGE",
+              "tag": "$VERSION"
+            },
+            "environment": "production",
+            "ci": true,
+            "debug": {
+              "nodeVersion": "$(node --version)",
+              "platform": "$(uname -s | tr '[:upper:]' '[:lower:]')",
+              "arch": "$(uname -m)"
+            }
+          };
+          
+          // 전역 함수로 버전 정보 접근
+          window.getAppVersion = function() {
+            return window.__APP_VERSION__;
+          };
+          
+          // 콘솔에 버전 정보 출력
+          console.group('🚀 WooBottle Labs - Version Info');
+          console.log('Version:', window.__APP_VERSION__.version);
+          console.log('Build Time:', window.__APP_VERSION__.buildTime);
+          console.log('Commit:', window.__APP_VERSION__.git.shortHash);
+          console.log('Branch:', window.__APP_VERSION__.git.branch);
+          console.groupEnd();
+          EOF
+          
+          # version.json 파일도 생성
+          cat > ./out/version.json << EOF
+          {
+            "name": "woobottle-labs",
+            "version": "$VERSION",
+            "buildTime": "$BUILD_TIME",
+            "buildNumber": "${{ github.run_number }}",
+            "buildId": "${{ github.run_id }}",
+            "git": {
+              "commitHash": "$COMMIT_HASH",
+              "shortHash": "$SHORT_HASH",
+              "branch": "$BRANCH",
+              "commitDate": "$COMMIT_DATE",
+              "commitMessage": "$COMMIT_MESSAGE",
+              "tag": "$VERSION"
+            },
+            "environment": "production",
+            "ci": true
+          }
+          EOF
+
+      # 12. AWS 자격증명 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 13. S3 버킷 설정 (GitHub Actions 라이브러리 사용)
+      - name: Setup S3 bucket
+        uses: aws-actions/amazon-s3-deploy@v1
+        with:
+          aws-s3-bucket: woo-bottle.com
+          source-dir: ./out
+          destination-dir: versions/${{ steps.final_version.outputs.version }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 14. 현재 버전으로 배포
+      - name: Deploy current version
+        uses: aws-actions/amazon-s3-deploy@v1
+        with:
+          aws-s3-bucket: woo-bottle.com
+          source-dir: ./out
+          destination-dir: current
+          aws-region: ${{ secrets.AWS_REGION }}
+          clean: true
+
+      # 15. 루트에 배포 (직접 접근용)
+      - name: Deploy to root
+        uses: aws-actions/amazon-s3-deploy@v1
+        with:
+          aws-s3-bucket: woo-bottle.com
+          source-dir: ./out
+          aws-region: ${{ secrets.AWS_REGION }}
+          clean: true
+
+      # 16. S3 웹사이트 호스팅 설정
+      - name: Configure S3 website hosting
+        run: |
+          # 웹사이트 설정
+          aws s3api put-bucket-website \
+            --bucket woo-bottle.com \
+            --website-configuration '{
+              "IndexDocument": {"Suffix": "index.html"},
+              "ErrorDocument": {"Key": "404.html"}
+            }'
+          
+          # 버킷 정책 설정
+          aws s3api put-bucket-policy \
+            --bucket woo-bottle.com \
+            --policy '{
+              "Version": "2012-10-17",
+              "Statement": [{
+                "Sid": "PublicReadGetObject",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::woo-bottle.com/*"
+              }]
+            }'
+
+      # 17. 배포 메타데이터 생성
+      - name: Create deployment metadata
+        run: |
+          VERSION="${{ steps.final_version.outputs.version }}"
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # 배포 메타데이터 JSON 생성
+          cat > deploy-info.json << EOF
+          {
+            "version": "$VERSION",
+            "timestamp": "$TIMESTAMP",
+            "environment": "production",
+            "bucket": "woo-bottle.com",
+            "commit_hash": "$(git rev-parse HEAD)",
+            "branch": "$(git rev-parse --abbrev-ref HEAD)",
+            "build_number": "${{ github.run_number }}",
+            "build_id": "${{ github.run_id }}",
+            "workflow_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+          EOF
+          
+          # S3에 업로드
+          aws s3 cp deploy-info.json s3://woo-bottle.com/deploy-info.json \
+            --content-type "application/json" \
+            --cache-control "no-cache"
+          
+          aws s3 cp deploy-info.json s3://woo-bottle.com/current/deploy-info.json \
+            --content-type "application/json" \
+            --cache-control "no-cache"
+
+      # 18. CloudFront 무효화 (선택사항)
+      - name: Invalidate CloudFront
+        if: env.CLOUDFRONT_DISTRIBUTION_ID != ''
+        uses: chetan/invalidate-cloudfront-action@v2
+        env:
+          DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+          PATHS: "/*"
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # 19. 오래된 버전 정리
+      - name: Cleanup old versions
+        run: |
+          echo "🧹 오래된 버전 정리 중..."
+          
+          # 버전 목록 가져오기 (최신 3개만 유지)
+          aws s3api list-objects-v2 \
+            --bucket woo-bottle.com \
+            --prefix "versions/" \
+            --delimiter "/" \
+            --query 'CommonPrefixes[].Prefix' \
+            --output text | \
+          tr '\t' '\n' | \
+          sort -V | \
+          head -n -3 | \
+          while read -r old_version; do
+            if [[ -n "$old_version" ]]; then
+              echo "삭제 중: $old_version"
+              aws s3 rm "s3://woo-bottle.com/$old_version" --recursive
+            fi
+          done
+
+      # 20. 배포 결과 출력
+      - name: Deployment summary
+        id: deploy
+        run: |
+          VERSION="${{ steps.final_version.outputs.version }}"
+          URL="https://woo-bottle.com"
+          
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          
+          echo "✅ 배포가 완료되었습니다!"
+          echo "🏷️ 버전: $VERSION"
+          echo "🌍 URL: $URL"
+          echo "📅 배포 시간: $(date)"
+          echo "🔗 워크플로우: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  # 배포 후 알림 (선택사항)
+  notify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Deployment notification
+        run: |
+          if [[ "${{ needs.deploy.result }}" == "success" ]]; then
+            echo "🎉 배포 성공!"
+            echo "버전: ${{ needs.deploy.outputs.version }}"
+            echo "URL: ${{ needs.deploy.outputs.deployment-url }}"
+          else
+            echo "❌ 배포 실패!"
+          fi
