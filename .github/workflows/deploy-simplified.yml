@@ -117,7 +117,11 @@ jobs:
           tag_exists_error: false
           message: "Automated release ${{ steps.final_version.outputs.version }}"
 
-      # 10. 버전 정보 주입
+      # 10. 빌드
+      - name: Build application
+        run: pnpm build
+
+      # 11. 버전 정보 주입
       - name: Inject version info
         run: |
           VERSION="${{ steps.final_version.outputs.version }}"
@@ -189,10 +193,6 @@ jobs:
             "ci": true
           }
           EOF
-
-      # 11. 빌드
-      - name: Build application
-        run: pnpm build
 
       # 12. AWS 자격증명 설정
       - name: Configure AWS credentials
