@@ -20,10 +20,8 @@ source "$(dirname "$0")/version-utils.sh" 2>/dev/null || {
 
 # 기본 설정
 ROLLBACK_VERSION=""
-IS_STAGING=false
 LIST_VERSIONS=false
 INTERACTIVE_MODE=false
-STAGING_BUCKET="woo-bottle-staging.com"
 PRODUCTION_BUCKET="woo-bottle.com"
 
 # 명령행 인자 파싱
@@ -32,10 +30,6 @@ while [[ $# -gt 0 ]]; do
     --version)
       ROLLBACK_VERSION="$2"
       shift 2
-      ;;
-    --staging)
-      IS_STAGING=true
-      shift
       ;;
     --list)
       LIST_VERSIONS=true
@@ -52,7 +46,6 @@ while [[ $# -gt 0 ]]; do
       echo
       echo "옵션:"
       echo "  --version v1.0.0    롤백할 버전 지정"
-      echo "  --staging           스테이징 환경에서 롤백"
       echo "  --list              사용 가능한 버전 목록 표시"
       echo "  --interactive       대화형 모드"
       echo "  --help, -h          이 도움말 표시"
@@ -61,7 +54,6 @@ while [[ $# -gt 0 ]]; do
       echo "  $0 --list                       # 사용 가능한 버전 목록"
       echo "  $0 --version v1.0.1             # 특정 버전으로 롤백"
       echo "  $0 --interactive                # 대화형 롤백"
-      echo "  $0 --version v1.0.1 --staging   # 스테이징 환경 롤백"
       exit 0
       ;;
     *)
@@ -90,16 +82,10 @@ export AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$AWS_REGION
 
-# 타겟 버킷 결정
-if [[ "$IS_STAGING" == true ]]; then
-  TARGET_BUCKET="$STAGING_BUCKET"
-  ENVIRONMENT="스테이징"
-  CURRENT_PATH="staging"
-else
-  TARGET_BUCKET="$PRODUCTION_BUCKET"
-  ENVIRONMENT="프로덕션"
-  CURRENT_PATH="current"
-fi
+# 타겟 버킷 설정
+TARGET_BUCKET="$PRODUCTION_BUCKET"
+ENVIRONMENT="프로덕션"
+CURRENT_PATH="current"
 
 echo -e "${BLUE}🔄 WooBottle Labs 롤백 시작...${NC}"
 echo -e "${BLUE}🎯 대상 환경: $ENVIRONMENT ($TARGET_BUCKET)${NC}"
@@ -257,8 +243,8 @@ echo "$ROLLBACK_METADATA" | aws s3 cp - "s3://$TARGET_BUCKET/$CURRENT_PATH/deplo
   --content-type "application/json" \
   --cache-control "no-cache"
 
-# CloudFront 캐시 무효화 (프로덕션만)
-if [[ "$IS_STAGING" != true && -n "$CLOUDFRONT_DISTRIBUTION_ID" ]]; then
+# CloudFront 캐시 무효화
+if [[ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]]; then
   echo -e "${YELLOW}🌐 CloudFront 캐시 무효화 중...${NC}"
   aws cloudfront create-invalidation \
     --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
@@ -275,16 +261,11 @@ echo -e "   백업 위치: s3://$TARGET_BUCKET/$BACKUP_PATH/"
 echo -e "   롤백 시간: $(date)"
 
 # 배포 URL 표시
-if [[ "$IS_STAGING" == true ]]; then
-  ROLLBACK_URL="http://$STAGING_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
-  echo -e "${GREEN}🔗 스테이징 URL: $ROLLBACK_URL${NC}"
+if [[ -n "$DEPLOYMENT_URL" ]]; then
+  echo -e "${GREEN}🔗 배포 URL: $DEPLOYMENT_URL${NC}"
 else
-  if [[ -n "$DEPLOYMENT_URL" ]]; then
-    echo -e "${GREEN}🔗 프로덕션 URL: $DEPLOYMENT_URL${NC}"
-  else
-    ROLLBACK_URL="http://$PRODUCTION_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
-    echo -e "${GREEN}🔗 프로덕션 URL: $ROLLBACK_URL${NC}"
-  fi
+  ROLLBACK_URL="http://$PRODUCTION_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
+  echo -e "${GREEN}🔗 배포 URL: $ROLLBACK_URL${NC}"
 fi
 
 echo

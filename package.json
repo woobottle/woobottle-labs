@@ -11,15 +11,15 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "deploy": "bash scripts/deploy.sh",
-    "deploy:staging": "bash scripts/deploy.sh --staging",
+
     "deploy:patch": "bash scripts/deploy.sh --auto-version patch",
     "deploy:minor": "bash scripts/deploy.sh --auto-version minor",
     "deploy:major": "bash scripts/deploy.sh --auto-version major",
     "rollback": "bash scripts/rollback.sh --interactive",
-    "rollback:staging": "bash scripts/rollback.sh --interactive --staging",
+
     "versions": "bash scripts/version-utils.sh list",
     "versions:s3:prod": "bash scripts/version-utils.sh list-s3 woo-bottle.com",
-    "versions:s3:staging": "bash scripts/version-utils.sh list-s3 woo-bottle-staging.com",
+
     "version:create": "bash scripts/version-utils.sh interactive",
     "version:current": "bash scripts/version-utils.sh current",
     "aws:setup": "bash scripts/setup-aws.sh"

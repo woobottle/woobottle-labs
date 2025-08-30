@@ -20,12 +20,10 @@ source "$(dirname "$0")/version-utils.sh" 2>/dev/null || {
 
 # 기본 설정
 DEPLOY_VERSION=""
-IS_STAGING=false
 AUTO_VERSION=""
 SKIP_TESTS=false
 SKIP_LINT=false
 SKIP_BUILD=false
-STAGING_BUCKET="woo-bottle-staging.com"
 PRODUCTION_BUCKET="woo-bottle.com"
 
 # 명령행 인자 파싱
@@ -34,10 +32,6 @@ while [[ $# -gt 0 ]]; do
     --version)
       DEPLOY_VERSION="$2"
       shift 2
-      ;;
-    --staging)
-      IS_STAGING=true
-      shift
       ;;
     --auto-version)
       AUTO_VERSION="$2"
@@ -62,7 +56,6 @@ while [[ $# -gt 0 ]]; do
       echo
       echo "옵션:"
       echo "  --version v1.0.0       특정 버전으로 배포"
-      echo "  --staging              스테이징 환경에 배포"
       echo "  --auto-version TYPE    자동 버전 생성 (patch|minor|major)"
       echo "  --skip-tests           테스트 건너뛰기"
       echo "  --skip-lint            린트 검사 건너뛰기"
@@ -70,11 +63,10 @@ while [[ $# -gt 0 ]]; do
       echo "  --help, -h             이 도움말 표시"
       echo
       echo "예시:"
-      echo "  $0                                    # 현재 버전으로 프로덕션 배포"
-      echo "  $0 --staging                          # 현재 버전으로 스테이징 배포"
-      echo "  $0 --version v1.2.0                   # 특정 버전으로 프로덕션 배포"
+      echo "  $0                                    # 현재 버전으로 배포"
+      echo "  $0 --version v1.2.0                   # 특정 버전으로 배포"
       echo "  $0 --auto-version patch               # 패치 버전 자동 생성 후 배포"
-      echo "  $0 --auto-version minor --staging     # 마이너 버전 생성 후 스테이징 배포"
+      echo "  $0 --auto-version minor               # 마이너 버전 생성 후 배포"
       exit 0
       ;;
     *)
@@ -108,14 +100,9 @@ else
   echo -e "${BLUE}📋 배포 버전: $DEPLOY_VERSION (지정됨)${NC}"
 fi
 
-# 타겟 버킷 결정
-if [[ "$IS_STAGING" == true ]]; then
-  TARGET_BUCKET="$STAGING_BUCKET"
-  DEPLOY_TYPE="스테이징"
-else
-  TARGET_BUCKET="$PRODUCTION_BUCKET"
-  DEPLOY_TYPE="프로덕션"
-fi
+# 타겟 버킷 설정
+TARGET_BUCKET="$PRODUCTION_BUCKET"
+DEPLOY_TYPE="프로덕션"
 
 echo -e "${BLUE}🎯 배포 대상: $DEPLOY_TYPE ($TARGET_BUCKET)${NC}"
 
@@ -134,23 +121,79 @@ if [[ -z "$AWS_ACCESS_KEY_ID" || -z "$AWS_SECRET_ACCESS_KEY" || -z "$AWS_REGION"
   exit 1
 fi
 
-# 스테이징 버킷 존재 확인 및 생성
-if [[ "$IS_STAGING" == true ]]; then
-  echo -e "${YELLOW}🔍 스테이징 버킷 확인 중...${NC}"
-  if ! aws s3 ls "s3://$STAGING_BUCKET" &>/dev/null; then
-    echo -e "${YELLOW}📦 스테이징 버킷 생성 중: $STAGING_BUCKET${NC}"
-    aws s3 mb "s3://$STAGING_BUCKET" --region "$AWS_REGION"
-    
-    # 정적 웹사이트 호스팅 설정
-    aws s3 website "s3://$STAGING_BUCKET" \
-      --index-document index.html \
-      --error-document 404.html
-    
-    echo -e "${GREEN}✅ 스테이징 버킷 생성 완료${NC}"
+# 버킷 존재 확인 및 설정
+setup_bucket() {
+  local bucket_name=$1
+  
+  echo -e "${YELLOW}🔍 버킷 확인 중: $bucket_name${NC}"
+  
+  if ! aws s3 ls "s3://$bucket_name" &>/dev/null; then
+    echo -e "${YELLOW}📦 버킷 생성 중: $bucket_name${NC}"
+    aws s3 mb "s3://$bucket_name" --region "$AWS_REGION"
+    echo -e "${GREEN}✅ 버킷 생성 완료${NC}"
   else
-    echo -e "${GREEN}✅ 스테이징 버킷 확인됨${NC}"
+    echo -e "${GREEN}✅ 버킷 확인됨${NC}"
   fi
-fi
+  
+  # 웹사이트 호스팅 설정 (리다이렉트 포함)
+  echo -e "${YELLOW}🌐 웹사이트 호스팅 설정 중...${NC}"
+  
+  # 웹사이트 설정 JSON 생성 (루트를 current/로 리다이렉트)
+  cat > /tmp/website-config.json << EOF
+{
+    "IndexDocument": {
+        "Suffix": "index.html"
+    },
+    "ErrorDocument": {
+        "Key": "404.html"
+    },
+    "RoutingRules": [
+        {
+            "Condition": {
+                "KeyPrefixEquals": ""
+            },
+            "Redirect": {
+                "ReplaceKeyPrefixWith": "current/"
+            }
+        }
+    ]
+}
+EOF
+  
+  # S3 웹사이트 호스팅 설정 적용
+  aws s3api put-bucket-website \
+    --bucket "$bucket_name" \
+    --website-configuration file:///tmp/website-config.json
+  
+  # 버킷 정책 설정 (공개 읽기 권한)
+  cat > /tmp/bucket-policy.json << EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::$bucket_name/*"
+        }
+    ]
+}
+EOF
+  
+  aws s3api put-bucket-policy \
+    --bucket "$bucket_name" \
+    --policy file:///tmp/bucket-policy.json
+  
+  # 임시 파일 정리
+  rm -f /tmp/website-config.json /tmp/bucket-policy.json
+  
+  echo -e "${GREEN}✅ 웹사이트 호스팅 설정 완료${NC}"
+  echo -e "${BLUE}🔗 웹사이트 URL: http://$bucket_name.s3-website.$AWS_REGION.amazonaws.com${NC}"
+}
+
+# 버킷 설정
+setup_bucket "$PRODUCTION_BUCKET"
 
 # AWS CLI 설치 확인
 if ! command -v aws &> /dev/null; then
@@ -231,12 +274,8 @@ VERSION_PATH="versions/$DEPLOY_VERSION"
 echo -e "${BLUE}📁 버전 경로: s3://$TARGET_BUCKET/$VERSION_PATH${NC}"
 aws s3 sync ./out "s3://$TARGET_BUCKET/$VERSION_PATH/" --cache-control "max-age=31536000"
 
-# 2. 현재 버전으로 설정 (프로덕션의 경우 current/, 스테이징의 경우 staging/)
-if [[ "$IS_STAGING" == true ]]; then
-  CURRENT_PATH="staging"
-else
-  CURRENT_PATH="current" 
-fi
+# 2. 현재 버전으로 설정
+CURRENT_PATH="current"
 
 echo -e "${BLUE}📁 현재 경로: s3://$TARGET_BUCKET/$CURRENT_PATH${NC}"
 aws s3 sync ./out "s3://$TARGET_BUCKET/$CURRENT_PATH/" --delete --cache-control "max-age=86400"
@@ -268,10 +307,8 @@ if [[ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]]; then
 fi
 
 # 오래된 버전 정리 (최신 3개만 유지)
-if [[ "$IS_STAGING" != true ]]; then
-  echo -e "${YELLOW}🧹 오래된 버전 정리 중...${NC}"
-  cleanup_old_versions "$TARGET_BUCKET" 3
-fi
+echo -e "${YELLOW}🧹 오래된 버전 정리 중...${NC}"
+cleanup_old_versions "$TARGET_BUCKET" 3
 
 echo -e "${GREEN}✅ 배포가 완료되었습니다!${NC}"
 echo -e "${GREEN}🎯 환경: $DEPLOY_TYPE${NC}"
@@ -280,16 +317,11 @@ echo -e "${GREEN}📦 버전: $DEPLOY_VERSION${NC}"
 echo -e "${GREEN}📅 배포 시간: $(date)${NC}"
 
 # 배포 URL 표시
-if [[ "$IS_STAGING" == true ]]; then
-  DEPLOYMENT_URL="http://$STAGING_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
-  echo -e "${GREEN}🔗 스테이징 URL: $DEPLOYMENT_URL${NC}"
+if [[ -n "$DEPLOYMENT_URL" ]]; then
+  echo -e "${GREEN}🔗 배포 URL: $DEPLOYMENT_URL${NC}"
 else
-  if [[ -n "$DEPLOYMENT_URL" ]]; then
-    echo -e "${GREEN}🔗 프로덕션 URL: $DEPLOYMENT_URL${NC}"
-  else
-    DEPLOYMENT_URL="http://$PRODUCTION_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
-    echo -e "${GREEN}🔗 프로덕션 URL: $DEPLOYMENT_URL${NC}"
-  fi
+  DEPLOYMENT_URL="http://$PRODUCTION_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
+  echo -e "${GREEN}🔗 배포 URL: $DEPLOYMENT_URL${NC}"
 fi
 
 # 배포 요약

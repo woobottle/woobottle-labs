@@ -41,7 +41,6 @@ export AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$AWS_REGION
 
 PRODUCTION_BUCKET="woo-bottle.com"
-STAGING_BUCKET="woo-bottle-staging.com"
 
 echo -e "${YELLOW}🔍 AWS 연결 테스트 중...${NC}"
 if ! aws sts get-caller-identity &>/dev/null; then
@@ -99,53 +98,7 @@ else
   echo -e "${GREEN}✅ 프로덕션 버킷이 이미 존재합니다${NC}"
 fi
 
-# 2. 스테이징 S3 버킷 생성
-echo -e "${YELLOW}📦 스테이징 S3 버킷 확인 중: $STAGING_BUCKET${NC}"
-if ! aws s3 ls "s3://$STAGING_BUCKET" &>/dev/null; then
-  echo -e "${YELLOW}📦 스테이징 버킷 생성 중...${NC}"
-  
-  # 버킷 생성
-  aws s3 mb "s3://$STAGING_BUCKET" --region "$AWS_REGION"
-  
-  # 정적 웹사이트 호스팅 설정
-  aws s3 website "s3://$STAGING_BUCKET" \
-    --index-document index.html \
-    --error-document 404.html
-  
-  # 퍼블릭 읽기 권한 설정
-  cat > /tmp/staging-bucket-policy.json << EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "PublicReadGetObject",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::$STAGING_BUCKET/*"
-    }
-  ]
-}
-EOF
-  
-  # 퍼블릭 액세스 차단 해제
-  aws s3api put-public-access-block \
-    --bucket "$STAGING_BUCKET" \
-    --public-access-block-configuration \
-    "BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false"
-  
-  # 버킷 정책 적용
-  aws s3api put-bucket-policy \
-    --bucket "$STAGING_BUCKET" \
-    --policy file:///tmp/staging-bucket-policy.json
-  
-  # 임시 파일 정리
-  rm -f /tmp/staging-bucket-policy.json
-  
-  echo -e "${GREEN}✅ 스테이징 버킷 생성 및 설정 완료${NC}"
-else
-  echo -e "${GREEN}✅ 스테이징 버킷이 이미 존재합니다${NC}"
-fi
+
 
 # 3. CloudFront 설정 (선택사항)
 if [[ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]]; then
@@ -164,7 +117,6 @@ echo -e "${GREEN}🎉 AWS 초기 설정이 완료되었습니다!${NC}"
 echo
 echo -e "${BLUE}📊 설정 요약:${NC}"
 echo -e "   프로덕션 버킷: $PRODUCTION_BUCKET"
-echo -e "   스테이징 버킷: $STAGING_BUCKET"
 echo -e "   AWS 리전: $AWS_REGION"
 
 if [[ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]]; then
@@ -174,13 +126,11 @@ fi
 echo
 echo -e "${BLUE}🔗 웹사이트 URL:${NC}"
 echo -e "   프로덕션: http://$PRODUCTION_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
-echo -e "   스테이징: http://$STAGING_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
 
 echo
 echo -e "${YELLOW}다음 단계:${NC}"
 echo -e "1. 첫 번째 Git 태그 생성: ${GREEN}npm run version:create${NC}"
-echo -e "2. 스테이징 배포 테스트: ${GREEN}npm run deploy:staging${NC}"
-echo -e "3. 프로덕션 배포: ${GREEN}npm run deploy${NC}"
+echo -e "2. 프로덕션 배포: ${GREEN}npm run deploy${NC}"
 
 echo
 echo -e "${YELLOW}💡 참고:${NC}"

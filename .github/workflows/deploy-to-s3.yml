@@ -3,14 +3,6 @@ name: Deploy to S3
 on:
   workflow_dispatch: # 수동 실행 전용
     inputs:
-      deployment_type:
-        description: '배포 타입'
-        required: true
-        default: 'production'
-        type: choice
-        options:
-          - production
-          - staging
       version_type:
         description: '버전 타입 (자동 생성 시)'
         required: false
@@ -101,11 +93,6 @@ jobs:
             DEPLOY_ARGS=""
           fi
           
-          # 배포 타입 결정
-          if [[ "${{ inputs.deployment_type }}" == "staging" ]]; then
-            DEPLOY_ARGS="$DEPLOY_ARGS --staging"
-          fi
-          
           # GitHub Actions에서 이미 실행한 단계들 건너뛰기
           DEPLOY_ARGS="$DEPLOY_ARGS --skip-tests --skip-lint"
           
@@ -121,7 +108,7 @@ jobs:
       - name: Deployment Summary
         run: |
           echo "✅ 배포가 완료되었습니다!"
-          echo "🎯 배포 타입: ${{ inputs.deployment_type }}"
+          echo "🎯 배포 타입: 프로덕션"
           
           if [[ "${{ inputs.auto_version }}" == "true" ]]; then
             echo "🏷️ 자동 생성된 ${{ inputs.version_type }} 버전으로 배포"
@@ -131,10 +118,5 @@ jobs:
             echo "📦 최신 버전으로 배포"
           fi
           
-          if [[ "${{ inputs.deployment_type }}" == "staging" ]]; then
-            echo "🌍 스테이징 버킷: woo-bottle-staging.com"
-          else
-            echo "🌍 프로덕션 버킷: woo-bottle.com"
-          fi
-          
+          echo "🌍 프로덕션 버킷: woo-bottle.com"
           echo "🕒 배포 시간: $(date)"
