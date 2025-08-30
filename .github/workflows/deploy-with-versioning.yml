@@ -1,0 +1,219 @@
+name: Deploy with Version Tracking
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: '테스트 건너뛰기 (emergency only)'
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy-version: ${{ steps.version.outputs.version }}
+      deploy-url: ${{ steps.summary.outputs.url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 'latest'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        if: inputs.skip_tests != true
+        run: pnpm test
+
+      - name: Run linting
+        if: inputs.skip_tests != true
+        run: pnpm lint
+
+      - name: Generate Deployment Version
+        id: version
+        run: |
+          # 고유 버전 생성: run-번호-커밋해시
+          VERSION="run-${{ github.run_number }}-$(git rev-parse --short HEAD)"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "🏷️ 배포 버전: $VERSION"
+
+      - name: Build application
+        run: pnpm build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to S3 with Version Tags
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          echo "🚀 S3에 배포 중: $VERSION"
+          
+          # S3 업로드
+          aws s3 sync ./out s3://woo-bottle.com/ \
+            --delete \
+            --cache-control "public, max-age=3600" \
+            --exclude "*.html" \
+            --exclude "*.json"
+          
+          # HTML과 JSON 파일은 별도 캐시 설정
+          aws s3 sync ./out s3://woo-bottle.com/ \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --include "*.html" \
+            --include "*.json"
+          
+          echo "🏷️ 파일 태깅 중..."
+          
+          # 업로드된 모든 파일에 버전 태그 추가
+          aws s3api list-objects-v2 \
+            --bucket woo-bottle.com \
+            --query 'Contents[?!starts_with(Key, `.`)].Key' \
+            --output text | \
+          tr '\t' '\n' | \
+          while read -r file; do
+            if [[ -n "$file" ]]; then
+              echo "  📄 태깅: $file"
+              aws s3api put-object-tagging \
+                --bucket woo-bottle.com \
+                --key "$file" \
+                --tagging "TagSet=[{Key=DeployVersion,Value=$VERSION},{Key=DeployTime,Value=$(date -u +%Y-%m-%dT%H:%M:%SZ)},{Key=GitCommit,Value=$(git rev-parse HEAD)},{Key=WorkflowRun,Value=${{ github.run_id }}},{Key=DeployedBy,Value=${{ github.actor }}}]"
+            fi
+          done
+
+      - name: Create Version Metadata
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          echo "📝 배포 메타데이터 생성 중..."
+          
+          # 배포 메타데이터 생성
+          cat > deploy-metadata.json << EOF
+          {
+            "deployVersion": "$VERSION",
+            "deployTime": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "gitCommit": "$(git rev-parse HEAD)",
+            "gitCommitShort": "$(git rev-parse --short HEAD)",
+            "gitBranch": "$(git rev-parse --abbrev-ref HEAD)",
+            "gitCommitMessage": "$(git log -1 --pretty=%B | head -n1)",
+            "workflowRun": "${{ github.run_id }}",
+            "workflowUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "deployedBy": "${{ github.actor }}",
+            "buildNumber": "${{ github.run_number }}",
+            "repository": "${{ github.repository }}",
+            "environment": "production"
+          }
+          EOF
+          
+          # S3에 메타데이터 업로드
+          aws s3 cp deploy-metadata.json s3://woo-bottle.com/.deploy-metadata.json \
+            --content-type "application/json" \
+            --cache-control "no-cache" \
+            --metadata "deploy-version=$VERSION,deploy-time=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Configure S3 website hosting
+        run: |
+          echo "🌐 S3 웹사이트 호스팅 설정 중..."
+          
+          # 웹사이트 설정
+          aws s3api put-bucket-website \
+            --bucket woo-bottle.com \
+            --website-configuration '{
+              "IndexDocument": {"Suffix": "index.html"},
+              "ErrorDocument": {"Key": "404.html"}
+            }'
+          
+          # 버킷 정책 설정
+          aws s3api put-bucket-policy \
+            --bucket woo-bottle.com \
+            --policy '{
+              "Version": "2012-10-17",
+              "Statement": [{
+                "Sid": "PublicReadGetObject",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::woo-bottle.com/*"
+              }]
+            }'
+
+      - name: CloudFront cache invalidation
+        if: env.CLOUDFRONT_DISTRIBUTION_ID != ''
+        uses: chetan/invalidate-cloudfront-action@v2
+        env:
+          DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+          PATHS: "/*"
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Deployment Summary
+        id: summary
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          URL="https://woo-bottle.com"
+          COMMIT_MSG="$(git log -1 --pretty=%B | head -n1)"
+          
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          
+          # GitHub 요약에 표시
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 배포 완료
+          
+          | 항목 | 값 |
+          |------|-----|
+          | 🏷️ **배포 버전** | \`$VERSION\` |
+          | 🌍 **URL** | [$URL]($URL) |
+          | 📅 **배포 시간** | $(date) |
+          | 🔗 **워크플로우** | [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
+          | 📝 **커밋** | [\`$(git rev-parse --short HEAD)\`](${{ github.server_url }}/${{ github.repository }}/commit/$(git rev-parse HEAD)) |
+          | 💬 **커밋 메시지** | $COMMIT_MSG |
+          | 👤 **배포자** | ${{ github.actor }} |
+          
+          ### 🔄 롤백이 필요한 경우
+          1. Actions 탭에서 **"Version-Based Rollback"** 워크플로우 실행
+          2. **빠른 롤백**: target_version을 비워두고 실행 (바로 이전 버전으로)
+          3. **특정 버전**: 이전 배포 버전을 입력 (예: \`run-120-abc1234\`)
+          
+          ### 📊 배포 정보
+          - **테스트 실행**: ${{ inputs.skip_tests != true && '✅ 완료' || '⚠️ 건너뜀' }}
+          - **파일 수**: $(aws s3api list-objects-v2 --bucket woo-bottle.com --query 'length(Contents)' --output text)개
+          - **버전 관리**: S3 객체 버저닝 활성화
+          EOF
+
+  # 배포 후 알림 (선택사항)
+  notify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Deployment notification
+        run: |
+          if [[ "${{ needs.deploy.result }}" == "success" ]]; then
+            echo "🎉 배포 성공!"
+            echo "버전: ${{ needs.deploy.outputs.deploy-version }}"
+            echo "URL: ${{ needs.deploy.outputs.deploy-url }}"
+          else
+            echo "❌ 배포 실패!"
+            echo "워크플로우를 확인해주세요: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi

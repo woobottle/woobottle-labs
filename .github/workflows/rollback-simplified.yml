@@ -75,11 +75,12 @@ jobs:
             --delete \
             --cache-control "max-age=86400"
           
-          # 루트에도 복사
-          aws s3 sync "s3://$BUCKET/versions/$TARGET_VERSION/" "s3://$BUCKET/" \
+          # current에서 루트로 복사 (current가 기본 접근이므로)
+          aws s3 sync "s3://$BUCKET/current/" "s3://$BUCKET/" \
             --delete \
             --cache-control "max-age=86400" \
             --exclude "versions/*" \
+            --exclude "current/*" \
             --exclude "backups/*"
           
           echo "✅ 롤백 완료: $TARGET_VERSION"
@@ -102,12 +103,12 @@ jobs:
           }
           EOF
           
-          # S3에 업로드
-          aws s3 cp rollback-info.json s3://woo-bottle.com/rollback-info.json \
+          # S3에 업로드 (current가 기본이므로 current 먼저, 그 다음 루트에 복사)
+          aws s3 cp rollback-info.json s3://woo-bottle.com/current/rollback-info.json \
             --content-type "application/json" \
             --cache-control "no-cache"
           
-          aws s3 cp rollback-info.json s3://woo-bottle.com/current/rollback-info.json \
+          aws s3 cp rollback-info.json s3://woo-bottle.com/rollback-info.json \
             --content-type "application/json" \
             --cache-control "no-cache"
 

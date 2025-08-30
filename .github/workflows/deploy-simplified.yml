@@ -235,25 +235,28 @@ jobs:
             --include "*.html" \
             --include "*.json"
 
-      # 15. 루트에 배포 (직접 접근용)
-      - name: Deploy to root S3
+      # 15. current를 root로 설정 (기본 접근용)
+      - name: Set current as root for direct access
         run: |
-          echo "🚀 루트 배포"
-          aws s3 sync ./out s3://woo-bottle.com/ \
+          echo "🚀 current를 기본 접근으로 설정"
+          # current 폴더의 내용을 루트로 복사 (current 폴더는 유지)
+          aws s3 sync s3://woo-bottle.com/current/ s3://woo-bottle.com/ \
             --delete \
             --cache-control "public, max-age=31536000" \
             --exclude "*.html" \
             --exclude "*.json" \
             --exclude "versions/*" \
-            --exclude "current/*"
+            --exclude "current/*" \
+            --exclude "backups/*"
           
           # HTML과 JSON 파일은 별도 캐시 설정
-          aws s3 sync ./out s3://woo-bottle.com/ \
+          aws s3 sync s3://woo-bottle.com/current/ s3://woo-bottle.com/ \
             --cache-control "no-cache, no-store, must-revalidate" \
             --include "*.html" \
             --include "*.json" \
             --exclude "versions/*" \
-            --exclude "current/*"
+            --exclude "current/*" \
+            --exclude "backups/*"
 
       # 16. S3 웹사이트 호스팅 설정
       - name: Configure S3 website hosting
@@ -302,11 +305,13 @@ jobs:
           EOF
           
           # S3에 업로드
-          aws s3 cp deploy-info.json s3://woo-bottle.com/deploy-info.json \
+          # current에 배포 정보 업로드 (root는 current에서 복사됨)
+          aws s3 cp deploy-info.json s3://woo-bottle.com/current/deploy-info.json \
             --content-type "application/json" \
             --cache-control "no-cache"
           
-          aws s3 cp deploy-info.json s3://woo-bottle.com/current/deploy-info.json \
+          # 루트에도 배포 정보 복사 (current와 동기화)
+          aws s3 cp deploy-info.json s3://woo-bottle.com/deploy-info.json \
             --content-type "application/json" \
             --cache-control "no-cache"
 
