@@ -61,6 +61,47 @@ get_next_version() {
     echo "v${major}.${minor}.${patch}"
 }
 
+# CI 환경 감지
+is_ci_environment() {
+    # GitHub Actions
+    [[ -n "$GITHUB_ACTIONS" ]] && return 0
+    # GitLab CI
+    [[ -n "$GITLAB_CI" ]] && return 0
+    # Jenkins
+    [[ -n "$JENKINS_URL" ]] && return 0
+    # CircleCI
+    [[ -n "$CIRCLECI" ]] && return 0
+    # Travis CI
+    [[ -n "$TRAVIS" ]] && return 0
+    # 기타 CI 환경변수
+    [[ -n "$CI" ]] && return 0
+    
+    return 1
+}
+
+# Git 설정 확인 및 설정
+setup_git_for_ci() {
+    if is_ci_environment; then
+        echo -e "${YELLOW}🔧 CI 환경에서 Git 설정 중...${NC}"
+        
+        # Git 사용자 정보가 없으면 설정
+        if [[ -z "$(git config user.name)" ]]; then
+            git config user.name "GitHub Actions"
+        fi
+        
+        if [[ -z "$(git config user.email)" ]]; then
+            git config user.email "actions@github.com"
+        fi
+        
+        # GitHub Actions의 경우 토큰 설정
+        if [[ -n "$GITHUB_ACTIONS" && -n "$GITHUB_TOKEN" ]]; then
+            git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+        fi
+        
+        echo -e "${GREEN}✅ CI 환경 Git 설정 완료${NC}"
+    fi
+}
+
 # Git 태그 생성
 create_git_tag() {
     local version=$1
@@ -68,11 +109,45 @@ create_git_tag() {
     
     echo -e "${YELLOW}🏷️  Git 태그 생성 중: $version${NC}"
     
-    # 현재 상태 확인
-    if ! git diff-index --quiet HEAD --; then
-        echo -e "${RED}❌ 커밋되지 않은 변경사항이 있습니다!${NC}"
-        echo "먼저 모든 변경사항을 커밋해주세요."
-        exit 1
+    # CI 환경 설정
+    setup_git_for_ci
+    
+    # CI 환경이 아닌 경우에만 변경사항 확인
+    if ! is_ci_environment; then
+        # 현재 상태 확인
+        if ! git diff-index --quiet HEAD --; then
+            echo -e "${RED}❌ 커밋되지 않은 변경사항이 있습니다!${NC}"
+            echo "먼저 모든 변경사항을 커밋해주세요."
+            exit 1
+        fi
+    else
+        echo -e "${BLUE}ℹ️  CI 환경에서 실행 중 - 변경사항 확인을 건너뜁니다.${NC}"
+        
+        # CI 환경에서는 빌드 아티팩트 등을 .gitignore에 추가하거나 스테이지에서 제외
+        if [[ -f ".gitignore" ]]; then
+            # 빌드 결과물들을 임시로 스테이지에서 제거
+            git reset HEAD -- out/ 2>/dev/null || true
+            git reset HEAD -- .next/ 2>/dev/null || true
+            git reset HEAD -- node_modules/ 2>/dev/null || true
+        fi
+    fi
+    
+    # 태그가 이미 존재하는지 확인
+    if git tag -l | grep -q "^${version}$"; then
+        echo -e "${YELLOW}⚠️  태그 '$version'이 이미 존재합니다.${NC}"
+        if is_ci_environment; then
+            echo -e "${BLUE}ℹ️  CI 환경에서는 기존 태그를 사용합니다.${NC}"
+            return 0
+        else
+            read -p "기존 태그를 덮어쓰시겠습니까? (y/N): " overwrite
+            if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
+                git tag -d "$version"
+                echo -e "${YELLOW}🗑️  기존 태그 삭제됨${NC}"
+            else
+                echo -e "${YELLOW}❌ 태그 생성이 취소되었습니다.${NC}"
+                exit 1
+            fi
+        fi
     fi
     
     # 태그 생성
@@ -86,8 +161,32 @@ push_git_tag() {
     local version=$1
     
     echo -e "${YELLOW}📤 태그를 원격 저장소에 푸시 중...${NC}"
-    git push origin "$version"
-    echo -e "${GREEN}✅ 태그 '$version' 푸시 완료${NC}"
+    
+    # CI 환경에서 푸시 권한 확인
+    if is_ci_environment; then
+        if [[ -z "$GITHUB_TOKEN" ]]; then
+            echo -e "${YELLOW}⚠️  GITHUB_TOKEN이 설정되지 않았습니다. 태그 푸시를 건너뜁니다.${NC}"
+            echo -e "${BLUE}ℹ️  태그는 로컬에만 생성되었습니다: $version${NC}"
+            return 0
+        fi
+        
+        # GitHub Actions에서 기본 브랜치로 푸시 권한이 제한될 수 있음
+        echo -e "${BLUE}ℹ️  CI 환경에서 태그 푸시를 시도합니다...${NC}"
+    fi
+    
+    # 태그 푸시 시도
+    if git push origin "$version" 2>/dev/null; then
+        echo -e "${GREEN}✅ 태그 '$version' 푸시 완료${NC}"
+    else
+        echo -e "${YELLOW}⚠️  태그 푸시에 실패했습니다. 권한을 확인해주세요.${NC}"
+        if is_ci_environment; then
+            echo -e "${BLUE}ℹ️  CI 환경에서는 태그가 로컬에만 생성되었습니다.${NC}"
+            echo -e "${BLUE}ℹ️  워크플로우 완료 후 수동으로 태그를 푸시하거나 권한을 확인해주세요.${NC}"
+        else
+            echo -e "${RED}❌ 태그 푸시 실패${NC}"
+            exit 1
+        fi
+    fi
 }
 
 # 사용 가능한 버전 목록 조회
