@@ -243,7 +243,8 @@ show_help() {
     echo "  $0 interactive"
 }
 
-# 메인 로직
+# 메인 로직 (스크립트가 직접 실행될 때만)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 case "${1:-}" in
     current)
         get_latest_version
@@ -303,3 +304,4 @@ case "${1:-}" in
         exit 1
         ;;
 esac
+fi
