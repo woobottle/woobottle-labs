@@ -101,7 +101,11 @@ jobs:
           
           # 배포 실행
           chmod +x ./scripts/deploy.sh
+          chmod +x ./scripts/version-utils.sh
           echo "Executing: ./scripts/deploy.sh $DEPLOY_ARGS"
+          echo "Current directory: $(pwd)"
+          echo "Deploy script exists: $(ls -la ./scripts/deploy.sh)"
+          echo "Version utils exists: $(ls -la ./scripts/version-utils.sh)"
           ./scripts/deploy.sh $DEPLOY_ARGS
           
       - name: Deployment Summary
