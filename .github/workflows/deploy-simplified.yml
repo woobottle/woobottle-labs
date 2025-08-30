@@ -202,33 +202,58 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # 13. S3 버킷 설정 (GitHub Actions 라이브러리 사용)
-      - name: Setup S3 bucket
-        uses: aws-actions/amazon-s3-deploy@v1
-        with:
-          aws-s3-bucket: woo-bottle.com
-          source-dir: ./out
-          destination-dir: versions/${{ steps.final_version.outputs.version }}
-          aws-region: ${{ secrets.AWS_REGION }}
+      # 13. S3에 버전별 배포
+      - name: Deploy versioned build to S3
+        run: |
+          VERSION="${{ steps.final_version.outputs.version }}"
+          echo "🚀 버전별 배포: $VERSION"
+          aws s3 sync ./out s3://woo-bottle.com/versions/$VERSION/ \
+            --delete \
+            --cache-control "public, max-age=31536000" \
+            --exclude "*.html" \
+            --exclude "*.json"
+          
+          # HTML과 JSON 파일은 별도 캐시 설정
+          aws s3 sync ./out s3://woo-bottle.com/versions/$VERSION/ \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --include "*.html" \
+            --include "*.json"
 
       # 14. 현재 버전으로 배포
-      - name: Deploy current version
-        uses: aws-actions/amazon-s3-deploy@v1
-        with:
-          aws-s3-bucket: woo-bottle.com
-          source-dir: ./out
-          destination-dir: current
-          aws-region: ${{ secrets.AWS_REGION }}
-          clean: true
+      - name: Deploy current version to S3
+        run: |
+          echo "🚀 현재 버전 배포"
+          aws s3 sync ./out s3://woo-bottle.com/current/ \
+            --delete \
+            --cache-control "public, max-age=31536000" \
+            --exclude "*.html" \
+            --exclude "*.json"
+          
+          # HTML과 JSON 파일은 별도 캐시 설정
+          aws s3 sync ./out s3://woo-bottle.com/current/ \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --include "*.html" \
+            --include "*.json"
 
       # 15. 루트에 배포 (직접 접근용)
-      - name: Deploy to root
-        uses: aws-actions/amazon-s3-deploy@v1
-        with:
-          aws-s3-bucket: woo-bottle.com
-          source-dir: ./out
-          aws-region: ${{ secrets.AWS_REGION }}
-          clean: true
+      - name: Deploy to root S3
+        run: |
+          echo "🚀 루트 배포"
+          aws s3 sync ./out s3://woo-bottle.com/ \
+            --delete \
+            --cache-control "public, max-age=31536000" \
+            --exclude "*.html" \
+            --exclude "*.json" \
+            --exclude "versions/*" \
+            --exclude "current/*"
+          
+          # HTML과 JSON 파일은 별도 캐시 설정
+          aws s3 sync ./out s3://woo-bottle.com/ \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --include "*.html" \
+            --include "*.json" \
+            --exclude "versions/*" \
+            --exclude "current/*"
 
       # 16. S3 웹사이트 호스팅 설정
       - name: Configure S3 website hosting
