@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# S3 웹사이트 호스팅 리다이렉트 설정 스크립트
-# 루트 경로(/)를 current/ 폴더로 리다이렉트
+# S3 웹사이트 호스팅 설정 스크립트
+# current/ 폴더의 내용을 루트로 복사하여 직접 접근 가능하도록 설정
 
 set -e
 
@@ -17,7 +17,7 @@ PRODUCTION_BUCKET="woo-bottle.com"
 
 # 사용법 표시
 show_help() {
-    echo "S3 웹사이트 호스팅 리다이렉트 설정 스크립트"
+    echo "S3 웹사이트 호스팅 설정 스크립트"
     echo
     echo "사용법:"
     echo "  $0 <bucket-name>"
@@ -35,7 +35,7 @@ setup_s3_website_hosting() {
     # 현재 폴더는 항상 current
     CURRENT_FOLDER="current"
     
-      # 웹사이트 설정 JSON 생성 (무한 리다이렉트 방지)
+      # 웹사이트 설정 JSON 생성 (리다이렉트 규칙 제거 - 직접 접근)
   cat > /tmp/website-config.json << EOF
 {
     "IndexDocument": {
@@ -43,19 +43,7 @@ setup_s3_website_hosting() {
     },
     "ErrorDocument": {
         "Key": "404.html"
-    },
-    "RoutingRules": [
-        {
-            "Condition": {
-                "KeyPrefixEquals": "",
-                "HttpErrorCodeReturnedEquals": "404"
-            },
-            "Redirect": {
-                "ReplaceKeyPrefixWith": "$CURRENT_FOLDER/",
-                "HttpRedirectCode": "302"
-            }
-        }
-    ]
+    }
 }
 EOF
     
@@ -69,6 +57,21 @@ EOF
     rm -f /tmp/website-config.json
     
     echo -e "${GREEN}✅ 웹사이트 호스팅 설정 완료${NC}"
+    
+    # current/ 폴더의 내용을 루트로 복사 (리다이렉트 대신 직접 접근 가능하도록)
+    echo -e "${YELLOW}📁 current/ 폴더 내용을 루트로 복사 중...${NC}"
+    aws s3 sync "s3://$bucket_name/current/" "s3://$bucket_name/" \
+        --exclude "deploy-info.json" \
+        --cache-control "max-age=86400" \
+        --delete
+    
+    # 배포 정보도 복사 (버전 정보 유지)
+    echo -e "${YELLOW}📄 배포 정보 복사 중...${NC}"
+    aws s3 cp "s3://$bucket_name/current/deploy-info.json" "s3://$bucket_name/deploy-info.json" \
+        --content-type "application/json" \
+        --cache-control "no-cache" 2>/dev/null || echo -e "${YELLOW}⚠️  deploy-info.json 파일이 없습니다 (정상)${NC}"
+    
+    echo -e "${GREEN}✅ 파일 복사 완료${NC}"
     echo -e "${BLUE}🔗 웹사이트 URL: https://$bucket_name"
 }
 
@@ -138,7 +141,8 @@ main() {
     echo -e "${GREEN}   https://$bucket_name${NC}"
     echo
     echo -e "${BLUE}💡 참고사항:${NC}"
-    echo -e "   - 루트 경로(/) 접근 시 자동으로 current/ 폴더로 리다이렉트됩니다"
+    echo -e "   - current/ 폴더의 내용이 루트(/)에 복사되어 직접 접근 가능합니다"
+    echo -e "   - 리다이렉트 없이 바로 index.html이 제공됩니다"
     echo -e "   - CloudFront를 사용하는 경우 캐시 무효화가 필요할 수 있습니다"
 }
 
