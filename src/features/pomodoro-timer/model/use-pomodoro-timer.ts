@@ -13,7 +13,7 @@ import {
   showNotification,
   updatePageTitle,
   requestNotificationPermission,
-  getTodayString,
+
 } from 'entities/timer';
 
 const STORAGE_KEYS = {
@@ -90,11 +90,8 @@ export const usePomodoroTimer = () => {
 
   // 페이지 제목 업데이트
   useEffect(() => {
-    if (timerState.status === 'running') {
-      updatePageTitle(timerState.timeLeft, timerState.phase);
-    } else {
-      document.title = 'WooBottle Labs';
-    }
+    const isRunning = timerState.status === 'running';
+    updatePageTitle(timerState.timeLeft, timerState.phase, isRunning);
   }, [timerState.timeLeft, timerState.phase, timerState.status]);
 
   // 타이머 로직
@@ -133,7 +130,6 @@ export const usePomodoroTimer = () => {
   }, [timerState.status]);
 
   const handleTimerComplete = useCallback((state: TimerState) => {
-    const phaseInfo = getPhaseInfo(state.phase);
     
     // 알림 표시
     if (state.settings.enableNotifications && notificationPermission) {
@@ -152,18 +148,17 @@ export const usePomodoroTimer = () => {
       }
     }
 
-    // 통계 업데이트
+    // 통계 업데이트 - 집중 세션 완료 시만
     if (state.phase === 'focus') {
-      const today = getTodayString();
       setStats(prevStats => {
-        const isToday = prevStats.todayFocusTime > 0; // 간단한 오늘 체크
+        const focusTimeInMinutes = state.settings.focusTime; // 분 단위
         
         return {
-          totalFocusTime: prevStats.totalFocusTime + state.settings.focusTime,
+          totalFocusTime: prevStats.totalFocusTime + focusTimeInMinutes,
           totalSessions: prevStats.totalSessions + 1,
-          todayFocusTime: prevStats.todayFocusTime + state.settings.focusTime,
+          todayFocusTime: prevStats.todayFocusTime + focusTimeInMinutes,
           todaySessions: prevStats.todaySessions + 1,
-          streak: prevStats.streak + (isToday ? 0 : 1),
+          streak: prevStats.streak + 1,
         };
       });
     }
@@ -182,7 +177,7 @@ export const usePomodoroTimer = () => {
       status: (nextPhase === 'focus' && state.settings.autoStartPomodoros) || 
               (nextPhase !== 'focus' && state.settings.autoStartBreaks) ? 'running' : 'idle',
     }));
-  }, [notificationPermission]);
+  }, [notificationPermission, setStats]);
 
   const startTimer = useCallback(() => {
     setTimerState(prev => ({ ...prev, status: 'running' }));
@@ -222,6 +217,9 @@ export const usePomodoroTimer = () => {
       const updatedSettings = { ...prev.settings, ...newSettings };
       const newTime = getPhaseTime(prev.phase, updatedSettings);
       
+      // localStorage에 업데이트된 설정 저장
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updatedSettings));
+      
       return {
         ...prev,
         settings: updatedSettings,
@@ -229,9 +227,7 @@ export const usePomodoroTimer = () => {
         totalTime: newTime,
       };
     });
-    
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...timerState.settings, ...newSettings }));
-  }, [timerState.settings]);
+  }, [timerState]);
 
   const resetStats = useCallback(() => {
     const resetStats: TimerStats = {

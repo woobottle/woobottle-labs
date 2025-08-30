@@ -1,4 +1,4 @@
-import { TimerPhase, TimerSettings, TIMER_PHASES } from '../model/types';
+import { TimerPhase, TimerSettings, TIMER_PHASES, DEFAULT_TIMER_SETTINGS } from '../model/types';
 
 /**
  * 시간을 MM:SS 형식으로 포맷팅
@@ -26,16 +26,17 @@ export const secondsToMinutes = (seconds: number): number => {
 /**
  * 현재 페이즈의 총 시간을 가져오기
  */
-export const getPhaseTime = (phase: TimerPhase, settings: TimerSettings): number => {
+export const getPhaseTime = (phase: TimerPhase, settings?: TimerSettings): number => {
+  const timerSettings = settings || DEFAULT_TIMER_SETTINGS;
   switch (phase) {
     case 'focus':
-      return minutesToSeconds(settings.focusTime);
+      return minutesToSeconds(timerSettings.focusTime);
     case 'shortBreak':
-      return minutesToSeconds(settings.shortBreakTime);
+      return minutesToSeconds(timerSettings.shortBreakTime);
     case 'longBreak':
-      return minutesToSeconds(settings.longBreakTime);
+      return minutesToSeconds(timerSettings.longBreakTime);
     default:
-      return minutesToSeconds(settings.focusTime);
+      return minutesToSeconds(timerSettings.focusTime);
   }
 };
 
@@ -49,7 +50,8 @@ export const getNextPhase = (
 ): TimerPhase => {
   if (currentPhase === 'focus') {
     // 집중 시간 완료 후
-    const isLongBreakTime = (completedSessions + 1) % settings.sessionsUntilLongBreak === 0;
+    const sessionAfterComplete = completedSessions + 1;
+    const isLongBreakTime = sessionAfterComplete % settings.sessionsUntilLongBreak === 0;
     return isLongBreakTime ? 'longBreak' : 'shortBreak';
   } else {
     // 휴식 시간 완료 후
@@ -76,21 +78,26 @@ export const calculateProgress = (timeLeft: number, totalTime: number): number =
  * 브라우저 알림 권한 요청
  */
 export const requestNotificationPermission = async (): Promise<boolean> => {
-  if (!('Notification' in window)) {
-    console.warn('이 브라우저는 알림을 지원하지 않습니다.');
+  try {
+    if (!('Notification' in window)) {
+      console.warn('이 브라우저는 알림을 지원하지 않습니다.');
+      return false;
+    }
+
+    if (Notification.permission === 'granted') {
+      return true;
+    }
+
+    if (Notification.permission === 'denied') {
+      return false;
+    }
+
+    const permission = await Notification.requestPermission();
+    return permission === 'granted';
+  } catch (error) {
+    console.error('알림 권한 요청 중 오류:', error);
     return false;
   }
-
-  if (Notification.permission === 'granted') {
-    return true;
-  }
-
-  if (Notification.permission === 'denied') {
-    return false;
-  }
-
-  const permission = await Notification.requestPermission();
-  return permission === 'granted';
 };
 
 /**
@@ -116,7 +123,12 @@ export const showNotification = (title: string, body: string, icon?: string): vo
 /**
  * 페이지 제목 업데이트
  */
-export const updatePageTitle = (timeLeft: number, phase: TimerPhase): void => {
+export const updatePageTitle = (timeLeft: number, phase: TimerPhase, isRunning: boolean = true): void => {
+  if (!isRunning) {
+    document.title = '뽀모도로 타이머 - WooBottle Labs';
+    return;
+  }
+  
   const phaseInfo = getPhaseInfo(phase);
   const timeString = formatTime(timeLeft);
   document.title = `${timeString} - ${phaseInfo.emoji} ${phaseInfo.label} | WooBottle Labs`;

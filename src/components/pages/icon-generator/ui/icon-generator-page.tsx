@@ -42,9 +42,9 @@ export const IconGeneratorPage: React.FC = () => {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0]);
     }
-  }, []);
+  }, [handleFile]);
 
-  const handleFile = (file: File) => {
+  const handleFile = useCallback((file: File) => {
     const validation = validateFile(file);
     if (!validation.isValid) {
       alert(validation.error);
@@ -58,7 +58,7 @@ export const IconGeneratorPage: React.FC = () => {
       }
     };
     reader.readAsDataURL(file);
-  };
+  }, [setUploadedImage]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

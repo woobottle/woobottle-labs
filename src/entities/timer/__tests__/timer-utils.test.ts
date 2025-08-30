@@ -9,7 +9,7 @@ import {
   getTodayString,
   DEFAULT_TIMER_SETTINGS,
 } from '../lib/timer-utils';
-import { TimerPhase, TimerSettings } from '../model/types';
+import { TimerSettings } from '../model/types';
 
 describe('Timer Utils', () => {
   describe('formatTime', () => {
@@ -72,25 +72,25 @@ describe('Timer Utils', () => {
     };
 
     it('should go from focus to short break when not time for long break', () => {
-      expect(getNextPhase('focus', 1, settings)).toBe('shortBreak');
-      expect(getNextPhase('focus', 2, settings)).toBe('shortBreak');
-      expect(getNextPhase('focus', 3, settings)).toBe('shortBreak');
+      expect(getNextPhase('focus', 0, settings)).toBe('shortBreak'); // 1번째 세션 완료 후
+      expect(getNextPhase('focus', 1, settings)).toBe('shortBreak'); // 2번째 세션 완료 후
+      expect(getNextPhase('focus', 2, settings)).toBe('shortBreak'); // 3번째 세션 완료 후
     });
 
     it('should go from focus to long break after specified sessions', () => {
-      expect(getNextPhase('focus', 4, settings)).toBe('longBreak');
-      expect(getNextPhase('focus', 8, settings)).toBe('longBreak');
+      expect(getNextPhase('focus', 3, settings)).toBe('longBreak'); // 4번째 세션 완료 후
+      expect(getNextPhase('focus', 7, settings)).toBe('longBreak'); // 8번째 세션 완료 후
     });
 
     it('should go from break to focus', () => {
-      expect(getNextPhase('shortBreak', 1, settings)).toBe('focus');
-      expect(getNextPhase('longBreak', 4, settings)).toBe('focus');
+      expect(getNextPhase('shortBreak', 0, settings)).toBe('focus');
+      expect(getNextPhase('longBreak', 3, settings)).toBe('focus');
     });
 
     it('should handle custom sessions until long break', () => {
       const customSettings = { ...settings, sessionsUntilLongBreak: 2 };
-      expect(getNextPhase('focus', 2, customSettings)).toBe('longBreak');
-      expect(getNextPhase('focus', 4, customSettings)).toBe('longBreak');
+      expect(getNextPhase('focus', 1, customSettings)).toBe('longBreak'); // 2번째 세션 완료 후
+      expect(getNextPhase('focus', 3, customSettings)).toBe('longBreak'); // 4번째 세션 완료 후
     });
   });
 
@@ -121,7 +121,7 @@ describe('Timer Utils', () => {
     beforeEach(() => {
       // Reset mocks
       jest.clearAllMocks();
-      global.Notification = jest.fn() as any;
+      global.Notification = jest.fn() as unknown as typeof Notification;
       global.Notification.permission = 'granted';
     });
 
@@ -130,7 +130,9 @@ describe('Timer Utils', () => {
       expect(global.Notification).toHaveBeenCalledWith('Test Title', {
         body: 'Test Body',
         icon: '/favicon.ico',
+        badge: '/favicon.ico',
         tag: 'pomodoro-timer',
+        requireInteraction: true,
       });
     });
 
@@ -169,11 +171,18 @@ describe('Timer Utils', () => {
 
   describe('requestNotificationPermission', () => {
     beforeEach(() => {
+      // window에 Notification 설정
+      Object.defineProperty(window, 'Notification', {
+        value: global.Notification,
+        writable: true,
+        configurable: true
+      });
       global.Notification.requestPermission = jest.fn();
+      global.Notification.permission = 'default';
     });
 
     it('should request notification permission', async () => {
-      global.Notification.requestPermission.mockResolvedValue('granted');
+      global.Notification.requestPermission = jest.fn().mockResolvedValue('granted');
       const result = await requestNotificationPermission();
       expect(result).toBe(true);
       expect(global.Notification.requestPermission).toHaveBeenCalled();
@@ -186,7 +195,7 @@ describe('Timer Utils', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      global.Notification.requestPermission.mockRejectedValue(new Error('Test error'));
+      global.Notification.requestPermission = jest.fn().mockRejectedValue(new Error('Test error'));
       const result = await requestNotificationPermission();
       expect(result).toBe(false);
     });

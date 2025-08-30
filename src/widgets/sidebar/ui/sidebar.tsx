@@ -23,7 +23,7 @@ interface MenuItem {
   id: string;
   label: string;
   href: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   description?: string;
 }
 

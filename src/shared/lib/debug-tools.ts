@@ -3,12 +3,25 @@
  * 브라우저 콘솔에서 사용할 수 있는 유틸리티 함수들
  */
 
+interface VersionInfo {
+  version: string;
+  buildTime: string;
+  git: {
+    shortHash: string;
+    branch: string;
+    commitHash: string;
+    commitMessage: string;
+  };
+  environment: string;
+  buildNumber: string;
+}
+
 interface DebugTools {
   version: () => void;
-  versionInfo: () => any;
+  versionInfo: () => VersionInfo | null;
   copyVersion: () => void;
-  checkVersion: () => Promise<any>;
-  compareVersions: () => Promise<void>;
+  checkVersion: () => Promise<VersionInfo | null>;
+  compareVersions: () => Promise<Record<string, unknown> | null>;
   rollbackInfo: () => void;
   clearCache: () => void;
   debugMode: (enabled?: boolean) => void;
@@ -178,12 +191,13 @@ User Agent: ${navigator.userAgent}
 // 브라우저 환경에서만 전역 디버그 도구 등록
 if (typeof window !== 'undefined') {
   // 전역 디버그 도구 등록
-  (window as any).__debug = createDebugTools();
+  (window as Record<string, unknown>).__debug = createDebugTools();
   
   // 개발 환경에서 자동으로 버전 정보 출력
   if (process.env.NODE_ENV === 'development') {
     setTimeout(() => {
-      (window as any).__debug.version();
+      const debug = (window as Record<string, unknown>).__debug as DebugTools;
+      debug.version();
       console.log('💡 디버그 도구: __debug 객체를 사용하세요.');
     }, 1000);
   }

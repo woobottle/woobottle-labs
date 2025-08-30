@@ -17,7 +17,7 @@ export default function SettingsPage() {
 
   const [saved, setSaved] = useState(false);
 
-  const handleSettingChange = (key: string, value: any) => {
+  const handleSettingChange = (key: string, value: string | boolean) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
@@ -35,7 +35,7 @@ export default function SettingsPage() {
   );
 
   const SettingRow = ({ icon: Icon, title, description, children }: {
-    icon: React.ComponentType<any>;
+    icon: React.ComponentType<{ className?: string }>;
     title: string;
     description: string;
     children: React.ReactNode;

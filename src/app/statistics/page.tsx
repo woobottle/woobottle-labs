@@ -6,7 +6,7 @@ import AppLayout from '../../components/AppLayout';
 
 export default function StatisticsPage() {
   const StatCard = ({ icon: Icon, title, value, change, color }: {
-    icon: React.ComponentType<any>;
+    icon: React.ComponentType<{ className?: string }>;
     title: string;
     value: string;
     change: string;

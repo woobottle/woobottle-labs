@@ -68,7 +68,7 @@ export default function TextCounterPage() {
   };
 
   const StatCard = ({ icon: Icon, label, value, color = "text-gray-700" }: {
-    icon: React.ComponentType<any>;
+    icon: React.ComponentType<{ className?: string }>;
     label: string;
     value: number;
     color?: string;

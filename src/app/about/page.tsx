@@ -38,7 +38,7 @@ export default function AboutPage() {
   ];
 
   const FeatureCard = ({ icon: Icon, title, description }: {
-    icon: React.ComponentType<any>;
+    icon: React.ComponentType<{ className?: string }>;
     title: string;
     description: string;
   }) => (

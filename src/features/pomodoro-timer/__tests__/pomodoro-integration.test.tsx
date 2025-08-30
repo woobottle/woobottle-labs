@@ -164,7 +164,7 @@ describe('Pomodoro Timer Integration', () => {
 
       // Initial focus phase
       expect(screen.getByText('🍅 집중 시간')).toBeInTheDocument();
-      expect(screen.getByText('0')).toBeInTheDocument(); // Completed sessions
+      expect(screen.getByText('완료된 세션').parentElement?.querySelector('.text-2xl')).toHaveTextContent('0');
 
       // Skip to break
       const skipButton = screen.getByText('건너뛰기');
@@ -312,8 +312,8 @@ describe('Pomodoro Timer Integration', () => {
       // Re-render to pick up mocked stats
       render(<PomodoroTimer />);
 
-      // Reset stats - use more specific selector
-      const resetStatsButton = screen.getByText('통계').parentElement?.querySelector('button:has-text("초기화")') || screen.getAllByText('초기화')[0];
+      // Reset stats - find the reset button by text
+      const resetStatsButton = screen.getAllByText('초기화')[0];
       await user.click(resetStatsButton);
 
       // Confirm dialog should appear and be accepted (mocked to return true)

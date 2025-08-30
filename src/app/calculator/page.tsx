@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calculator as CalculatorIcon, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import AppLayout from '../../components/AppLayout';
 
 export default function CalculatorPage() {
