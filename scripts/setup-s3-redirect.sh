@@ -69,7 +69,7 @@ EOF
     rm -f /tmp/website-config.json
     
     echo -e "${GREEN}✅ 웹사이트 호스팅 설정 완료${NC}"
-    echo -e "${BLUE}🔗 웹사이트 URL: http://$bucket_name.s3-website.$AWS_REGION.amazonaws.com${NC}"
+    echo -e "${BLUE}🔗 웹사이트 URL: https://$bucket_name"
 }
 
 # 버킷 정책 설정 (공개 읽기 권한)

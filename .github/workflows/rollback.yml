@@ -85,13 +85,13 @@ jobs:
           
           if [[ "${{ inputs.environment }}" == "staging" ]]; then
             echo "🌍 스테이징 버킷: woo-bottle-staging.com"
-            echo "🔗 스테이징 URL: http://woo-bottle-staging.com.s3-website.${{ secrets.AWS_REGION }}.amazonaws.com"
+            echo "🔗 스테이징 URL: https://woo-bottle-staging.com.s3-website.${{ secrets.AWS_REGION }}.amazonaws.com"
           else
             echo "🌍 프로덕션 버킷: woo-bottle.com"
             if [[ -n "${{ secrets.DEPLOYMENT_URL }}" ]]; then
               echo "🔗 프로덕션 URL: ${{ secrets.DEPLOYMENT_URL }}"
             else
-              echo "🔗 프로덕션 URL: http://woo-bottle.com.s3-website.${{ secrets.AWS_REGION }}.amazonaws.com"
+              echo "🔗 프로덕션 URL: https://woo-bottle.com.s3-website.${{ secrets.AWS_REGION }}.amazonaws.com"
             fi
           fi
           

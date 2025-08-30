@@ -16,7 +16,7 @@
 
 현재 상황:
 - S3 버킷: `woo-bottle.com`
-- 기존 URL: `http://woo-bottle.com.s3-website-us-east-1.amazonaws.com`
+- 기존 URL: `https://woo-bottle.com`
 - 목표 URL: `https://woo-bottle.com`
 
 필요한 AWS 서비스:
@@ -309,7 +309,7 @@ dig woo-bottle.com
 
 ```bash
 # HTTP → HTTPS 리다이렉트 확인
-curl -I http://woo-bottle.com
+curl -I https://woo-bottle.com
 
 # HTTPS 직접 접근
 curl -I https://woo-bottle.com
