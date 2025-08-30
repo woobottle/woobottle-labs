@@ -22,6 +22,9 @@ source "$(dirname "$0")/version-utils.sh" 2>/dev/null || {
 DEPLOY_VERSION=""
 IS_STAGING=false
 AUTO_VERSION=""
+SKIP_TESTS=false
+SKIP_LINT=false
+SKIP_BUILD=false
 STAGING_BUCKET="woo-bottle-staging.com"
 PRODUCTION_BUCKET="woo-bottle.com"
 
@@ -40,6 +43,18 @@ while [[ $# -gt 0 ]]; do
       AUTO_VERSION="$2"
       shift 2
       ;;
+    --skip-tests)
+      SKIP_TESTS=true
+      shift
+      ;;
+    --skip-lint)
+      SKIP_LINT=true
+      shift
+      ;;
+    --skip-build)
+      SKIP_BUILD=true
+      shift
+      ;;
     --help|-h)
       echo "WooBottle Labs 배포 스크립트 (버저닝 지원)"
       echo
@@ -49,6 +64,9 @@ while [[ $# -gt 0 ]]; do
       echo "  --version v1.0.0       특정 버전으로 배포"
       echo "  --staging              스테이징 환경에 배포"
       echo "  --auto-version TYPE    자동 버전 생성 (patch|minor|major)"
+      echo "  --skip-tests           테스트 건너뛰기"
+      echo "  --skip-lint            린트 검사 건너뛰기"
+      echo "  --skip-build           빌드 건너뛰기"
       echo "  --help, -h             이 도움말 표시"
       echo
       echo "예시:"
@@ -101,11 +119,13 @@ fi
 
 echo -e "${BLUE}🎯 배포 대상: $DEPLOY_TYPE ($TARGET_BUCKET)${NC}"
 
-# 환경 설정 로드
-source .env.local 2>/dev/null || {
-  echo -e "${RED}❌ .env.local 파일이 없습니다!${NC}"
-  exit 1
-}
+# 환경 설정 로드 (GitHub Actions에서는 환경변수가 이미 설정됨)
+if [[ -f .env.local ]]; then
+  source .env.local
+  echo -e "${BLUE}📋 .env.local 파일을 로드했습니다.${NC}"
+else
+  echo -e "${YELLOW}⚠️  .env.local 파일이 없습니다. 환경변수를 사용합니다.${NC}"
+fi
 
 # 필수 환경변수 확인
 if [[ -z "$AWS_ACCESS_KEY_ID" || -z "$AWS_SECRET_ACCESS_KEY" || -z "$AWS_REGION" ]]; then
@@ -150,39 +170,58 @@ else
 fi
 
 # 테스트 실행
-echo -e "${YELLOW}🧪 테스트 실행 중...${NC}"
-if command -v pnpm &> /dev/null; then
-  pnpm test
-elif command -v yarn &> /dev/null; then
-  yarn test
+if [[ "$SKIP_TESTS" != true ]]; then
+  echo -e "${YELLOW}🧪 테스트 실행 중...${NC}"
+  if command -v pnpm &> /dev/null; then
+    pnpm test
+  elif command -v yarn &> /dev/null; then
+    yarn test
+  else
+    npm test
+  fi
 else
-  npm test
+  echo -e "${YELLOW}⏭️  테스트를 건너뜁니다.${NC}"
 fi
 
 # Lint 검사
-echo -e "${YELLOW}🔍 코드 검사 중...${NC}"
-if command -v pnpm &> /dev/null; then
-  pnpm lint
-elif command -v yarn &> /dev/null; then
-  yarn lint
+if [[ "$SKIP_LINT" != true ]]; then
+  echo -e "${YELLOW}🔍 코드 검사 중...${NC}"
+  if command -v pnpm &> /dev/null; then
+    pnpm lint
+  elif command -v yarn &> /dev/null; then
+    yarn lint
+  else
+    npm run lint
+  fi
 else
-  npm run lint
+  echo -e "${YELLOW}⏭️  린트 검사를 건너뜁니다.${NC}"
 fi
 
 # 빌드
-echo -e "${YELLOW}🔨 프로젝트 빌드 중...${NC}"
-if command -v pnpm &> /dev/null; then
-  pnpm build
-elif command -v yarn &> /dev/null; then
-  yarn build
+if [[ "$SKIP_BUILD" != true ]]; then
+  echo -e "${YELLOW}🔨 프로젝트 빌드 중...${NC}"
+  if command -v pnpm &> /dev/null; then
+    pnpm build
+  elif command -v yarn &> /dev/null; then
+    yarn build
+  else
+    npm run build
+  fi
 else
-  npm run build
+  echo -e "${YELLOW}⏭️  빌드를 건너뜁니다.${NC}"
 fi
 
 # AWS 자격증명 설정
 export AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$AWS_REGION
+
+# 빌드 결과물 확인
+if [[ ! -d "./out" ]]; then
+  echo -e "${RED}❌ 빌드 결과물 디렉토리(./out)가 존재하지 않습니다!${NC}"
+  echo "먼저 'pnpm build' 또는 'npm run build'를 실행해주세요."
+  exit 1
+fi
 
 # S3에 버전별 업로드
 echo -e "${YELLOW}☁️  S3에 버전별 업로드 중...${NC}"

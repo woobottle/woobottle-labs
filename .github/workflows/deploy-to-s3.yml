@@ -96,8 +96,12 @@ jobs:
             DEPLOY_ARGS="$DEPLOY_ARGS --staging"
           fi
           
+          # GitHub Actions에서 이미 실행한 단계들 건너뛰기
+          DEPLOY_ARGS="$DEPLOY_ARGS --skip-tests --skip-lint"
+          
           # 배포 실행
           chmod +x ./scripts/deploy.sh
+          echo "Executing: ./scripts/deploy.sh $DEPLOY_ARGS"
           ./scripts/deploy.sh $DEPLOY_ARGS
           
       - name: Deployment Summary
