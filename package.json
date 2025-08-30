@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "prebuild": "node scripts/inject-version.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -22,6 +23,9 @@
 
     "version:create": "bash scripts/version-utils.sh interactive",
     "version:current": "bash scripts/version-utils.sh current",
+    "version:compare": "bash scripts/version-compare.sh compare",
+    "version:details": "bash scripts/version-compare.sh details",
+    "version:simulate": "bash scripts/version-compare.sh simulate",
     "aws:setup": "bash scripts/setup-aws.sh"
   },
   "dependencies": {

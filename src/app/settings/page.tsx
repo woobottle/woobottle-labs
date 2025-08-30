@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Settings as SettingsIcon, Moon, Sun, Globe, Save, Bell, Palette } from 'lucide-react';
+import { Settings as SettingsIcon, Moon, Sun, Globe, Save, Bell, Palette, Info } from 'lucide-react';
 import AppLayout from '../../components/AppLayout';
+import { VersionInfo } from '../../shared/ui/version-info';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
@@ -226,6 +227,15 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
+          </SettingCard>
+
+          {/* Version Information */}
+          <SettingCard>
+            <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+              <Info className="w-5 h-5" />
+              버전 정보
+            </h2>
+            <VersionInfo />
           </SettingCard>
 
           {/* Save Button */}

@@ -27,10 +27,27 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        {/* 버전 정보 스크립트 로드 */}
+        <script src="/version.js" async />
+      </head>
       <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors`}>
         <ThemeProvider defaultTheme="light">
           {children}
         </ThemeProvider>
+        {/* 디버그 도구 로드 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // 디버그 도구 초기화
+              if (typeof window !== 'undefined') {
+                import('/src/shared/lib/debug-tools.js').catch(() => {
+                  console.log('디버그 도구를 로드할 수 없습니다.');
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
