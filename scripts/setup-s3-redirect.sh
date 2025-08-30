@@ -35,8 +35,8 @@ setup_s3_website_hosting() {
     # 현재 폴더는 항상 current
     CURRENT_FOLDER="current"
     
-    # 웹사이트 설정 JSON 생성
-    cat > /tmp/website-config.json << EOF
+      # 웹사이트 설정 JSON 생성 (무한 리다이렉트 방지)
+  cat > /tmp/website-config.json << EOF
 {
     "IndexDocument": {
         "Suffix": "index.html"
@@ -47,10 +47,12 @@ setup_s3_website_hosting() {
     "RoutingRules": [
         {
             "Condition": {
-                "KeyPrefixEquals": ""
+                "KeyPrefixEquals": "",
+                "HttpErrorCodeReturnedEquals": "404"
             },
             "Redirect": {
-                "ReplaceKeyPrefixWith": "$CURRENT_FOLDER/"
+                "ReplaceKeyPrefixWith": "$CURRENT_FOLDER/",
+                "HttpRedirectCode": "302"
             }
         }
     ]

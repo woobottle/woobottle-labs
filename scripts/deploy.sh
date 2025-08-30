@@ -138,7 +138,7 @@ setup_bucket() {
   # 웹사이트 호스팅 설정 (리다이렉트 포함)
   echo -e "${YELLOW}🌐 웹사이트 호스팅 설정 중...${NC}"
   
-  # 웹사이트 설정 JSON 생성 (루트를 current/로 리다이렉트)
+  # 웹사이트 설정 JSON 생성 (무한 리다이렉트 방지)
   cat > /tmp/website-config.json << EOF
 {
     "IndexDocument": {
@@ -150,10 +150,12 @@ setup_bucket() {
     "RoutingRules": [
         {
             "Condition": {
-                "KeyPrefixEquals": ""
+                "KeyPrefixEquals": "",
+                "HttpErrorCodeReturnedEquals": "404"
             },
             "Redirect": {
-                "ReplaceKeyPrefixWith": "current/"
+                "ReplaceKeyPrefixWith": "current/",
+                "HttpRedirectCode": "302"
             }
         }
     ]
@@ -280,7 +282,11 @@ CURRENT_PATH="current"
 echo -e "${BLUE}📁 현재 경로: s3://$TARGET_BUCKET/$CURRENT_PATH${NC}"
 aws s3 sync ./out "s3://$TARGET_BUCKET/$CURRENT_PATH/" --delete --cache-control "max-age=86400"
 
-# 3. 배포 메타데이터 저장
+# 3. 루트에도 복사 (직접 접근 가능하도록)
+echo -e "${BLUE}📁 루트 경로: s3://$TARGET_BUCKET/${NC}"
+aws s3 sync ./out "s3://$TARGET_BUCKET/" --delete --cache-control "max-age=86400" --exclude "versions/*"
+
+# 4. 배포 메타데이터 저장
 DEPLOY_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 DEPLOY_METADATA="{
   \"version\": \"$DEPLOY_VERSION\",
@@ -292,6 +298,11 @@ DEPLOY_METADATA="{
 }"
 
 echo "$DEPLOY_METADATA" | aws s3 cp - "s3://$TARGET_BUCKET/$CURRENT_PATH/deploy-info.json" \
+  --content-type "application/json" \
+  --cache-control "no-cache"
+
+# 루트에도 배포 정보 저장
+echo "$DEPLOY_METADATA" | aws s3 cp - "s3://$TARGET_BUCKET/deploy-info.json" \
   --content-type "application/json" \
   --cache-control "no-cache"
 
