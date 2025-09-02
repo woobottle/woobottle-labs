@@ -64,13 +64,33 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy to S3 with Version Tags
+      - name: Enable S3 Versioning and Deploy
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           
+          echo "🔧 S3 버켓 버저닝 활성화 중..."
+          
+          # S3 버저닝 활성화
+          aws s3api put-bucket-versioning \
+            --bucket woo-bottle.com \
+            --versioning-configuration Status=Enabled
+          
+          # 라이프사이클 정책 설정 (선택사항: 이전 버전 관리)
+          aws s3api put-bucket-lifecycle-configuration \
+            --bucket woo-bottle.com \
+            --lifecycle-configuration '{
+              "Rules": [{
+                "ID": "version-management",
+                "Status": "Enabled",
+                "Filter": {"Prefix": ""},
+                "NoncurrentVersionExpiration": {"NoncurrentDays": 30},
+                "AbortIncompleteMultipartUpload": {"DaysAfterInitiation": 7}
+              }]
+            }'
+          
           echo "🚀 S3에 배포 중: $VERSION"
           
-          # S3 업로드
+          # S3 업로드 (버저닝이 활성화되어 자동으로 버전 관리됨)
           aws s3 sync ./out s3://woo-bottle.com/ \
             --delete \
             --cache-control "public, max-age=3600" \
@@ -83,53 +103,86 @@ jobs:
             --include "*.html" \
             --include "*.json"
           
-          echo "🏷️ 파일 태깅 중..."
+          echo "📋 배포된 파일들의 버전 ID 수집 중..."
           
-          # 업로드된 모든 파일에 버전 태그 추가
-          aws s3api list-objects-v2 \
-            --bucket woo-bottle.com \
-            --query 'Contents[?!starts_with(Key, `.`)].Key' \
-            --output text | \
-          tr '\t' '\n' | \
-          while read -r file; do
-            if [[ -n "$file" ]]; then
-              echo "  📄 태깅: $file"
-              aws s3api put-object-tagging \
-                --bucket woo-bottle.com \
-                --key "$file" \
-                --tagging "TagSet=[{Key=DeployVersion,Value=$VERSION},{Key=DeployTime,Value=$(date -u +%Y-%m-%dT%H:%M:%SZ)},{Key=GitCommit,Value=$(git rev-parse HEAD)},{Key=WorkflowRun,Value=${{ github.run_id }}},{Key=DeployedBy,Value=${{ github.actor }}}]"
+          # 주요 파일들의 버전 ID 수집
+          VERSION_IDS_FILE="version-ids.json"
+          echo "{" > $VERSION_IDS_FILE
+          echo '  "deployVersion": "'$VERSION'",' >> $VERSION_IDS_FILE
+          echo '  "deployTime": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",' >> $VERSION_IDS_FILE
+          echo '  "files": {' >> $VERSION_IDS_FILE
+          
+          FIRST=true
+          for file in "index.html" "404.html" "favicon.ico" "_next/static/css/*.css" "_next/static/js/*.js"; do
+            if aws s3api head-object --bucket woo-bottle.com --key "$file" --output json 2>/dev/null; then
+              VERSION_ID=$(aws s3api head-object --bucket woo-bottle.com --key "$file" --query 'VersionId' --output text)
+              if [[ $VERSION_ID != "null" && $VERSION_ID != "None" ]]; then
+                if [[ $FIRST == "false" ]]; then
+                  echo "," >> $VERSION_IDS_FILE
+                fi
+                echo '    "'$file'": "'$VERSION_ID'"' >> $VERSION_IDS_FILE
+                FIRST=false
+                echo "  📄 $file: $VERSION_ID"
+              fi
             fi
           done
+          
+          echo "" >> $VERSION_IDS_FILE
+          echo "  }" >> $VERSION_IDS_FILE
+          echo "}" >> $VERSION_IDS_FILE
 
-      - name: Create Version Metadata
+      - name: Store Deployment Version History
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           
-          echo "📝 배포 메타데이터 생성 중..."
+          echo "📝 배포 버전 히스토리 저장 중..."
           
-          # 배포 메타데이터 생성
-          cat > deploy-metadata.json << EOF
+          # 기존 배포 히스토리 다운로드
+          HISTORY_FILE="deploy-history.json"
+          if aws s3api head-object --bucket woo-bottle.com --key ".deploy-history.json" 2>/dev/null; then
+            aws s3 cp s3://woo-bottle.com/.deploy-history.json $HISTORY_FILE || echo "[]" > $HISTORY_FILE
+          else
+            echo "[]" > $HISTORY_FILE
+          fi
+          
+          # 현재 배포 정보 추가
+          CURRENT_DEPLOY=$(cat << EOF
           {
             "deployVersion": "$VERSION",
             "deployTime": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "deployTimestamp": $(date +%s),
             "gitCommit": "$(git rev-parse HEAD)",
             "gitCommitShort": "$(git rev-parse --short HEAD)",
             "gitBranch": "$(git rev-parse --abbrev-ref HEAD)",
-            "gitCommitMessage": "$(git log -1 --pretty=%B | head -n1)",
+            "gitCommitMessage": "$(git log -1 --pretty=%B | head -n1 | sed 's/"/\\"/g')",
             "workflowRun": "${{ github.run_id }}",
             "workflowUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "deployedBy": "${{ github.actor }}",
-            "buildNumber": "${{ github.run_number }}",
+            "buildNumber": ${{ github.run_number }},
             "repository": "${{ github.repository }}",
-            "environment": "production"
+            "environment": "production",
+            "s3VersionIds": $(cat version-ids.json | jq '.files // {}')
           }
           EOF
+          )
           
-          # S3에 메타데이터 업로드
-          aws s3 cp deploy-metadata.json s3://woo-bottle.com/.deploy-metadata.json \
+          # 기존 히스토리에 현재 배포 추가 (최대 50개 유지)
+          NEW_HISTORY=$(jq --argjson current "$CURRENT_DEPLOY" '. + [$current] | sort_by(.deployTimestamp) | reverse | .[0:50]' $HISTORY_FILE)
+          echo "$NEW_HISTORY" > $HISTORY_FILE
+          
+          # 배포 히스토리를 S3에 업로드
+          aws s3 cp $HISTORY_FILE s3://woo-bottle.com/.deploy-history.json \
             --content-type "application/json" \
-            --cache-control "no-cache" \
-            --metadata "deploy-version=$VERSION,deploy-time=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            --cache-control "no-cache"
+          
+          # 현재 배포 메타데이터 업로드
+          echo "$CURRENT_DEPLOY" > current-deploy.json
+          aws s3 cp current-deploy.json s3://woo-bottle.com/.current-deploy.json \
+            --content-type "application/json" \
+            --cache-control "no-cache"
+          
+          echo "✅ 배포 히스토리 업데이트 완료"
+          echo "📊 총 배포 기록: $(echo "$NEW_HISTORY" | jq length)개"
 
       - name: Configure S3 website hosting
         run: |
@@ -191,14 +244,16 @@ jobs:
           | 👤 **배포자** | ${{ github.actor }} |
           
           ### 🔄 롤백이 필요한 경우
-          1. Actions 탭에서 **"Version-Based Rollback"** 워크플로우 실행
-          2. **빠른 롤백**: target_version을 비워두고 실행 (바로 이전 버전으로)
-          3. **특정 버전**: 이전 배포 버전을 입력 (예: \`run-120-abc1234\`)
+          1. Actions 탭에서 **"S3 Version-Based Rollback"** 워크플로우 실행
+          2. **빠른 롤백**: "previous" 타입 선택 (바로 이전 배포로)
+          3. **특정 버전**: "specific" 타입 + 배포 버전 입력 (예: \`run-120-abc1234\`)
+          4. **시간 기반**: "time_based" 타입 + 시간 입력 (예: \`2024-01-15T10:30:00Z\`)
           
           ### 📊 배포 정보
           - **테스트 실행**: ${{ inputs.skip_tests != true && '✅ 완료' || '⚠️ 건너뜀' }}
           - **파일 수**: $(aws s3api list-objects-v2 --bucket woo-bottle.com --query 'length(Contents)' --output text)개
-          - **버전 관리**: S3 객체 버저닝 활성화
+          - **버전 관리**: ✅ S3 객체 버저닝 활성화
+          - **배포 히스토리**: 최대 50개 배포 기록 유지
           EOF
 
   # 배포 후 알림 (선택사항)

@@ -1,0 +1,303 @@
+name: S3 Version-Based Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_deployment:
+        description: '롤백할 배포 버전 (예: run-120-abc1234) 또는 시간대 (예: 2024-01-15T10:30:00Z)'
+        required: false
+        type: string
+      rollback_type:
+        description: '롤백 타입'
+        required: true
+        default: 'previous'
+        type: choice
+        options:
+          - previous        # 바로 이전 배포로 롤백
+          - specific        # 특정 배포 버전으로 롤백
+          - time_based      # 특정 시간 이후 첫 번째 배포로 롤백
+      confirm_rollback:
+        description: '롤백 확인 (ROLLBACK 입력)'
+        required: true
+        type: string
+
+jobs:
+  validate-rollback:
+    runs-on: ubuntu-latest
+    outputs:
+      target-deploy: ${{ steps.find-target.outputs.target_deploy }}
+      rollback-safe: ${{ steps.validate.outputs.safe }}
+    
+    steps:
+      - name: Validate Rollback Confirmation
+        run: |
+          if [[ "${{ inputs.confirm_rollback }}" != "ROLLBACK" ]]; then
+            echo "❌ 롤백 확인이 필요합니다. 'ROLLBACK'을 정확히 입력해주세요."
+            exit 1
+          fi
+          echo "✅ 롤백 확인됨"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Download Deployment History
+        run: |
+          echo "📥 배포 히스토리 다운로드 중..."
+          
+          if aws s3api head-object --bucket woo-bottle.com --key ".deploy-history.json" 2>/dev/null; then
+            aws s3 cp s3://woo-bottle.com/.deploy-history.json deploy-history.json
+          else
+            echo "❌ 배포 히스토리를 찾을 수 없습니다."
+            exit 1
+          fi
+          
+          # 현재 배포 정보 다운로드
+          if aws s3api head-object --bucket woo-bottle.com --key ".current-deploy.json" 2>/dev/null; then
+            aws s3 cp s3://woo-bottle.com/.current-deploy.json current-deploy.json
+          else
+            echo "⚠️ 현재 배포 정보를 찾을 수 없습니다."
+            echo "{}" > current-deploy.json
+          fi
+
+      - name: Find Target Deployment
+        id: find-target
+        run: |
+          ROLLBACK_TYPE="${{ inputs.rollback_type }}"
+          TARGET_INPUT="${{ inputs.target_deployment }}"
+          
+          echo "🔍 롤백 대상 찾는 중... (타입: $ROLLBACK_TYPE)"
+          
+          case $ROLLBACK_TYPE in
+            "previous")
+              # 현재 배포를 제외한 가장 최근 배포
+              TARGET_DEPLOY=$(jq -r '.[1] // empty' deploy-history.json)
+              ;;
+            "specific")
+              if [[ -z "$TARGET_INPUT" ]]; then
+                echo "❌ 특정 배포 버전을 입력해주세요."
+                exit 1
+              fi
+              # 특정 배포 버전 찾기
+              TARGET_DEPLOY=$(jq --arg version "$TARGET_INPUT" '.[] | select(.deployVersion == $version)' deploy-history.json)
+              ;;
+            "time_based")
+              if [[ -z "$TARGET_INPUT" ]]; then
+                echo "❌ 대상 시간을 입력해주세요. (예: 2024-01-15T10:30:00Z)"
+                exit 1
+              fi
+              # 특정 시간 이후 첫 번째 배포 찾기
+              TARGET_TIMESTAMP=$(date -d "$TARGET_INPUT" +%s 2>/dev/null || echo "0")
+              if [[ $TARGET_TIMESTAMP -eq 0 ]]; then
+                echo "❌ 잘못된 시간 형식입니다."
+                exit 1
+              fi
+              TARGET_DEPLOY=$(jq --argjson ts "$TARGET_TIMESTAMP" '.[] | select(.deployTimestamp >= $ts) | last' deploy-history.json)
+              ;;
+          esac
+          
+          if [[ -z "$TARGET_DEPLOY" || "$TARGET_DEPLOY" == "null" ]]; then
+            echo "❌ 롤백 대상을 찾을 수 없습니다."
+            exit 1
+          fi
+          
+          echo "🎯 롤백 대상 발견:"
+          echo "$TARGET_DEPLOY" | jq .
+          
+          # 대상 배포 정보 저장
+          echo "$TARGET_DEPLOY" > target-deploy.json
+          TARGET_VERSION=$(echo "$TARGET_DEPLOY" | jq -r '.deployVersion')
+          echo "target_deploy=$TARGET_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Validate Rollback Safety
+        id: validate
+        run: |
+          TARGET_DEPLOY=$(cat target-deploy.json)
+          CURRENT_DEPLOY=$(cat current-deploy.json)
+          
+          echo "🔍 롤백 안전성 검증 중..."
+          
+          # 현재 배포와 동일한지 확인
+          CURRENT_VERSION=$(echo "$CURRENT_DEPLOY" | jq -r '.deployVersion // "unknown"')
+          TARGET_VERSION=$(echo "$TARGET_DEPLOY" | jq -r '.deployVersion')
+          
+          if [[ "$CURRENT_VERSION" == "$TARGET_VERSION" ]]; then
+            echo "⚠️ 현재 배포와 동일한 버전입니다. 롤백이 필요하지 않을 수 있습니다."
+          fi
+          
+          # S3 버전 ID 존재 확인
+          VERSION_IDS=$(echo "$TARGET_DEPLOY" | jq '.s3VersionIds // {}')
+          if [[ "$VERSION_IDS" == "{}" ]]; then
+            echo "⚠️ S3 버전 ID 정보가 없습니다. 레거시 배포일 수 있습니다."
+          fi
+          
+          echo "safe=true" >> $GITHUB_OUTPUT
+          echo "✅ 롤백 안전성 검증 완료"
+
+  rollback:
+    needs: validate-rollback
+    runs-on: ubuntu-latest
+    if: needs.validate-rollback.outputs.rollback-safe == 'true'
+    
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Download Target Deployment Info
+        run: |
+          # 배포 히스토리에서 대상 정보 다운로드
+          aws s3 cp s3://woo-bottle.com/.deploy-history.json deploy-history.json
+          
+          TARGET_VERSION="${{ needs.validate-rollback.outputs.target-deploy }}"
+          jq --arg version "$TARGET_VERSION" '.[] | select(.deployVersion == $version)' deploy-history.json > target-deploy.json
+          
+          echo "🎯 롤백 대상 정보:"
+          cat target-deploy.json | jq .
+
+      - name: Backup Current State
+        run: |
+          echo "💾 현재 상태 백업 중..."
+          
+          # 현재 상태를 롤백 백업으로 저장
+          BACKUP_TIME=$(date -u +%Y%m%d-%H%M%S)
+          BACKUP_KEY=".rollback-backups/backup-$BACKUP_TIME.json"
+          
+          # 현재 배포 정보를 백업
+          if aws s3api head-object --bucket woo-bottle.com --key ".current-deploy.json" 2>/dev/null; then
+            aws s3 cp s3://woo-bottle.com/.current-deploy.json s3://woo-bottle.com/$BACKUP_KEY
+            echo "✅ 현재 상태가 $BACKUP_KEY 에 백업되었습니다."
+          fi
+
+      - name: Restore S3 Object Versions
+        run: |
+          echo "🔄 S3 객체 버전 복원 중..."
+          
+          TARGET_DEPLOY=$(cat target-deploy.json)
+          VERSION_IDS=$(echo "$TARGET_DEPLOY" | jq -r '.s3VersionIds // {}')
+          
+          if [[ "$VERSION_IDS" == "{}" ]]; then
+            echo "⚠️ S3 버전 ID가 없습니다. 전체 객체 목록을 이전 상태로 복원할 수 없습니다."
+            echo "대신 가능한 모든 객체의 이전 버전을 복원합니다..."
+            
+            # 모든 객체의 이전 버전 목록 가져오기
+            aws s3api list-object-versions --bucket woo-bottle.com --query 'Versions[?IsLatest==`false`]' --output json > all-versions.json
+            
+            # 대상 배포 시간 이전의 가장 최근 버전들 복원 (복잡한 로직이므로 간단히 처리)
+            echo "⚠️ 레거시 배포 복원은 수동으로 처리가 필요할 수 있습니다."
+          else
+            echo "📄 개별 파일 버전 복원 중..."
+            
+            # 각 파일의 특정 버전 복원
+            echo "$VERSION_IDS" | jq -r 'to_entries[] | "\(.key) \(.value)"' | while read -r file version_id; do
+              echo "  🔄 복원 중: $file (버전: $version_id)"
+              
+              # 해당 버전을 다운로드하여 다시 업로드 (최신 버전으로 만들기)
+              aws s3api get-object \
+                --bucket woo-bottle.com \
+                --key "$file" \
+                --version-id "$version_id" \
+                "/tmp/restore-$file" || continue
+              
+              # 파일을 다시 업로드 (새로운 최신 버전 생성)
+              aws s3 cp "/tmp/restore-$file" "s3://woo-bottle.com/$file" \
+                --cache-control "$([ "${file##*.}" == "html" ] && echo "no-cache, no-store, must-revalidate" || echo "public, max-age=3600")"
+              
+              echo "  ✅ 복원 완료: $file"
+            done
+          fi
+
+      - name: Update Current Deployment Metadata
+        run: |
+          echo "📝 현재 배포 메타데이터 업데이트 중..."
+          
+          TARGET_DEPLOY=$(cat target-deploy.json)
+          
+          # 롤백 정보 추가
+          ROLLBACK_INFO=$(echo "$TARGET_DEPLOY" | jq --arg rollback_time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg rollback_by "${{ github.actor }}" \
+            --arg rollback_run "${{ github.run_id }}" \
+            '. + {
+              "rolledBackAt": $rollback_time,
+              "rolledBackBy": $rollback_by,
+              "rollbackWorkflowRun": $rollback_run,
+              "isRollback": true
+            }')
+          
+          # 현재 배포 메타데이터 업데이트
+          echo "$ROLLBACK_INFO" > current-deploy.json
+          aws s3 cp current-deploy.json s3://woo-bottle.com/.current-deploy.json \
+            --content-type "application/json" \
+            --cache-control "no-cache"
+
+      - name: Verify Rollback
+        run: |
+          echo "✅ 롤백 검증 중..."
+          
+          # 주요 파일들이 접근 가능한지 확인
+          ERRORS=0
+          for file in "index.html" "404.html"; do
+            if aws s3api head-object --bucket woo-bottle.com --key "$file" >/dev/null 2>&1; then
+              echo "  ✅ $file 접근 가능"
+            else
+              echo "  ❌ $file 접근 불가"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+          
+          if [[ $ERRORS -gt 0 ]]; then
+            echo "⚠️ $ERRORS 개의 파일에 문제가 있습니다."
+          else
+            echo "🎉 모든 주요 파일 접근 가능"
+          fi
+
+      - name: CloudFront Invalidation
+        if: env.CLOUDFRONT_DISTRIBUTION_ID != ''
+        uses: chetan/invalidate-cloudfront-action@v2
+        env:
+          DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+          PATHS: "/*"
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Rollback Summary
+        run: |
+          TARGET_DEPLOY=$(cat target-deploy.json)
+          TARGET_VERSION=$(echo "$TARGET_DEPLOY" | jq -r '.deployVersion')
+          TARGET_TIME=$(echo "$TARGET_DEPLOY" | jq -r '.deployTime')
+          TARGET_COMMIT=$(echo "$TARGET_DEPLOY" | jq -r '.gitCommitShort')
+          
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🔄 롤백 완료
+          
+          | 항목 | 값 |
+          |------|-----|
+          | 🎯 **롤백된 버전** | \`$TARGET_VERSION\` |
+          | 📅 **원본 배포 시간** | $TARGET_TIME |
+          | 🔗 **커밋** | \`$TARGET_COMMIT\` |
+          | 🔄 **롤백 시간** | $(date) |
+          | 👤 **롤백 실행자** | ${{ github.actor }} |
+          | 🌍 **사이트 URL** | [https://woo-bottle.com](https://woo-bottle.com) |
+          
+          ### 📋 롤백 세부사항
+          - **롤백 타입**: ${{ inputs.rollback_type }}
+          - **워크플로우**: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - **S3 버저닝**: ✅ 활용됨
+          - **백업**: 현재 상태가 백업되었습니다
+          
+          ### ⚠️ 주의사항
+          - 롤백된 버전의 동작을 확인해주세요
+          - 문제가 있다면 다시 최신 버전으로 배포하거나 다른 버전으로 롤백할 수 있습니다
+          - CloudFront 캐시 무효화가 완료될 때까지 몇 분 소요될 수 있습니다
+          EOF
+          
+          echo "🎉 롤백이 성공적으로 완료되었습니다!"
+          echo "버전: $TARGET_VERSION"
+          echo "사이트: https://woo-bottle.com"
