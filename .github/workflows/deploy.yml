@@ -37,7 +37,8 @@ jobs:
         pnpm build # (선택사항, React/Vue/Angular 프로젝트의 경우)
     
     - name: Sync files to S3 bucket
-      run:  aws s3 sync ./out s3://woo-bottle.com/ \
+      run:  |
+        aws s3 sync ./out s3://woo-bottle.com/ \
             --delete \
             --cache-control "public, max-age=3600" \
             --exclude "*.html" \
