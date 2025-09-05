@@ -42,7 +42,7 @@ export const IconGeneratorPage: React.FC = () => {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0]);
     }
-  }, [handleFile]);
+  }, []);
 
   const handleFile = useCallback((file: File) => {
     const validation = validateFile(file);
