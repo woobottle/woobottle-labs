@@ -1,0 +1,44 @@
+name: Rollback Full Website Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_id:
+        description: 'Rollback할 배포의 Version ID (해당 배포의 모든 파일이 이 Version ID를 가짐)'
+        required: true
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-2 # 본인 S3 버킷 리전으로 변경
+
+    - name: Rollback all files to previous version
+      run: |
+        BUCKET="woo-bottle.com"
+        VERSION_ID="${{ github.event.inputs.version_id }}"
+        
+        echo "롤백을 시작합니다. 버전 ID: ${VERSION_ID}"
+        
+        # 특정 버전 ID에 해당하는 모든 객체를 찾습니다.
+        # 이 스크립트는 해당 버전 ID의 객체와 그 이전 버전의 ID를 함께 가져옵니다.
+        aws s3api list-object-versions --bucket $BUCKET --versions-key-marker $VERSION_ID --prefix "" --query "Versions[?VersionId=='$VERSION_ID'].[Key, VersionId]" --output json | jq -r '.[][]' | while read -r key; do
+          read -r version_id;
+          
+          # 이전 버전의 ID를 찾습니다.
+          PREVIOUS_VERSION_ID=$(aws s3api list-object-versions --bucket $BUCKET --prefix "$key" --query "Versions[?VersionId!='$VERSION_ID'].[VersionId]" --output text | head -n 1)
+          
+          if [ -n "$PREVIOUS_VERSION_ID" ]; then
+            echo "파일: $key, 이전 버전 ID: $PREVIOUS_VERSION_ID"
+            # 이전 버전의 객체를 현재 버전으로 복사합니다.
+            aws s3 cp s3://$BUCKET/$key --version-id $PREVIOUS_VERSION_ID s3://$BUCKET/$key
+          else
+            echo "파일: $key는 이전 버전이 없습니다. 건너뜁니다."
+          fi
+        done
