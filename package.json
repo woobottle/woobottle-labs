@@ -9,23 +9,7 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "deploy": "bash scripts/deploy.sh",
-
-    "deploy:patch": "bash scripts/deploy.sh --auto-version patch",
-    "deploy:minor": "bash scripts/deploy.sh --auto-version minor",
-    "deploy:major": "bash scripts/deploy.sh --auto-version major",
-    "rollback": "bash scripts/rollback.sh --interactive",
-
-    "versions": "bash scripts/version-utils.sh list",
-    "versions:s3:prod": "bash scripts/version-utils.sh list-s3 woo-bottle.com",
-
-    "version:create": "bash scripts/version-utils.sh interactive",
-    "version:current": "bash scripts/version-utils.sh current",
-    "version:compare": "bash scripts/version-compare.sh compare",
-    "version:details": "bash scripts/version-compare.sh details",
-    "version:simulate": "bash scripts/version-compare.sh simulate",
-    "aws:setup": "bash scripts/setup-aws.sh"
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "clsx": "^2.1.1",
