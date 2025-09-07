@@ -70,15 +70,82 @@ jobs:
         EXISTING_MANIFEST=""
         if [ "$ROLLBACK_MODE" = "tag" ]; then
           # 배포 태그로 기존 매니페스트 찾기
-          EXISTING_MANIFEST=$(aws s3api list-objects-v2 --bucket $BUCKET --prefix "batch-operations/deploy-manifest-" --query "Contents[].Key" --output text | tr '\t' '\n' | while read -r manifest_key; do
-            if [ -n "$manifest_key" ]; then
-              MANIFEST_DEPLOYMENT_TAG=$(aws s3api head-object --bucket $BUCKET --key "$manifest_key" --query "Metadata.\"deployment-tag\"" --output text 2>/dev/null || echo "")
-              if [ "$MANIFEST_DEPLOYMENT_TAG" = "$SEARCH_VALUE" ]; then
-                echo "$manifest_key"
-                break
+          echo "🔍 배포 매니페스트 검색 중... (태그: $SEARCH_VALUE)"
+          
+          # 사용 가능한 매니페스트 파일 목록 확인
+          echo "   📂 batch-operations/ 경로 탐색 중..."
+          
+          # 결과를 EXISTING_MANIFEST에 저장 (서브셸 문제 해결)
+          TEMP_MANIFEST_LIST=$(aws s3api list-objects-v2 --bucket $BUCKET --prefix "batch-operations/deploy-manifest-" --query "Contents[].Key" --output text)
+          
+          if [ -n "$TEMP_MANIFEST_LIST" ] && [ "$TEMP_MANIFEST_LIST" != "None" ]; then
+            echo "$TEMP_MANIFEST_LIST" | tr '\t' '\n' | while read -r manifest_key; do
+              if [ -n "$manifest_key" ] && [ "$manifest_key" != "None" ]; then
+                echo "   🔍 매니페스트 메타데이터 확인: $manifest_key"
+                
+                # 메타데이터 확인
+                MANIFEST_DEPLOYMENT_TAG=$(aws s3api head-object --bucket $BUCKET --key "$manifest_key" --query "Metadata.\"deployment-tag\"" --output text 2>/dev/null || echo "")
+                
+                echo "      - 발견된 태그: '$MANIFEST_DEPLOYMENT_TAG'"
+                echo "      - 찾는 태그: '$SEARCH_VALUE'"
+                
+                if [ "$MANIFEST_DEPLOYMENT_TAG" = "$SEARCH_VALUE" ]; then
+                  echo "   ✅ 매치! 매니페스트 발견: $manifest_key"
+                  echo "$manifest_key" > /tmp/found_manifest.txt
+                  break
+                fi
               fi
+            done
+            
+            # 파일에서 결과 읽기
+            if [ -f /tmp/found_manifest.txt ]; then
+              EXISTING_MANIFEST=$(cat /tmp/found_manifest.txt)
+              rm -f /tmp/found_manifest.txt
             fi
-          done)
+          else
+            echo "   ❌ batch-operations/ 경로에 deploy-manifest 파일이 없습니다."
+            
+            # 전체 batch-operations 경로 내용 확인
+            echo "   🔍 batch-operations/ 전체 내용 확인:"
+            aws s3 ls "s3://$BUCKET/batch-operations/" --recursive || echo "      batch-operations/ 경로가 존재하지 않습니다."
+            
+            # 대안: 태그를 이용한 검색 (서브셸 문제 해결)
+            echo "   🏷️ 태그 기반 매니페스트 검색 시도..."
+            
+            # batch-operations 내 모든 객체 목록 가져오기
+            ALL_BATCH_OBJECTS=$(aws s3api list-objects-v2 --bucket $BUCKET --prefix "batch-operations/" --query "Contents[].Key" --output text)
+            
+            if [ -n "$ALL_BATCH_OBJECTS" ] && [ "$ALL_BATCH_OBJECTS" != "None" ]; then
+              echo "$ALL_BATCH_OBJECTS" | tr '\t' '\n' | while read -r obj_key; do
+                if [ -n "$obj_key" ] && [[ "$obj_key" == *"deploy-manifest"* ]]; then
+                  echo "      🔍 태그 확인 중: $obj_key"
+                  
+                  # 태그 확인
+                  TAGS=$(aws s3api get-object-tagging --bucket $BUCKET --key "$obj_key" --query "TagSet[?Key=='deployment-tag'].Value" --output text 2>/dev/null || echo "")
+                  
+                  echo "         - 발견된 태그: '$TAGS'"
+                  echo "         - 찾는 태그: '$SEARCH_VALUE'"
+                  
+                  if [ "$TAGS" = "$SEARCH_VALUE" ]; then
+                    echo "      ✅ 태그 매치! 매니페스트 발견: $obj_key"
+                    echo "$obj_key" > /tmp/found_manifest_by_tag.txt
+                    break
+                  fi
+                fi
+              done
+              
+              # 태그 기반 검색 결과 확인
+              if [ -f /tmp/found_manifest_by_tag.txt ]; then
+                EXISTING_MANIFEST=$(cat /tmp/found_manifest_by_tag.txt)
+                rm -f /tmp/found_manifest_by_tag.txt
+                echo "   ✅ 태그 기반 검색으로 매니페스트 발견: $EXISTING_MANIFEST"
+              else
+                echo "   ❌ 태그 기반 검색에서도 매니페스트를 찾을 수 없습니다."
+              fi
+            else
+              echo "      ❌ batch-operations/ 경로에 객체가 없습니다."
+            fi
+          fi
         fi
         
         if [ -n "$EXISTING_MANIFEST" ]; then
@@ -91,7 +158,26 @@ jobs:
           MANIFEST_SIZE=$(wc -l < /tmp/manifest_$$.csv)
           echo "📊 재사용 매니페스트 파일 수: $((MANIFEST_SIZE - 1))개"
         else
-          echo "🔍 기존 매니페스트를 찾을 수 없어 새로 생성합니다..."
+          echo ""
+          echo "❌ 기존 배포 매니페스트를 찾을 수 없습니다!"
+          echo "📋 매니페스트 검색 결과 요약:"
+          echo "   - 메타데이터 기반 검색: 실패"
+          echo "   - 태그 기반 검색: 실패"
+          echo "   - 검색 대상 태그: '$SEARCH_VALUE'"
+          echo ""
+          echo "🔍 새로운 매니페스트를 생성합니다..."
+          echo "⚠️  주의: 이 과정은 시간이 오래 걸릴 수 있습니다."
+          echo ""
+          echo "💡 매니페스트를 찾지 못한 가능한 원인:"
+          echo "   1. 배포 태그가 정확하지 않음 (대소문자 구분)"
+          echo "   2. 해당 배포가 매니페스트를 생성하지 않음"
+          echo "   3. 매니페스트가 삭제되었거나 손상됨"
+          echo "   4. AWS 권한 문제로 메타데이터/태그 접근 불가"
+          echo ""
+          echo "🔧 권장 사항:"
+          echo "   - GitHub Actions 로그에서 정확한 배포 태그 확인"
+          echo "   - S3 콘솔에서 batch-operations/ 경로 직접 확인"
+          echo "   - IAM 권한에 s3:GetObjectTagging 포함 여부 확인"
           
           # S3 버전 정보 수집
           aws s3api list-object-versions --bucket $BUCKET --output json > /tmp/all_versions_$$.json
