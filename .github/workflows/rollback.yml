@@ -27,18 +27,22 @@ jobs:
         echo "롤백을 시작합니다. 버전 ID: ${VERSION_ID}"
         
         # 특정 버전 ID에 해당하는 모든 객체를 찾습니다.
-        # 이 스크립트는 해당 버전 ID의 객체와 그 이전 버전의 ID를 함께 가져옵니다.
-        aws s3api list-object-versions --bucket $BUCKET --versions-key-marker $VERSION_ID --prefix "" --query "Versions[?VersionId=='$VERSION_ID'].[Key, VersionId]" --output json | jq -r '.[][]' | while read -r key; do
-          read -r version_id;
-          
-          # 이전 버전의 ID를 찾습니다.
-          PREVIOUS_VERSION_ID=$(aws s3api list-object-versions --bucket $BUCKET --prefix "$key" --query "Versions[?VersionId!='$VERSION_ID'].[VersionId]" --output text | head -n 1)
-          
-          if [ -n "$PREVIOUS_VERSION_ID" ]; then
-            echo "파일: $key, 이전 버전 ID: $PREVIOUS_VERSION_ID"
-            # 이전 버전의 객체를 현재 버전으로 복사합니다.
-            aws s3 cp s3://$BUCKET/$key --version-id $PREVIOUS_VERSION_ID s3://$BUCKET/$key
-          else
-            echo "파일: $key는 이전 버전이 없습니다. 건너뜁니다."
+        echo "해당 버전 ID의 파일들을 찾는 중..."
+        aws s3api list-object-versions --bucket $BUCKET --query "Versions[?VersionId=='$VERSION_ID'].[Key]" --output text | while read -r key; do
+          if [ -n "$key" ] && [ "$key" != "None" ]; then
+            echo "처리 중인 파일: $key"
+            
+            # 해당 파일의 모든 버전을 시간순으로 정렬하여 가져옵니다 (최신순)
+            PREVIOUS_VERSION_ID=$(aws s3api list-object-versions --bucket $BUCKET --prefix "$key" --query "Versions[?Key=='$key'] | sort_by(@, &LastModified) | reverse(@) | [1].VersionId" --output text)
+            
+            if [ -n "$PREVIOUS_VERSION_ID" ] && [ "$PREVIOUS_VERSION_ID" != "None" ]; then
+              echo "파일: $key, 이전 버전 ID로 롤백: $PREVIOUS_VERSION_ID"
+              # 이전 버전의 객체를 현재 버전으로 복사합니다.
+              aws s3 cp "s3://$BUCKET/$key" "s3://$BUCKET/$key" --source-version-id "$PREVIOUS_VERSION_ID"
+            else
+              echo "파일: $key는 이전 버전이 없습니다. 건너뜁니다."
+            fi
           fi
         done
+        
+        echo "롤백이 완료되었습니다."
