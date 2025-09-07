@@ -72,7 +72,7 @@ jobs:
         echo "🔍 메타데이터 기반 대상 버전 검색 중..."
         
         # 병렬로 메타데이터 검사할 파일 목록 생성
-        jq -r '.Versions[] | select(.IsLatest != true) | "\(.Key)|\(.VersionId)"' /tmp/all_versions_$$.json | head -100 > $TEMP_FILE
+        jq -r '.Versions[] | select(.IsLatest != true) | "\(.Key)|\(.VersionId)"' /tmp/all_versions_$$.json | head -10000 > $TEMP_FILE
         
         # 3단계: 병렬 처리로 메타데이터 검사 및 롤백
         echo "🚀 병렬 처리로 롤백 실행 중..."
