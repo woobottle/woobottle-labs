@@ -90,10 +90,10 @@ jobs:
             *)      content_type="binary/octet-stream" ;;
           esac
           
-          # 파일 업로드 with 태그
+          # 파일 업로드 with 메타데이터
           aws s3 cp "$file" "s3://$BUCKET/$s3_key" \
             --content-type "$content_type" \
-            --tagging "deployment=$DEPLOYMENT_TAG"
+            --metadata "deployment=$DEPLOYMENT_TAG,deployed-at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
         done
         
         echo "Deployment completed with tag: $DEPLOYMENT_TAG"
