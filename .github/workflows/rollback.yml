@@ -5,7 +5,18 @@ on:
     inputs:
       deployment_tag:
         description: 'Rollback할 배포 태그 (예: deploy-20241215-143022-a1b2c3d)'
+        required: false
+      custom_version:
+        description: '특정 버전으로 롤백 (메타데이터의 version 값, 예: v1.2.3)'
+        required: false
+      rollback_mode:
+        description: '롤백 모드 선택'
         required: true
+        default: 'tag'
+        type: choice
+        options:
+        - tag
+        - version
 
 jobs:
   rollback:
@@ -19,51 +30,106 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-northeast-2 # 본인 S3 버킷 리전으로 변경
 
-    - name: Rollback deployment by tag
+    - name: Rollback deployment
       run: |
         BUCKET="woo-bottle.com"
+        ROLLBACK_MODE="${{ github.event.inputs.rollback_mode }}"
         DEPLOYMENT_TAG="${{ github.event.inputs.deployment_tag }}"
+        CUSTOM_VERSION="${{ github.event.inputs.custom_version }}"
         
-        echo "롤백을 시작합니다. 배포 태그: ${DEPLOYMENT_TAG}"
+        echo "롤백을 시작합니다."
+        echo "롤백 모드: ${ROLLBACK_MODE}"
         
-        # 1. 해당 태그를 가진 모든 파일들을 찾습니다
-        echo "배포 태그 '${DEPLOYMENT_TAG}'에 해당하는 파일들을 찾는 중..."
+        if [ "$ROLLBACK_MODE" = "tag" ]; then
+          if [ -z "$DEPLOYMENT_TAG" ]; then
+            echo "❌ 에러: 태그 모드에서는 deployment_tag가 필요합니다."
+            exit 1
+          fi
+          echo "배포 태그: ${DEPLOYMENT_TAG}"
+          SEARCH_CRITERIA="deployment"
+          SEARCH_VALUE="$DEPLOYMENT_TAG"
+        elif [ "$ROLLBACK_MODE" = "version" ]; then
+          if [ -z "$CUSTOM_VERSION" ]; then
+            echo "❌ 에러: 버전 모드에서는 custom_version이 필요합니다."
+            exit 1
+          fi
+          echo "대상 버전: ${CUSTOM_VERSION}"
+          SEARCH_CRITERIA="version"
+          SEARCH_VALUE="$CUSTOM_VERSION"
+        fi
         
-        # S3에서 해당 태그를 가진 모든 객체 찾기
+        echo "==================================="
+        echo "S3에서 대상 파일들을 찾는 중..."
+        
+        ROLLBACK_COUNT=0
+        
+        # S3에서 모든 객체를 검사하여 메타데이터 기반으로 대상 버전 찾기
         aws s3api list-objects-v2 --bucket $BUCKET --query "Contents[].Key" --output text | tr '\t' '\n' | while read -r key; do
           if [ -n "$key" ] && [ "$key" != "None" ]; then
-            # 각 객체의 태그를 확인
-            OBJECT_TAGS=$(aws s3api get-object-tagging --bucket $BUCKET --key "$key" --query "TagSet[?Key=='deployment'].Value" --output text 2>/dev/null || echo "")
+            echo "검사 중: $key"
             
-            if [ "$OBJECT_TAGS" = "$DEPLOYMENT_TAG" ]; then
-              echo "롤백 대상 파일 발견: $key"
-              
-              # 해당 파일의 이전 버전 찾기 (해당 태그 버전 이전의 최신 버전)
-              CURRENT_VERSION_ID=$(aws s3api list-object-versions --bucket $BUCKET --prefix "$key" --query "Versions[?Key=='$key'] | sort_by(@, &LastModified) | reverse(@) | [0].VersionId" --output text)
-              PREVIOUS_VERSION_ID=$(aws s3api list-object-versions --bucket $BUCKET --prefix "$key" --query "Versions[?Key=='$key'] | sort_by(@, &LastModified) | reverse(@) | [1].VersionId" --output text)
-              
-              if [ -n "$PREVIOUS_VERSION_ID" ] && [ "$PREVIOUS_VERSION_ID" != "None" ] && [ "$PREVIOUS_VERSION_ID" != "$CURRENT_VERSION_ID" ]; then
-                echo "  → 이전 버전으로 롤백: $PREVIOUS_VERSION_ID"
+            # 해당 파일의 모든 버전을 가져와서 메타데이터 확인
+            aws s3api list-object-versions --bucket $BUCKET --prefix "$key" --query "Versions[?Key=='$key'] | sort_by(@, &LastModified) | reverse(@)" --output json | jq -r '.[] | .VersionId' | while read -r version_id; do
+              if [ -n "$version_id" ] && [ "$version_id" != "null" ]; then
+                # 각 버전의 메타데이터 확인
+                METADATA=$(aws s3api head-object --bucket $BUCKET --key "$key" --version-id "$version_id" --query "Metadata" --output json 2>/dev/null || echo "{}")
                 
-                # 이전 버전을 현재 버전으로 복사
-                aws s3 cp "s3://$BUCKET/$key" "s3://$BUCKET/$key" --source-version-id "$PREVIOUS_VERSION_ID"
+                # 메타데이터에서 검색 기준에 맞는 값 찾기
+                METADATA_VALUE=$(echo "$METADATA" | jq -r ".\"$SEARCH_CRITERIA\" // empty" 2>/dev/null || echo "")
                 
-                # 롤백된 파일에 롤백 태그 추가
-                ROLLBACK_TAG="rollback-$(date +%Y%m%d-%H%M%S)-from-${DEPLOYMENT_TAG}"
-                aws s3api put-object-tagging --bucket $BUCKET --key "$key" --tagging "TagSet=[{Key=deployment,Value=$ROLLBACK_TAG},{Key=rolled_back_from,Value=$DEPLOYMENT_TAG}]"
-                
-                echo "  → 롤백 완료 (새 태그: $ROLLBACK_TAG)"
-              else
-                echo "  → 이전 버전이 없습니다. 건너뜁니다."
+                if [ "$METADATA_VALUE" = "$SEARCH_VALUE" ]; then
+                  echo "✅ 대상 버전 발견: $key (버전: $version_id)"
+                  echo "   → 메타데이터 $SEARCH_CRITERIA: $METADATA_VALUE"
+                  
+                  # copy-object를 사용하여 해당 버전을 현재 버전으로 복사
+                  echo "   → 롤백 실행 중..."
+                  
+                  # 기존 메타데이터 가져오기
+                  ORIGINAL_METADATA=$(echo "$METADATA" | jq -r 'to_entries | map("\(.key)=\(.value)") | join(",")')
+                  
+                  # 롤백 메타데이터 추가
+                  ROLLBACK_TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+                  ROLLBACK_METADATA="rollback-timestamp=$ROLLBACK_TIMESTAMP,rolled-back-from=$SEARCH_VALUE,rollback-mode=$ROLLBACK_MODE"
+                  
+                  if [ -n "$ORIGINAL_METADATA" ] && [ "$ORIGINAL_METADATA" != "null" ]; then
+                    FULL_METADATA="$ORIGINAL_METADATA,$ROLLBACK_METADATA"
+                  else
+                    FULL_METADATA="$ROLLBACK_METADATA"
+                  fi
+                  
+                  # copy-object로 특정 버전을 현재 버전으로 복사
+                  aws s3api copy-object \
+                    --bucket "$BUCKET" \
+                    --key "$key" \
+                    --copy-source "$BUCKET/$key?versionId=$version_id" \
+                    --metadata "$FULL_METADATA" \
+                    --metadata-directive REPLACE
+                  
+                  if [ $? -eq 0 ]; then
+                    echo "   ✅ 롤백 성공!"
+                    ROLLBACK_COUNT=$((ROLLBACK_COUNT + 1))
+                  else
+                    echo "   ❌ 롤백 실패"
+                  fi
+                  
+                  # 첫 번째 매치에서 중단 (가장 최신 버전)
+                  break
+                fi
               fi
-            fi
+            done
           fi
         done
         
         echo ""
         echo "==================================="
         echo "롤백이 완료되었습니다!"
-        echo "롤백된 배포 태그: ${DEPLOYMENT_TAG}"
+        echo "롤백 모드: ${ROLLBACK_MODE}"
+        if [ "$ROLLBACK_MODE" = "tag" ]; then
+          echo "롤백된 배포 태그: ${DEPLOYMENT_TAG}"
+        else
+          echo "롤백된 버전: ${CUSTOM_VERSION}"
+        fi
+        echo "처리된 파일 수: ${ROLLBACK_COUNT}"
         echo "==================================="
     
     - name: Invalidate CloudFront cache after rollback
