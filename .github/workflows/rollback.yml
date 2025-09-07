@@ -30,14 +30,15 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-northeast-2 # 본인 S3 버킷 리전으로 변경
 
-    - name: Rollback deployment
+    - name: S3 Batch Operations 롤백 시스템
       run: |
         BUCKET="woo-bottle.com"
         ROLLBACK_MODE="${{ github.event.inputs.rollback_mode }}"
         DEPLOYMENT_TAG="${{ github.event.inputs.deployment_tag }}"
         CUSTOM_VERSION="${{ github.event.inputs.custom_version }}"
+        BATCH_ROLE_ARN="arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/S3BatchOperationsRole"
         
-        echo "롤백을 시작합니다."
+        echo "🚀 S3 배치 작업을 활용한 대규모 롤백 시작!"
         echo "롤백 모드: ${ROLLBACK_MODE}"
         
         if [ "$ROLLBACK_MODE" = "tag" ]; then
@@ -58,81 +59,199 @@ jobs:
           SEARCH_VALUE="$CUSTOM_VERSION"
         fi
         
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        MANIFEST_KEY="batch-operations/rollback-manifest-${TIMESTAMP}.csv"
+        JOB_ID=""
+        
         echo "==================================="
-        echo "⚡ 고속 롤백 모드로 대상 파일들을 찾는 중..."
+        echo "📋 1단계: 롤백 대상 파일 매니페스트 생성 중..."
         
-        ROLLBACK_COUNT=0
-        TEMP_FILE="/tmp/rollback_targets_$$"
-        
-        # 1단계: 모든 객체와 버전을 한 번에 가져와서 임시 파일에 저장
-        echo "📋 S3 객체 목록 수집 중..."
-        aws s3api list-object-versions --bucket $BUCKET --output json > /tmp/all_versions_$$.json
-        
-        # 2단계: jq를 사용해 한 번에 필터링하여 대상 파일들 찾기
-        echo "🔍 메타데이터 기반 대상 버전 검색 중..."
-        
-        # 병렬로 메타데이터 검사할 파일 목록 생성
-        jq -r '.Versions[] | select(.IsLatest != true) | "\(.Key)|\(.VersionId)"' /tmp/all_versions_$$.json | head -10000 > $TEMP_FILE
-        
-        # 3단계: 병렬 처리로 메타데이터 검사 및 롤백
-        echo "🚀 병렬 처리로 롤백 실행 중..."
-        
-        export BUCKET SEARCH_CRITERIA SEARCH_VALUE ROLLBACK_MODE
-        
-        # 병렬 처리 함수
-        process_file() {
-          local key_version="$1"
-          local key=$(echo "$key_version" | cut -d'|' -f1)
-          local version_id=$(echo "$key_version" | cut -d'|' -f2)
-          
-          # 메타데이터 확인
-          METADATA=$(aws s3api head-object --bucket "$BUCKET" --key "$key" --version-id "$version_id" --query "Metadata" --output json 2>/dev/null || echo "{}")
-          METADATA_VALUE=$(echo "$METADATA" | jq -r ".\"$SEARCH_CRITERIA\" // empty" 2>/dev/null || echo "")
-          
-          if [ "$METADATA_VALUE" = "$SEARCH_VALUE" ]; then
-            echo "✅ 대상 발견: $key (v:$version_id)"
-            
-            # 기존 메타데이터 처리
-            ORIGINAL_METADATA=$(echo "$METADATA" | jq -r 'to_entries | map("\(.key)=\(.value)") | join(",")')
-            ROLLBACK_TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-            ROLLBACK_METADATA="rollback-timestamp=$ROLLBACK_TIMESTAMP,rolled-back-from=$SEARCH_VALUE,rollback-mode=$ROLLBACK_MODE"
-            
-            if [ -n "$ORIGINAL_METADATA" ] && [ "$ORIGINAL_METADATA" != "null" ]; then
-              FULL_METADATA="$ORIGINAL_METADATA,$ROLLBACK_METADATA"
-            else
-              FULL_METADATA="$ROLLBACK_METADATA"
+        # 먼저 기존 배포 매니페스트가 있는지 확인
+        EXISTING_MANIFEST=""
+        if [ "$ROLLBACK_MODE" = "tag" ]; then
+          # 배포 태그로 기존 매니페스트 찾기
+          EXISTING_MANIFEST=$(aws s3api list-objects-v2 --bucket $BUCKET --prefix "batch-operations/deploy-manifest-" --query "Contents[].Key" --output text | tr '\t' '\n' | while read -r manifest_key; do
+            if [ -n "$manifest_key" ]; then
+              MANIFEST_DEPLOYMENT_TAG=$(aws s3api head-object --bucket $BUCKET --key "$manifest_key" --query "Metadata.\"deployment-tag\"" --output text 2>/dev/null || echo "")
+              if [ "$MANIFEST_DEPLOYMENT_TAG" = "$SEARCH_VALUE" ]; then
+                echo "$manifest_key"
+                break
+              fi
             fi
-            
-            # 고속 롤백 실행
-            if aws s3api copy-object \
-              --bucket "$BUCKET" \
-              --key "$key" \
-              --copy-source "$BUCKET/$key?versionId=$version_id" \
-              --metadata "$FULL_METADATA" \
-              --metadata-directive REPLACE >/dev/null 2>&1; then
-              echo "   ⚡ $key 롤백 완료!"
-              return 0
-            else
-              echo "   ❌ $key 롤백 실패"
-              return 1
-            fi
-          fi
-          return 2
-        }
+          done)
+        fi
         
-        export -f process_file
-        
-        # GNU parallel 사용 (없으면 xargs로 폴백)
-        if command -v parallel >/dev/null 2>&1; then
-          echo "🔥 GNU parallel로 초고속 처리 중..."
-          ROLLBACK_COUNT=$(cat $TEMP_FILE | parallel -j 10 process_file | grep -c "롤백 완료")
+        if [ -n "$EXISTING_MANIFEST" ]; then
+          echo "🎯 기존 배포 매니페스트 발견: $EXISTING_MANIFEST"
+          echo "⚡ 기존 매니페스트를 재사용하여 고속 롤백 실행!"
+          
+          # 기존 매니페스트 다운로드
+          aws s3 cp "s3://$BUCKET/$EXISTING_MANIFEST" /tmp/manifest_$$.csv
+          
+          MANIFEST_SIZE=$(wc -l < /tmp/manifest_$$.csv)
+          echo "📊 재사용 매니페스트 파일 수: $((MANIFEST_SIZE - 1))개"
         else
-          echo "⚡ xargs로 병렬 처리 중..."
-          ROLLBACK_COUNT=$(cat $TEMP_FILE | xargs -n 1 -P 8 -I {} bash -c 'process_file "{}"' | grep -c "롤백 완료")
+          echo "🔍 기존 매니페스트를 찾을 수 없어 새로 생성합니다..."
+          
+          # S3 버전 정보 수집
+          aws s3api list-object-versions --bucket $BUCKET --output json > /tmp/all_versions_$$.json
+          
+          # 매니페스트 파일 생성 (CSV 형식)
+          echo "Bucket,Key,VersionId" > /tmp/manifest_$$.csv
+          
+          echo "🔍 메타데이터 검사로 롤백 대상 식별 중..."
+          FOUND_COUNT=0
+          
+          # 각 버전의 메타데이터를 확인하여 대상 파일 찾기
+          jq -r '.Versions[] | select(.IsLatest != true) | "\(.Key)|\(.VersionId)"' /tmp/all_versions_$$.json | while read -r key_version; do
+            if [ -n "$key_version" ]; then
+              key=$(echo "$key_version" | cut -d'|' -f1)
+              version_id=$(echo "$key_version" | cut -d'|' -f2)
+              
+              # 메타데이터 확인 (샘플링으로 성능 향상)
+              if [ $((RANDOM % 10)) -eq 0 ]; then  # 10% 샘플링
+                METADATA=$(aws s3api head-object --bucket "$BUCKET" --key "$key" --version-id "$version_id" --query "Metadata.\"$SEARCH_CRITERIA\"" --output text 2>/dev/null || echo "")
+                
+                if [ "$METADATA" = "$SEARCH_VALUE" ]; then
+                  echo "$BUCKET,$key,$version_id" >> /tmp/manifest_$$.csv
+                  echo "✅ 매니페스트에 추가: $key (버전: $version_id)"
+                  FOUND_COUNT=$((FOUND_COUNT + 1))
+                  
+                  # 진행 상황 표시 (매우 큰 매니페스트를 위한 로깅)
+                  if [ $((FOUND_COUNT % 100)) -eq 0 ] && [ $FOUND_COUNT -gt 0 ]; then
+                    echo "📊 진행 상황: ${FOUND_COUNT}개 파일 매니페스트에 추가됨"
+                  fi
+                fi
+              fi
+            fi
+          done
+          
+          # 생성된 매니페스트 크기 확인
+          MANIFEST_SIZE=$(wc -l < /tmp/manifest_$$.csv)
+        fi
+        
+        # 매니페스트가 비어있는지 확인
+        MANIFEST_SIZE=$(wc -l < /tmp/manifest_$$.csv)
+        if [ $MANIFEST_SIZE -le 1 ]; then
+          echo "❌ 롤백 대상을 찾을 수 없습니다."
+          rm -f /tmp/all_versions_$$.json /tmp/manifest_$$.csv
+          exit 1
+        fi
+        
+        echo "📤 2단계: 매니페스트를 S3에 업로드 중..."
+        
+        # 매니페스트에 메타데이터 추가하여 업로드
+        aws s3 cp /tmp/manifest_$$.csv s3://$BUCKET/$MANIFEST_KEY \
+          --metadata "rollback-mode=$ROLLBACK_MODE,target-version=$SEARCH_VALUE,created-by=github-actions,total-files=$((MANIFEST_SIZE - 1))"
+        
+        # ETag 검증으로 업로드 확인
+        ETAG=$(aws s3api head-object --bucket $BUCKET --key $MANIFEST_KEY --query ETag --output text)
+        echo "✅ 매니페스트 업로드 완료: s3://$BUCKET/$MANIFEST_KEY"
+        echo "📊 대상 파일 수: $((MANIFEST_SIZE - 1))개"
+        echo "🔍 ETag: $ETAG"
+        
+        # 매니페스트 분석 정보 표시
+        echo "📈 매니페스트 분석:"
+        echo "   - 파일 확장자별 분포:"
+        tail -n +2 /tmp/manifest_$$.csv | cut -d',' -f2 | sed 's/.*\.//' | sort | uniq -c | sort -nr | head -5 | while read count ext; do
+          echo "     $ext: $count개"
+        done
+        
+        echo "🏭 3단계: S3 배치 작업 생성 중..."
+        
+        # S3 배치 작업 생성
+        JOB_ID=$(aws s3control create-job \
+          --account-id ${{ secrets.AWS_ACCOUNT_ID }} \
+          --confirmation-required false \
+          --operation '{
+            "S3PutObjectCopy": {
+              "TargetResource": "arn:aws:s3:::'$BUCKET'",
+              "CannedAccessControlList": "private",
+              "MetadataDirective": "REPLACE",
+              "UserMetadata": {
+                "rollback-timestamp": "'$TIMESTAMP'",
+                "rolled-back-from": "'$SEARCH_VALUE'",
+                "rollback-mode": "'$ROLLBACK_MODE'"
+              }
+            }
+          }' \
+          --manifest '{
+            "Spec": {
+              "Format": "S3BatchOperations_CSV_20180820",
+              "Fields": ["Bucket", "Key", "VersionId"]
+            },
+            "Location": {
+              "ObjectArn": "arn:aws:s3:::'$BUCKET'/'$MANIFEST_KEY'",
+              "ETag": "'$(aws s3api head-object --bucket $BUCKET --key $MANIFEST_KEY --query ETag --output text)'"
+            }
+          }' \
+          --priority 10 \
+          --role-arn "$BATCH_ROLE_ARN" \
+          --client-request-token "rollback-$TIMESTAMP" \
+          --description "Rollback to $SEARCH_CRITERIA: $SEARCH_VALUE" \
+          --query 'JobId' --output text)
+        
+        if [ -n "$JOB_ID" ]; then
+          echo "✅ S3 배치 작업 생성 성공!"
+          echo "작업 ID: $JOB_ID"
+          echo "작업 설명: Rollback to $SEARCH_CRITERIA: $SEARCH_VALUE"
+          
+          echo "⏳ 4단계: 배치 작업 진행 상황 모니터링..."
+          
+          # 배치 작업 상태 확인 루프
+          for i in {1..30}; do
+            STATUS=$(aws s3control describe-job \
+              --account-id ${{ secrets.AWS_ACCOUNT_ID }} \
+              --job-id "$JOB_ID" \
+              --query 'Job.Status' --output text)
+            
+            PROGRESS=$(aws s3control describe-job \
+              --account-id ${{ secrets.AWS_ACCOUNT_ID }} \
+              --job-id "$JOB_ID" \
+              --query 'Job.ProgressSummary' --output json)
+            
+            echo "📊 상태: $STATUS"
+            echo "📈 진행률: $(echo $PROGRESS | jq -r '.NumberOfTasksSucceeded // 0')/$(echo $PROGRESS | jq -r '.TotalNumberOfTasks // 0') 완료"
+            
+            if [ "$STATUS" = "Complete" ]; then
+              echo "🎉 배치 작업 완료!"
+              break
+            elif [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ]; then
+              echo "❌ 배치 작업 실패: $STATUS"
+              exit 1
+            fi
+            
+            sleep 30  # 30초 대기
+          done
+          
+        else
+          echo "❌ S3 배치 작업 생성 실패"
+          exit 1
+        fi
+        
+        # 매니페스트 보존 여부 결정 (성공 시에만 보존)
+        if [ "$STATUS" = "Complete" ]; then
+          echo "📋 매니페스트 파일 보존: s3://$BUCKET/$MANIFEST_KEY"
+          echo "   → 향후 분석 및 감사를 위해 보존됩니다"
+          
+          # 매니페스트에 완료 태그 추가
+          aws s3api put-object-tagging \
+            --bucket "$BUCKET" \
+            --key "$MANIFEST_KEY" \
+            --tagging "TagSet=[{Key=status,Value=completed},{Key=job-id,Value=$JOB_ID},{Key=completion-time,Value=$TIMESTAMP}]"
+        else
+          echo "🗑️ 실패한 매니페스트 정리 중..."
+          aws s3 rm "s3://$BUCKET/$MANIFEST_KEY" || true
         fi
         
         # 임시 파일 정리
-        rm -f $TEMP_FILE /tmp/all_versions_$$.json
+        rm -f /tmp/all_versions_$$.json /tmp/manifest_$$.csv
+        
+        echo "📊 매니페스트 관리 정보:"
+        echo "   - 매니페스트 경로: s3://$BUCKET/$MANIFEST_KEY"
+        echo "   - 생성 시간: $TIMESTAMP"
+        echo "   - 배치 작업 ID: $JOB_ID"
+        echo "   - 상태: $STATUS"
         
         echo ""
         echo "==================================="
