@@ -59,66 +59,80 @@ jobs:
         fi
         
         echo "==================================="
-        echo "S3에서 대상 파일들을 찾는 중..."
+        echo "⚡ 고속 롤백 모드로 대상 파일들을 찾는 중..."
         
         ROLLBACK_COUNT=0
+        TEMP_FILE="/tmp/rollback_targets_$$"
         
-        # S3에서 모든 객체를 검사하여 메타데이터 기반으로 대상 버전 찾기
-        aws s3api list-objects-v2 --bucket $BUCKET --query "Contents[].Key" --output text | tr '\t' '\n' | while read -r key; do
-          if [ -n "$key" ] && [ "$key" != "None" ]; then
-            echo "검사 중: $key"
+        # 1단계: 모든 객체와 버전을 한 번에 가져와서 임시 파일에 저장
+        echo "📋 S3 객체 목록 수집 중..."
+        aws s3api list-object-versions --bucket $BUCKET --output json > /tmp/all_versions_$$.json
+        
+        # 2단계: jq를 사용해 한 번에 필터링하여 대상 파일들 찾기
+        echo "🔍 메타데이터 기반 대상 버전 검색 중..."
+        
+        # 병렬로 메타데이터 검사할 파일 목록 생성
+        jq -r '.Versions[] | select(.IsLatest != true) | "\(.Key)|\(.VersionId)"' /tmp/all_versions_$$.json | head -100 > $TEMP_FILE
+        
+        # 3단계: 병렬 처리로 메타데이터 검사 및 롤백
+        echo "🚀 병렬 처리로 롤백 실행 중..."
+        
+        export BUCKET SEARCH_CRITERIA SEARCH_VALUE ROLLBACK_MODE
+        
+        # 병렬 처리 함수
+        process_file() {
+          local key_version="$1"
+          local key=$(echo "$key_version" | cut -d'|' -f1)
+          local version_id=$(echo "$key_version" | cut -d'|' -f2)
+          
+          # 메타데이터 확인
+          METADATA=$(aws s3api head-object --bucket "$BUCKET" --key "$key" --version-id "$version_id" --query "Metadata" --output json 2>/dev/null || echo "{}")
+          METADATA_VALUE=$(echo "$METADATA" | jq -r ".\"$SEARCH_CRITERIA\" // empty" 2>/dev/null || echo "")
+          
+          if [ "$METADATA_VALUE" = "$SEARCH_VALUE" ]; then
+            echo "✅ 대상 발견: $key (v:$version_id)"
             
-            # 해당 파일의 모든 버전을 가져와서 메타데이터 확인
-            aws s3api list-object-versions --bucket $BUCKET --prefix "$key" --query "Versions[?Key=='$key'] | sort_by(@, &LastModified) | reverse(@)" --output json | jq -r '.[] | .VersionId' | while read -r version_id; do
-              if [ -n "$version_id" ] && [ "$version_id" != "null" ]; then
-                # 각 버전의 메타데이터 확인
-                METADATA=$(aws s3api head-object --bucket $BUCKET --key "$key" --version-id "$version_id" --query "Metadata" --output json 2>/dev/null || echo "{}")
-                
-                # 메타데이터에서 검색 기준에 맞는 값 찾기
-                METADATA_VALUE=$(echo "$METADATA" | jq -r ".\"$SEARCH_CRITERIA\" // empty" 2>/dev/null || echo "")
-                
-                if [ "$METADATA_VALUE" = "$SEARCH_VALUE" ]; then
-                  echo "✅ 대상 버전 발견: $key (버전: $version_id)"
-                  echo "   → 메타데이터 $SEARCH_CRITERIA: $METADATA_VALUE"
-                  
-                  # copy-object를 사용하여 해당 버전을 현재 버전으로 복사
-                  echo "   → 롤백 실행 중..."
-                  
-                  # 기존 메타데이터 가져오기
-                  ORIGINAL_METADATA=$(echo "$METADATA" | jq -r 'to_entries | map("\(.key)=\(.value)") | join(",")')
-                  
-                  # 롤백 메타데이터 추가
-                  ROLLBACK_TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-                  ROLLBACK_METADATA="rollback-timestamp=$ROLLBACK_TIMESTAMP,rolled-back-from=$SEARCH_VALUE,rollback-mode=$ROLLBACK_MODE"
-                  
-                  if [ -n "$ORIGINAL_METADATA" ] && [ "$ORIGINAL_METADATA" != "null" ]; then
-                    FULL_METADATA="$ORIGINAL_METADATA,$ROLLBACK_METADATA"
-                  else
-                    FULL_METADATA="$ROLLBACK_METADATA"
-                  fi
-                  
-                  # copy-object로 특정 버전을 현재 버전으로 복사
-                  aws s3api copy-object \
-                    --bucket "$BUCKET" \
-                    --key "$key" \
-                    --copy-source "$BUCKET/$key?versionId=$version_id" \
-                    --metadata "$FULL_METADATA" \
-                    --metadata-directive REPLACE
-                  
-                  if [ $? -eq 0 ]; then
-                    echo "   ✅ 롤백 성공!"
-                    ROLLBACK_COUNT=$((ROLLBACK_COUNT + 1))
-                  else
-                    echo "   ❌ 롤백 실패"
-                  fi
-                  
-                  # 첫 번째 매치에서 중단 (가장 최신 버전)
-                  break
-                fi
-              fi
-            done
+            # 기존 메타데이터 처리
+            ORIGINAL_METADATA=$(echo "$METADATA" | jq -r 'to_entries | map("\(.key)=\(.value)") | join(",")')
+            ROLLBACK_TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+            ROLLBACK_METADATA="rollback-timestamp=$ROLLBACK_TIMESTAMP,rolled-back-from=$SEARCH_VALUE,rollback-mode=$ROLLBACK_MODE"
+            
+            if [ -n "$ORIGINAL_METADATA" ] && [ "$ORIGINAL_METADATA" != "null" ]; then
+              FULL_METADATA="$ORIGINAL_METADATA,$ROLLBACK_METADATA"
+            else
+              FULL_METADATA="$ROLLBACK_METADATA"
+            fi
+            
+            # 고속 롤백 실행
+            if aws s3api copy-object \
+              --bucket "$BUCKET" \
+              --key "$key" \
+              --copy-source "$BUCKET/$key?versionId=$version_id" \
+              --metadata "$FULL_METADATA" \
+              --metadata-directive REPLACE >/dev/null 2>&1; then
+              echo "   ⚡ $key 롤백 완료!"
+              return 0
+            else
+              echo "   ❌ $key 롤백 실패"
+              return 1
+            fi
           fi
-        done
+          return 2
+        }
+        
+        export -f process_file
+        
+        # GNU parallel 사용 (없으면 xargs로 폴백)
+        if command -v parallel >/dev/null 2>&1; then
+          echo "🔥 GNU parallel로 초고속 처리 중..."
+          ROLLBACK_COUNT=$(cat $TEMP_FILE | parallel -j 10 process_file | grep -c "롤백 완료")
+        else
+          echo "⚡ xargs로 병렬 처리 중..."
+          ROLLBACK_COUNT=$(cat $TEMP_FILE | xargs -n 1 -P 8 -I {} bash -c 'process_file "{}"' | grep -c "롤백 완료")
+        fi
+        
+        # 임시 파일 정리
+        rm -f $TEMP_FILE /tmp/all_versions_$$.json
         
         echo ""
         echo "==================================="
