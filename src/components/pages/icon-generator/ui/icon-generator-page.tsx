@@ -77,7 +77,7 @@ export const IconGeneratorPage: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            앱 아이콘 생성기 V2
+            앱 아이콘 생성기 V3
           </h1>
           <p className="text-gray-600 text-lg">
             하나의 이미지로 iOS, Android, Web용 아이콘을 한 번에 생성하세요
