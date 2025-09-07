@@ -56,9 +56,48 @@ jobs:
       run: |
         pnpm build # (선택사항, React/Vue/Angular 프로젝트의 경우)
     
-    - name: Sync files to S3 bucket
-      run:  |        
-        aws s3 sync ./out s3://woo-bottle.com/
+    - name: Generate deployment tag
+      run: |
+        # 배포 태그 생성 (날짜-시간-커밋해시)
+        DEPLOYMENT_TAG="deploy-$(date +%Y%m%d-%H%M%S)-$(echo $GITHUB_SHA | cut -c1-7)"
+        echo "DEPLOYMENT_TAG=$DEPLOYMENT_TAG" >> $GITHUB_ENV
+        echo "Generated deployment tag: $DEPLOYMENT_TAG"
+    
+    - name: Sync files to S3 bucket with deployment tags
+      run: |
+        BUCKET="woo-bottle.com"
+        DEPLOYMENT_TAG="${{ env.DEPLOYMENT_TAG }}"
+        
+        echo "Deploying with tag: $DEPLOYMENT_TAG"
+        
+        # 먼저 파일들을 업로드하면서 태그를 추가합니다
+        find ./out -type f | while read -r file; do
+          # 상대 경로로 변환 (./out/ 제거)
+          s3_key=${file#./out/}
+          
+          echo "Uploading: $s3_key with tag: $DEPLOYMENT_TAG"
+          
+          # 파일 확장자에 따른 Content-Type 설정
+          case "$s3_key" in
+            *.html) content_type="text/html" ;;
+            *.css)  content_type="text/css" ;;
+            *.js)   content_type="application/javascript" ;;
+            *.json) content_type="application/json" ;;
+            *.svg)  content_type="image/svg+xml" ;;
+            *.png)  content_type="image/png" ;;
+            *.jpg|*.jpeg) content_type="image/jpeg" ;;
+            *.ico)  content_type="image/x-icon" ;;
+            *)      content_type="binary/octet-stream" ;;
+          esac
+          
+          # 파일 업로드 with 태그
+          aws s3 cp "$file" "s3://$BUCKET/$s3_key" \
+            --content-type "$content_type" \
+            --tagging "deployment=$DEPLOYMENT_TAG"
+        done
+        
+        echo "Deployment completed with tag: $DEPLOYMENT_TAG"
+        echo "To rollback this deployment, use tag: $DEPLOYMENT_TAG"
     
     - name: Invalidate CloudFront cache
       run: |

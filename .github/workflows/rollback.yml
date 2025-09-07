@@ -3,8 +3,8 @@ name: Rollback Full Website Deployment
 on:
   workflow_dispatch:
     inputs:
-      version_id:
-        description: 'Rollback할 배포의 Version ID (해당 배포의 모든 파일이 이 Version ID를 가짐)'
+      deployment_tag:
+        description: 'Rollback할 배포 태그 (예: deploy-20241215-143022-a1b2c3d)'
         required: true
 
 jobs:
@@ -19,30 +19,57 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-northeast-2 # 본인 S3 버킷 리전으로 변경
 
-    - name: Rollback all files to previous version
+    - name: Rollback deployment by tag
       run: |
         BUCKET="woo-bottle.com"
-        VERSION_ID="${{ github.event.inputs.version_id }}"
+        DEPLOYMENT_TAG="${{ github.event.inputs.deployment_tag }}"
         
-        echo "롤백을 시작합니다. 버전 ID: ${VERSION_ID}"
+        echo "롤백을 시작합니다. 배포 태그: ${DEPLOYMENT_TAG}"
         
-        # 특정 버전 ID에 해당하는 모든 객체를 찾습니다.
-        echo "해당 버전 ID의 파일들을 찾는 중..."
-        aws s3api list-object-versions --bucket $BUCKET --query "Versions[?VersionId=='$VERSION_ID'].[Key]" --output text | while read -r key; do
+        # 1. 해당 태그를 가진 모든 파일들을 찾습니다
+        echo "배포 태그 '${DEPLOYMENT_TAG}'에 해당하는 파일들을 찾는 중..."
+        
+        # S3에서 해당 태그를 가진 모든 객체 찾기
+        aws s3api list-objects-v2 --bucket $BUCKET --query "Contents[].Key" --output text | tr '\t' '\n' | while read -r key; do
           if [ -n "$key" ] && [ "$key" != "None" ]; then
-            echo "처리 중인 파일: $key"
+            # 각 객체의 태그를 확인
+            OBJECT_TAGS=$(aws s3api get-object-tagging --bucket $BUCKET --key "$key" --query "TagSet[?Key=='deployment'].Value" --output text 2>/dev/null || echo "")
             
-            # 해당 파일의 모든 버전을 시간순으로 정렬하여 가져옵니다 (최신순)
-            PREVIOUS_VERSION_ID=$(aws s3api list-object-versions --bucket $BUCKET --prefix "$key" --query "Versions[?Key=='$key'] | sort_by(@, &LastModified) | reverse(@) | [1].VersionId" --output text)
-            
-            if [ -n "$PREVIOUS_VERSION_ID" ] && [ "$PREVIOUS_VERSION_ID" != "None" ]; then
-              echo "파일: $key, 이전 버전 ID로 롤백: $PREVIOUS_VERSION_ID"
-              # 이전 버전의 객체를 현재 버전으로 복사합니다.
-              aws s3 cp "s3://$BUCKET/$key" "s3://$BUCKET/$key" --source-version-id "$PREVIOUS_VERSION_ID"
-            else
-              echo "파일: $key는 이전 버전이 없습니다. 건너뜁니다."
+            if [ "$OBJECT_TAGS" = "$DEPLOYMENT_TAG" ]; then
+              echo "롤백 대상 파일 발견: $key"
+              
+              # 해당 파일의 이전 버전 찾기 (해당 태그 버전 이전의 최신 버전)
+              CURRENT_VERSION_ID=$(aws s3api list-object-versions --bucket $BUCKET --prefix "$key" --query "Versions[?Key=='$key'] | sort_by(@, &LastModified) | reverse(@) | [0].VersionId" --output text)
+              PREVIOUS_VERSION_ID=$(aws s3api list-object-versions --bucket $BUCKET --prefix "$key" --query "Versions[?Key=='$key'] | sort_by(@, &LastModified) | reverse(@) | [1].VersionId" --output text)
+              
+              if [ -n "$PREVIOUS_VERSION_ID" ] && [ "$PREVIOUS_VERSION_ID" != "None" ] && [ "$PREVIOUS_VERSION_ID" != "$CURRENT_VERSION_ID" ]; then
+                echo "  → 이전 버전으로 롤백: $PREVIOUS_VERSION_ID"
+                
+                # 이전 버전을 현재 버전으로 복사
+                aws s3 cp "s3://$BUCKET/$key" "s3://$BUCKET/$key" --source-version-id "$PREVIOUS_VERSION_ID"
+                
+                # 롤백된 파일에 롤백 태그 추가
+                ROLLBACK_TAG="rollback-$(date +%Y%m%d-%H%M%S)-from-${DEPLOYMENT_TAG}"
+                aws s3api put-object-tagging --bucket $BUCKET --key "$key" --tagging "TagSet=[{Key=deployment,Value=$ROLLBACK_TAG},{Key=rolled_back_from,Value=$DEPLOYMENT_TAG}]"
+                
+                echo "  → 롤백 완료 (새 태그: $ROLLBACK_TAG)"
+              else
+                echo "  → 이전 버전이 없습니다. 건너뜁니다."
+              fi
             fi
           fi
         done
         
-        echo "롤백이 완료되었습니다."
+        echo ""
+        echo "==================================="
+        echo "롤백이 완료되었습니다!"
+        echo "롤백된 배포 태그: ${DEPLOYMENT_TAG}"
+        echo "==================================="
+    
+    - name: Invalidate CloudFront cache after rollback
+      run: |
+        echo "CloudFront 캐시를 무효화하는 중..."
+        aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+        echo "CloudFront 캐시 무효화가 완료되었습니다."
