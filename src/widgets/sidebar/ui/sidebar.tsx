@@ -16,7 +16,8 @@ import {
   BarChart3,
   Smartphone,
   Home as HomeIcon,
-  Image
+  Image,
+  Coins
 } from 'lucide-react';
 import { ThemeToggle } from '../../../shared/ui/theme-toggle';
 
@@ -56,6 +57,13 @@ const menuItems: MenuItem[] = [
     href: '/icon-generator',
     icon: Smartphone,
     description: '앱 아이콘 자동 생성'
+  },
+  {
+    id: 'currency-converter',
+    label: '환율 변환기',
+    href: '/currency-converter',
+    icon: Coins,
+    description: '통화 ↔ 통화 변환'
   },
   {
     id: 'png-to-webp',
