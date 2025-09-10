@@ -10,7 +10,6 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-
     "s3:check": "bash scripts/check-s3-deployment.sh",
     "s3:setup": "bash scripts/setup-s3-spa-routing.sh",
     "cloudfront:setup": "bash scripts/setup-cloudfront-spa.sh"
@@ -21,6 +20,7 @@
     "jszip": "^3.10.1",
     "lucide-react": "^0.539.0",
     "next": "15.4.6",
+    "qrcodejs2": "^0.0.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "tailwind-merge": "^3.3.1"

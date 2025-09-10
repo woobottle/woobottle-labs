@@ -17,7 +17,8 @@ import {
   Smartphone,
   Home as HomeIcon,
   Image,
-  Coins
+  Coins,
+  QrCode
 } from 'lucide-react';
 import { ThemeToggle } from '../../../shared/ui/theme-toggle';
 
@@ -64,6 +65,13 @@ const menuItems: MenuItem[] = [
     href: '/currency-converter',
     icon: Coins,
     description: '통화 ↔ 통화 변환'
+  },
+  {
+    id: 'qr-code-generator',
+    label: 'QR 코드 생성기',
+    href: '/qr-code-generator',
+    icon: QrCode,
+    description: '텍스트/URL로 QR 생성'
   },
   {
     id: 'png-to-webp',
