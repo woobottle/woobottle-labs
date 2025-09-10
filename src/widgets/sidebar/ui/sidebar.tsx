@@ -15,7 +15,8 @@ import {
   Clock,
   BarChart3,
   Smartphone,
-  Home as HomeIcon
+  Home as HomeIcon,
+  Image
 } from 'lucide-react';
 import { ThemeToggle } from '../../../shared/ui/theme-toggle';
 
@@ -55,6 +56,13 @@ const menuItems: MenuItem[] = [
     href: '/icon-generator',
     icon: Smartphone,
     description: '앱 아이콘 자동 생성'
+  },
+  {
+    id: 'png-to-webp',
+    label: 'PNG → WebP',
+    href: '/png-to-webp',
+    icon: Image,
+    description: 'PNG 이미지를 WebP로 변환'
   },
   {
     id: 'area-converter',
