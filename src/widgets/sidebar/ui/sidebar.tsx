@@ -137,8 +137,9 @@ export const Sidebar: React.FC = () => {
 
       {/* Sidebar */}
       <div className={`
-        fixed left-0 top-0 h-full w-64 bg-white/90 backdrop-blur-lg border-r border-white/30 shadow-xl z-40
+        fixed left-0 top-0 w-64 h-[100dvh] bg-white/90 backdrop-blur-lg border-r border-white/30 shadow-xl z-40
         dark:bg-gray-900/90 dark:border-gray-700/30
+        overflow-y-auto overscroll-contain
         transform transition-transform duration-300 ease-in-out
         lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
