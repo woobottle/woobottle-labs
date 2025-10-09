@@ -3,12 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  FileText, 
-  Calculator, 
-  Settings, 
-  Info, 
-  Menu, 
+import {
+  FileText,
+  Calculator,
+  Settings,
+  Info,
+  Menu,
   X,
   Home,
   Hash,
@@ -18,7 +18,8 @@ import {
   Home as HomeIcon,
   Image,
   Coins,
-  QrCode
+  QrCode,
+  UserCheck
 } from 'lucide-react';
 import { ThemeToggle } from '../../../shared/ui/theme-toggle';
 
@@ -72,6 +73,13 @@ const menuItems: MenuItem[] = [
     href: '/qr-code-generator',
     icon: QrCode,
     description: '텍스트/URL로 QR 생성'
+  },
+  {
+    id: 'name-generator',
+    label: '아이 이름 작명기',
+    href: '/name-generator',
+    icon: UserCheck,
+    description: '아름다운 이름 추천'
   },
   {
     id: 'png-to-webp',

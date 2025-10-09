@@ -11,7 +11,7 @@ import { Input } from 'shared/ui/input';
 import 'qrcodejs2';
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var QRCode: any;
 }
 
