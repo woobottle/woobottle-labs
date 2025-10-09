@@ -33,4 +33,13 @@ export const iconSizes: IconSize[] = [
   { name: 'apple-touch-icon-180', size: 180, description: 'Apple Touch Icon', platform: 'web' },
   { name: 'android-chrome-192', size: 192, description: 'Android Chrome 192x192', platform: 'web' },
   { name: 'android-chrome-512', size: 512, description: 'Android Chrome 512x512', platform: 'web' },
+
+  // macOS Sizes
+  { name: 'icon_16x16', size: 16, description: 'Small Dock Icon', platform: 'macos' },
+  { name: 'icon_32x32', size: 32, description: 'Large Dock Icon', platform: 'macos' },
+  { name: 'icon_64x64', size: 64, description: 'Small App Icon', platform: 'macos' },
+  { name: 'icon_128x128', size: 128, description: 'App Icon', platform: 'macos' },
+  { name: 'icon_256x256', size: 256, description: 'Standard App Icon', platform: 'macos' },
+  { name: 'icon_512x512', size: 512, description: 'App Icon @2x', platform: 'macos' },
+  { name: 'icon_1024x1024', size: 1024, description: 'App Store', platform: 'macos' },
 ];

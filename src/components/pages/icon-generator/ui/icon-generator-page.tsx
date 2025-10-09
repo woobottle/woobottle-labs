@@ -155,7 +155,7 @@ export const IconGeneratorPage: React.FC = () => {
               </h2>
               
               <div className="space-y-3">
-                {(['ios', 'android', 'web'] as Platform[]).map((platform) => (
+                {(['ios', 'android', 'web', 'macos'] as Platform[]).map((platform) => (
                   <button
                     key={platform}
                     onClick={() => togglePlatform(platform)}
