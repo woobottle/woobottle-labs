@@ -3,11 +3,11 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
-  output: 'export',
+  // output: 'export', // API routes 사용을 위해 static export 제거
   trailingSlash: true,
   images: {
     domains: [],
-    unoptimized: true, // static export에서 필요
+    unoptimized: false,
   },
   eslint: {
     ignoreDuringBuilds: true,

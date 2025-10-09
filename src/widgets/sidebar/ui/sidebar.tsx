@@ -155,12 +155,12 @@ export const Sidebar: React.FC = () => {
       <div className={`
         fixed left-0 top-0 w-64 h-[100dvh] bg-white/90 backdrop-blur-lg border-r border-white/30 shadow-xl z-40
         dark:bg-gray-900/90 dark:border-gray-700/30
-        overflow-y-auto overscroll-contain
+        flex flex-col
         transform transition-transform duration-300 ease-in-out
         lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Header */}
-        <div className="p-6 border-b border-gray-200/50 dark:border-gray-700/50">
+        <div className="p-6 border-b border-gray-200/50 dark:border-gray-700/50 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600">
               <Hash className="w-6 h-6 text-white" />
@@ -173,12 +173,12 @@ export const Sidebar: React.FC = () => {
         </div>
 
         {/* Navigation Menu */}
-        <nav className="p-4">
+        <nav className="flex-1 overflow-y-auto overscroll-contain p-4">
           <div className="space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
-              
+
               return (
                 <Link
                   key={item.id}
@@ -186,16 +186,16 @@ export const Sidebar: React.FC = () => {
                   onClick={() => setIsOpen(false)}
                   className={`
                     w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-[1.02]' 
+                    ${isActive
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-[1.02]'
                       : 'text-gray-700 hover:bg-white/60 hover:shadow-md dark:text-gray-300 dark:hover:bg-gray-800/60'
                     }
                   `}
                 >
                   <div className={`
                     p-2 rounded-lg transition-colors duration-200
-                    ${isActive 
-                      ? 'bg-white/20' 
+                    ${isActive
+                      ? 'bg-white/20'
                       : 'bg-gray-100 dark:bg-gray-800'
                     }
                   `}>
@@ -217,16 +217,19 @@ export const Sidebar: React.FC = () => {
           </div>
         </nav>
 
-        {/* Theme Toggle */}
-        <div className="absolute bottom-20 left-0 right-0 p-4">
-          <ThemeToggle />
-        </div>
+        {/* Bottom Section */}
+        <div className="flex-shrink-0 border-t border-gray-200/50 dark:border-gray-700/50">
+          {/* Theme Toggle */}
+          <div className="p-4">
+            <ThemeToggle />
+          </div>
 
-        {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200/50 dark:border-gray-700/50">
-          <div className="text-center text-xs text-gray-500 dark:text-gray-400">
-            <p>Version 1.0.0</p>
-            <p className="mt-1">© 2024 WooBottle Labs</p>
+          {/* Footer */}
+          <div className="px-4 pb-4">
+            <div className="text-center text-xs text-gray-500 dark:text-gray-400">
+              <p>Version 1.0.0</p>
+              <p className="mt-1">© 2024 WooBottle Labs</p>
+            </div>
           </div>
         </div>
       </div>

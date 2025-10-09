@@ -16,6 +16,7 @@ import { AppLayout } from 'widgets/app-layout';
 import { Button } from 'shared/ui/button';
 import { Card } from 'shared/ui/card';
 import { Input } from 'shared/ui/input';
+import { generateNameCombinations, filterNamesByOptions, type NameData, type NameGenerationOptions } from 'entities/name';
 
 type Gender = 'male' | 'female';
 type CalendarType = 'solar' | 'lunar';
@@ -65,6 +66,16 @@ interface NameApplicationData {
   referralSource: string;
 }
 
+interface GeneratedNameResult {
+  id: string;
+  fullName: string; // 성씨 + 이름
+  givenName: string; // 이름 부분
+  surname: string; // 성씨
+  meaning?: string;
+  score: number; // 1-10 점수
+  reason: string; // 추천 이유
+}
+
 export const NameGeneratorPage: React.FC = () => {
   const [formData, setFormData] = useState<NameApplicationData>({
     calendarType: 'solar',
@@ -100,7 +111,8 @@ export const NameGeneratorPage: React.FC = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [generatedNames, setGeneratedNames] = useState<GeneratedNameResult[]>([]);
+  const [showResults, setShowResults] = useState(false);
   const [errors, setErrors] = useState<Partial<NameApplicationData>>({});
 
   const updateFormData = (field: keyof NameApplicationData, value: string | boolean) => {
@@ -132,6 +144,117 @@ export const NameGeneratorPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // 이름 생성 로직
+  const generateNamesForUser = (data: NameApplicationData): GeneratedNameResult[] => {
+    // NameGenerationOptions 생성
+    const options: NameGenerationOptions = {
+      gender: data.gender === 'male' ? 'male' : 'female',
+      country: 'korea', // 기본적으로 한국 이름
+      includeMeaning: true,
+      popularityRange: { min: 3, max: 10 } // 어느 정도 인기 있는 이름들
+    };
+
+    // 이름 후보들 생성
+    const nameCandidates = generateNameCombinations(options, 20); // 20개 후보 생성
+
+    // 중복 피할 이름들 추출
+    const restrictedNames = data.restrictions
+      ? data.restrictions.split(/[,\s]+/).map(name => name.trim()).filter(name => name.length > 0)
+      : [];
+
+    // 형제자매 이름들 추출
+    const siblingNames = data.siblings
+      ? data.siblings.split(/[,\s]+/).map(name => name.trim()).filter(name => name.length > 0)
+      : [];
+
+    // 필터링된 이름들
+    const filteredNames = nameCandidates.filter(name => {
+      // 돌림자 고려
+      if (data.useSiblingName && data.siblingNameKorean) {
+        // 돌림자가 포함된 이름 우선 (단순히 이름에 돌림자가 포함되는지 체크)
+        const hasSiblingChar = name.name.includes(data.siblingNameKorean);
+        if (data.siblingPosition === 'middle' || data.siblingPosition === 'end') {
+          // TODO: 더 정교한 돌림자 로직 구현 가능
+        }
+      }
+
+      // 중복 이름 필터링
+      const fullName = `${data.surnameKorean}${name.name}`;
+      const isRestricted = restrictedNames.some(restricted =>
+        fullName.includes(restricted) || restricted.includes(name.name)
+      );
+      const isSiblingName = siblingNames.some(sibling =>
+        fullName.includes(sibling) || sibling.includes(name.name)
+      );
+
+      return !isRestricted && !isSiblingName;
+    });
+
+    // 상위 5개 선택 및 결과 생성
+    const selectedNames = filteredNames.slice(0, 5);
+
+    return selectedNames.map((name, index) => {
+      // 출생일시를 바탕으로 점수 계산 (간단한 알고리즘)
+      let baseScore = name.popularity;
+      const birthMonth = parseInt(data.birthMonth) || 1;
+      const birthDay = parseInt(data.birthDay) || 1;
+
+      // 출생 월/일에 따른 추가 점수
+      if (birthMonth >= 1 && birthMonth <= 12) {
+        baseScore += (birthMonth % 3) * 0.5; // 월에 따른 약간의 변동
+      }
+      if (birthDay >= 1 && birthDay <= 31) {
+        baseScore += (birthDay % 5) * 0.3; // 일에 따른 약간의 변동
+      }
+
+      // 돌림자 보너스
+      if (data.useSiblingName && data.siblingNameKorean) {
+        if (name.name.includes(data.siblingNameKorean)) {
+          baseScore += 1;
+        }
+      }
+
+      const score = Math.min(10, Math.max(1, baseScore));
+
+      // 추천 이유 생성
+      let reason = '';
+      if (name.meaning) {
+        reason = `"${name.meaning}"의 좋은 의미를 담고 있습니다.`;
+      } else {
+        const reasons = [
+          '전통적이고 고풍스러운 느낌의 이름입니다.',
+          '현대적이면서도 세련된 인상을 줍니다.',
+          '부드럽고 친근한 느낌이 드는 이름입니다.',
+          '강인하고 믿음직한 인상을 줍니다.',
+          '우아하고 고급스러운 느낌의 이름입니다.',
+          '상큼하고 밝은 이미지를 전달합니다.',
+          '차분하고 신뢰감을 주는 이름입니다.',
+          '독특하면서도 매력적인 이름입니다.'
+        ];
+        reason = reasons[index % reasons.length];
+      }
+
+      // 희망사항이 있으면 추가 고려
+      if (data.preferences) {
+        if (data.preferences.includes('강한') || data.preferences.includes('힘든')) {
+          reason += ' 강인한 인상을 주는 이름으로 선택했습니다.';
+        } else if (data.preferences.includes('부드러운') || data.preferences.includes('친근한')) {
+          reason += ' 부드럽고 친근한 느낌의 이름입니다.';
+        }
+      }
+
+      return {
+        id: `name-${index + 1}`,
+        fullName: `${data.surnameKorean}${name.name}`,
+        givenName: name.name,
+        surname: data.surnameKorean,
+        meaning: name.meaning,
+        score: Math.round(score * 10) / 10,
+        reason
+      };
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -142,76 +265,191 @@ export const NameGeneratorPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // 백엔드 API 호출 (개발 중이므로 일단 시뮬레이션)
-      console.log('작명 신청서 데이터:', formData);
+      // 이름 생성 시작
+      console.log('이름 생성을 시작합니다...', formData);
 
-      // 실제 백엔드 연동 시 아래 코드 활성화
-      /*
-      const response = await fetch('/api/name-application', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('작명 신청서 제출 성공:', result);
-      */
-
-      // 시뮬레이션: 2초 후 성공
+      // AI 기반 이름 생성 시뮬레이션 (2초)
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      setSubmitSuccess(true);
+      // 이름 생성
+      const generatedResults = generateNamesForUser(formData);
+      setGeneratedNames(generatedResults);
+      setShowResults(true);
 
-      // 성공 후 폼 초기화 (선택사항)
-      // setFormData({...});
+      console.log('이름 생성 완료:', generatedResults);
 
     } catch (error) {
-      console.error('신청서 제출 실패:', error);
-      alert('신청서 제출에 실패했습니다. 다시 시도해주세요.');
+      console.error('이름 생성 실패:', error);
+      alert('이름 생성에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // 성공 화면
-  if (submitSuccess) {
+  // 이름 생성 결과 화면
+  if (showResults) {
     return (
       <AppLayout>
-        <div className="max-w-4xl mx-auto p-6">
-          <Card className="p-12 text-center">
-            <div className="space-y-6">
-              <div className="p-4 bg-green-100 dark:bg-green-900/20 rounded-full w-fit mx-auto">
-                <CheckCircle className="w-16 h-16 text-green-600" />
+        <div className="max-w-6xl mx-auto p-6 space-y-8">
+          {/* 헤더 */}
+          <div className="text-center space-y-4">
+            <div className="flex items-center justify-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-green-500 to-blue-600 rounded-full">
+                <CheckCircle className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-                작명 신청이 완료되었습니다!
+                AI 작명 결과
               </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-400">
-                신청하신 내용이 성공적으로 접수되었습니다.
-                <br />
-                2-3일 이내에 전문 작명사가 검토하여 연락드리겠습니다.
+            </div>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              {formData.applicantName}님의 아이를 위한 맞춤 이름 추천입니다.
+            </p>
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+              <p className="text-sm text-green-800 dark:text-green-200">
+                ✨ AI가 출생일시, 성별, 가족사항 등을 고려하여 최적의 이름을 추천했습니다.
               </p>
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  📞 문의전화: 02-538-3200
-                  <br />
-                  📱 문자문의: 010-8077-8158
-                </p>
+            </div>
+          </div>
+
+          {/* 생성된 이름들 */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {generatedNames.map((name, index) => (
+                <Card key={name.id} className="p-6 hover:shadow-lg transition-all duration-300 border-2 hover:border-pink-300">
+                  <div className="space-y-4">
+                    {/* 이름과 점수 */}
+                    <div className="text-center">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-pink-100 dark:bg-pink-900/20 rounded-full text-sm font-medium text-pink-800 dark:text-pink-200">
+                        <span>추천순위 #{index + 1}</span>
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-3">
+                        {name.fullName}
+                      </h3>
+                      <div className="flex items-center justify-center gap-1 mt-2">
+                        <span className="text-yellow-500">⭐</span>
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">
+                          {name.score}점
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 의미 */}
+                    {name.meaning && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                        <p className="text-sm text-blue-800 dark:text-blue-200 italic">
+                          "{name.meaning}"
+                        </p>
+                      </div>
+                    )}
+
+                    {/* 추천 이유 */}
+                    <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        {name.reason}
+                      </p>
+                    </div>
+
+                    {/* 액션 버튼 */}
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="flex-1"
+                        onClick={() => {
+                          navigator.clipboard?.writeText(name.fullName);
+                          alert(`${name.fullName}이(가) 클립보드에 복사되었습니다.`);
+                        }}
+                      >
+                        복사하기
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-pink-500 hover:bg-pink-600"
+                      >
+                        선택하기
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* 추가 정보 */}
+            <Card className="p-6 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/10 dark:to-purple-900/10">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                  💡 작명 TIP
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <div>
+                    <p><strong>이름의 의미:</strong> 아이의 성격과 운명에 영향을 줄 수 있습니다.</p>
+                  </div>
+                  <div>
+                    <p><strong>발음의 중요성:</strong> 부르기 쉽고 기억하기 좋은 이름이 좋습니다.</p>
+                  </div>
+                  <div>
+                    <p><strong>가족 조화:</strong> 가족 이름들과의 조화를 고려하세요.</p>
+                  </div>
+                  <div>
+                    <p><strong>미래 지향:</strong> 아이의 성장 과정에서 어울릴 이름을 선택하세요.</p>
+                  </div>
+                </div>
               </div>
+            </Card>
+
+            {/* 액션 버튼들 */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
-                onClick={() => setSubmitSuccess(false)}
-                className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                onClick={() => setShowResults(false)}
+                variant="secondary"
+                className="px-8 py-3"
+              >
+                다른 이름 더 보기
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowResults(false);
+                  setGeneratedNames([]);
+                  // 폼 초기화
+                  setFormData({
+                    calendarType: 'solar',
+                    birthYear: '',
+                    birthMonth: '',
+                    birthDay: '',
+                    birthHour: '',
+                    birthMinute: '',
+                    gender: 'male',
+                    surnameKorean: '',
+                    surnameHanja: '',
+                    surnameOrigin: '',
+                    useSiblingName: false,
+                    siblingPosition: 'none',
+                    siblingNameKorean: '',
+                    siblingNameHanja: '',
+                    fatherName: '',
+                    motherName: '',
+                    birthOrder: '',
+                    siblings: '',
+                    restrictions: '',
+                    preferences: '',
+                    specialRequests: '',
+                    applicantName: '',
+                    relationship: '',
+                    phone: '',
+                    mobile: '',
+                    email: '',
+                    postalCode: '',
+                    address: '',
+                    detailAddress: '',
+                    referralSource: ''
+                  });
+                }}
+                className="px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
               >
                 새로운 신청서 작성하기
               </Button>
             </div>
-          </Card>
+          </div>
         </div>
       </AppLayout>
     );
