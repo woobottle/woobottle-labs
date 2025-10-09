@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { FileText, Calculator, BarChart3, Clock, Settings, Info, ArrowRight, Smartphone, Home } from 'lucide-react';
+import { FileText, Calculator, BarChart3, Clock, Settings, Info, ArrowRight, Smartphone, Home, Image } from 'lucide-react';
 import AppLayout from '../components/AppLayout';
 
 export default function HomePage() {
@@ -42,6 +42,15 @@ export default function HomePage() {
       href: '/icon-generator',
       color: 'from-pink-500 to-pink-600',
       stats: 'iOS/Android/Web'
+    },
+    {
+      id: 'image-resizer',
+      title: '이미지 리사이저',
+      description: '이미지를 업로드하고 원하는 크기로 조절하세요',
+      icon: Image,
+      href: '/image-resizer',
+      color: 'from-orange-500 to-orange-600',
+      stats: '크기 조절'
     },
     {
       id: 'statistics',
@@ -134,9 +143,9 @@ export default function HomePage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center dark:bg-gray-800/80 dark:border-gray-700/20">
-          <div className="text-3xl font-bold text-blue-600 mb-2">8</div>
+          <div className="text-3xl font-bold text-blue-600 mb-2">9</div>
           <p className="text-gray-600 dark:text-gray-300">생산성 도구</p>
         </div>
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 text-center dark:bg-gray-800/80 dark:border-gray-700/20">

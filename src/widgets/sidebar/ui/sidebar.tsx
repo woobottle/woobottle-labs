@@ -19,7 +19,8 @@ import {
   Image,
   Coins,
   QrCode,
-  UserCheck
+  UserCheck,
+  Maximize
 } from 'lucide-react';
 import { ThemeToggle } from '../../../shared/ui/theme-toggle';
 
@@ -87,6 +88,13 @@ const menuItems: MenuItem[] = [
     href: '/png-to-webp',
     icon: Image,
     description: 'PNG 이미지를 WebP로 변환'
+  },
+  {
+    id: 'image-resizer',
+    label: '이미지 리사이저',
+    href: '/image-resizer',
+    icon: Maximize,
+    description: '이미지 크기 조절'
   },
   {
     id: 'area-converter',
