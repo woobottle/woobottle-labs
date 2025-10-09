@@ -928,7 +928,7 @@ export const NameGeneratorPage: React.FC = () => {
               {/* 방문 경로 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  백운산작명원 방문경로
+                  방문경로
                 </label>
                 <select
                   value={formData.referralSource}
