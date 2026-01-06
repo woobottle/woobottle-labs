@@ -1,0 +1,121 @@
+import {
+  BarChart3,
+  Calculator,
+  Clock,
+  Coins,
+  FileText,
+  Home,
+  Home as HomeIcon,
+  Image,
+  Info,
+  Maximize,
+  QrCode,
+  Settings,
+  Smartphone,
+  UserCheck,
+} from 'lucide-react';
+
+import type { Tool } from './types';
+
+export const TOOLS: Tool[] = [
+  {
+    id: 'home',
+    label: '홈',
+    href: '/',
+    icon: Home,
+    description: '대시보드',
+  },
+  {
+    id: 'text-counter',
+    label: '글자수 카운터',
+    href: '/text-counter',
+    icon: FileText,
+    description: '실시간 텍스트 분석',
+  },
+  {
+    id: 'calculator',
+    label: '계산기',
+    href: '/calculator',
+    icon: Calculator,
+    description: '간단한 계산기',
+  },
+  {
+    id: 'icon-generator',
+    label: '아이콘 생성기',
+    href: '/icon-generator',
+    icon: Smartphone,
+    description: '앱 아이콘 자동 생성',
+  },
+  {
+    id: 'currency-converter',
+    label: '환율 변환기',
+    href: '/currency-converter',
+    icon: Coins,
+    description: '통화 ↔ 통화 변환',
+  },
+  {
+    id: 'qr-code-generator',
+    label: 'QR 코드 생성기',
+    href: '/qr-code-generator',
+    icon: QrCode,
+    description: '텍스트/URL로 QR 생성',
+  },
+  {
+    id: 'name-generator',
+    label: '아이 이름 작명기',
+    href: '/name-generator',
+    icon: UserCheck,
+    description: '아름다운 이름 추천',
+  },
+  {
+    id: 'png-to-webp',
+    label: 'PNG → WebP',
+    href: '/png-to-webp',
+    icon: Image,
+    description: 'PNG 이미지를 WebP로 변환',
+  },
+  {
+    id: 'image-resizer',
+    label: '이미지 리사이저',
+    href: '/image-resizer',
+    icon: Maximize,
+    description: '이미지 크기 조절',
+  },
+  {
+    id: 'area-converter',
+    label: '평수 변환기',
+    href: '/area-converter',
+    icon: HomeIcon,
+    description: '평수 ↔ 제곱미터 변환',
+  },
+  {
+    id: 'statistics',
+    label: '통계 분석',
+    href: '/statistics',
+    icon: BarChart3,
+    description: '텍스트 통계 상세',
+  },
+  {
+    id: 'timer',
+    label: '뽀모도로 타이머',
+    href: '/timer',
+    icon: Clock,
+    description: '집중력 향상 시간 관리',
+  },
+  {
+    id: 'settings',
+    label: '설정',
+    href: '/settings',
+    icon: Settings,
+    description: '앱 설정',
+  },
+  {
+    id: 'about',
+    label: '정보',
+    href: '/about',
+    icon: Info,
+    description: '앱 정보',
+  },
+];
+
+

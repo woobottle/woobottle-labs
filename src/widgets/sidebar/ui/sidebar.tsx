@@ -3,142 +3,100 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  FileText,
-  Calculator,
-  Settings,
-  Info,
-  Menu,
-  X,
-  Home,
-  Hash,
-  Clock,
-  BarChart3,
-  Smartphone,
-  Home as HomeIcon,
-  Image,
-  Coins,
-  QrCode,
-  UserCheck,
-  Maximize
-} from 'lucide-react';
-import { ThemeToggle } from '../../../shared/ui/theme-toggle';
+import { Hash, Menu, Search, Star, X } from 'lucide-react';
 
-interface MenuItem {
-  id: string;
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  description?: string;
-}
-
-const menuItems: MenuItem[] = [
-  {
-    id: 'home',
-    label: '홈',
-    href: '/',
-    icon: Home,
-    description: '대시보드'
-  },
-  {
-    id: 'text-counter',
-    label: '글자수 카운터',
-    href: '/text-counter',
-    icon: FileText,
-    description: '실시간 텍스트 분석'
-  },
-  {
-    id: 'calculator',
-    label: '계산기',
-    href: '/calculator',
-    icon: Calculator,
-    description: '간단한 계산기'
-  },
-  {
-    id: 'icon-generator',
-    label: '아이콘 생성기',
-    href: '/icon-generator',
-    icon: Smartphone,
-    description: '앱 아이콘 자동 생성'
-  },
-  {
-    id: 'currency-converter',
-    label: '환율 변환기',
-    href: '/currency-converter',
-    icon: Coins,
-    description: '통화 ↔ 통화 변환'
-  },
-  {
-    id: 'qr-code-generator',
-    label: 'QR 코드 생성기',
-    href: '/qr-code-generator',
-    icon: QrCode,
-    description: '텍스트/URL로 QR 생성'
-  },
-  {
-    id: 'name-generator',
-    label: '아이 이름 작명기',
-    href: '/name-generator',
-    icon: UserCheck,
-    description: '아름다운 이름 추천'
-  },
-  {
-    id: 'png-to-webp',
-    label: 'PNG → WebP',
-    href: '/png-to-webp',
-    icon: Image,
-    description: 'PNG 이미지를 WebP로 변환'
-  },
-  {
-    id: 'image-resizer',
-    label: '이미지 리사이저',
-    href: '/image-resizer',
-    icon: Maximize,
-    description: '이미지 크기 조절'
-  },
-  {
-    id: 'area-converter',
-    label: '평수 변환기',
-    href: '/area-converter',
-    icon: HomeIcon,
-    description: '평수 ↔ 제곱미터 변환'
-  },
-  {
-    id: 'statistics',
-    label: '통계 분석',
-    href: '/statistics',
-    icon: BarChart3,
-    description: '텍스트 통계 상세'
-  },
-  {
-    id: 'timer',
-    label: '뽀모도로 타이머',
-    href: '/timer',
-    icon: Clock,
-    description: '집중력 향상 시간 관리'
-  },
-  {
-    id: 'settings',
-    label: '설정',
-    href: '/settings',
-    icon: Settings,
-    description: '앱 설정'
-  },
-  {
-    id: 'about',
-    label: '정보',
-    href: '/about',
-    icon: Info,
-    description: '앱 정보'
-  }
-];
+import { TOOLS } from 'entities/tool';
+import { useToolFavorites } from 'features/tool-favorites';
+import { ThemeToggle } from 'shared/ui/theme-toggle';
+import { Input } from 'shared/ui/input';
 
 export const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const pathname = usePathname();
+  const { favoritesSet, toggleFavorite } = useToolFavorites();
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
+  };
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredTools = TOOLS.filter((tool) => {
+    if (!normalizedQuery) return true;
+    return (
+      tool.label.toLowerCase().includes(normalizedQuery) ||
+      tool.href.toLowerCase().includes(normalizedQuery) ||
+      (tool.description?.toLowerCase().includes(normalizedQuery) ?? false)
+    );
+  });
+
+  const favoriteTools = filteredTools.filter((t) => favoritesSet.has(t.id));
+  const otherTools = filteredTools.filter((t) => !favoritesSet.has(t.id));
+
+  const renderToolLink = (item: (typeof TOOLS)[number]) => {
+    const Icon = item.icon;
+    const isActive = pathname === item.href;
+    const isFavorite = favoritesSet.has(item.id);
+
+    return (
+      <Link
+        key={item.id}
+        href={item.href}
+        onClick={() => setIsOpen(false)}
+        className={`
+          w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200
+          ${isActive
+            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-[1.02]'
+            : 'text-gray-700 hover:bg-white/60 hover:shadow-md dark:text-gray-300 dark:hover:bg-gray-800/60'
+          }
+        `}
+      >
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className={`
+            p-2 rounded-lg transition-colors duration-200
+            ${isActive
+              ? 'bg-white/20'
+              : 'bg-gray-100 dark:bg-gray-800'
+            }
+          `}>
+            <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`} />
+          </div>
+          <div className="min-w-0 text-left">
+            <p className={`truncate font-medium ${isActive ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
+              {item.label}
+            </p>
+            {item.description && (
+              <p className={`truncate text-xs ${isActive ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+                {item.description}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          aria-label={isFavorite ? '즐겨찾기 해제' : '즐겨찾기 등록'}
+          title={isFavorite ? '즐겨찾기 해제' : '즐겨찾기 등록'}
+          className={`
+            flex h-8 w-8 items-center justify-center rounded-lg transition-colors
+            ${isActive ? 'hover:bg-white/15' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}
+          `}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleFavorite(item.id);
+          }}
+        >
+          <Star
+            className={`
+              h-4 w-4
+              ${isActive ? 'text-white' : isFavorite ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500'}
+            `}
+            fill={isFavorite ? 'currentColor' : 'none'}
+          />
+        </button>
+      </Link>
+    );
   };
 
   return (
@@ -182,47 +140,50 @@ export const Sidebar: React.FC = () => {
 
         {/* Navigation Menu */}
         <nav className="flex-1 overflow-y-auto overscroll-contain p-4">
-          <div className="space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`
-                    w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200
-                    ${isActive
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-[1.02]'
-                      : 'text-gray-700 hover:bg-white/60 hover:shadow-md dark:text-gray-300 dark:hover:bg-gray-800/60'
-                    }
-                  `}
-                >
-                  <div className={`
-                    p-2 rounded-lg transition-colors duration-200
-                    ${isActive
-                      ? 'bg-white/20'
-                      : 'bg-gray-100 dark:bg-gray-800'
-                    }
-                  `}>
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`} />
-                  </div>
-                  <div className="text-left">
-                    <p className={`font-medium ${isActive ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
-                      {item.label}
-                    </p>
-                    {item.description && (
-                      <p className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
+          <div className="sticky top-0 z-10 mb-4 rounded-xl bg-white/90 pb-3 backdrop-blur-lg dark:bg-gray-900/90">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="도구 검색…"
+                className="px-3 py-2 pl-9 text-sm"
+              />
+            </div>
           </div>
+
+          {filteredTools.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+              검색 결과가 없어요.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {favoriteTools.length > 0 && (
+                <div>
+                  <div className="mb-2 flex items-center gap-2 px-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                    <Star className="h-3.5 w-3.5" />
+                    즐겨찾기
+                  </div>
+                  <div className="space-y-2">
+                    {favoriteTools.map(renderToolLink)}
+                  </div>
+                </div>
+              )}
+
+              {otherTools.length > 0 && (
+                <div>
+                  {favoriteTools.length > 0 && (
+                    <div className="mb-2 px-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      전체
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    {otherTools.map(renderToolLink)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </nav>
 
         {/* Bottom Section */}
