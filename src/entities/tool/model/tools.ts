@@ -1,8 +1,10 @@
 import {
   BarChart3,
+  BookOpen,
   Calculator,
   Clock,
   Coins,
+  Dices,
   FileText,
   Home,
   Home as HomeIcon,
@@ -31,6 +33,13 @@ export const TOOLS: Tool[] = [
     href: '/text-counter',
     icon: FileText,
     description: '실시간 텍스트 분석',
+  },
+  {
+    id: 'markdown-preview',
+    label: 'Markdown 미리보기',
+    href: '/markdown-preview',
+    icon: BookOpen,
+    description: 'Markdown 실시간 미리보기',
   },
   {
     id: 'calculator',
@@ -101,6 +110,13 @@ export const TOOLS: Tool[] = [
     href: '/timer',
     icon: Clock,
     description: '집중력 향상 시간 관리',
+  },
+  {
+    id: 'dice-roller',
+    label: '주사위',
+    href: '/dice-roller',
+    icon: Dices,
+    description: '6면체 주사위 굴리기',
   },
   {
     id: 'settings',
