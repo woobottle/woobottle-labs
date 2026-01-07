@@ -5,7 +5,7 @@ on:
   pull_request_review_comment:
     types: [created]
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
   issues: write
   id-token: write
@@ -20,4 +20,4 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          # Responds to @claude mentions in comments
+          show_full_output: true
