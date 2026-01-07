@@ -26,8 +26,8 @@ export function useExchangeRates(options: UseExchangeRatesOptions = {}) {
         throw new Error(json.error_type || 'Failed to load exchange rates');
       }
       setData(json);
-    } catch (e: any) {
-      setError(e?.message || 'Unknown error');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setIsLoading(false);
     }
