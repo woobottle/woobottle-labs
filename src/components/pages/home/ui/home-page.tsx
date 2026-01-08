@@ -153,7 +153,7 @@ export const HomePage: React.FC = () => {
               href="#tools"
               className="inline-flex items-center justify-center rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-black/10 transition hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
             >
-              도구 둘러보기
+              도구 바로가기
               <ArrowRight className="ml-2 h-4 w-4" />
             </a>
             <Link
