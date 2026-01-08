@@ -34,9 +34,9 @@ export const ThemeToggle: React.FC = () => {
   const getLabel = () => {
     switch (theme) {
       case 'light':
-        return '라이트 모드';
-      case 'dark':
         return '다크 모드';
+      case 'dark':
+        return '라이트 모드';
     }
   };
 
