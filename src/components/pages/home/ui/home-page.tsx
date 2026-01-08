@@ -156,12 +156,6 @@ export const HomePage: React.FC = () => {
               도구 둘러보기
               <ArrowRight className="ml-2 h-4 w-4" />
             </a>
-            <Link
-              href="/text-counter"
-              className="inline-flex items-center justify-center rounded-xl border border-white/40 bg-white/60 px-5 py-3 text-sm font-semibold text-gray-900 shadow-sm backdrop-blur transition hover:bg-white/80 dark:border-white/10 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10"
-            >
-              글자수 카운터 바로가기
-            </Link>
           </>
         }
       />
