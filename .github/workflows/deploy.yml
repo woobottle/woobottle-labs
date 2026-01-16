@@ -149,6 +149,7 @@ jobs:
         DEPLOYMENT_TAG: ${{ env.DEPLOYMENT_TAG }}
         DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
       run: |
+        # DEPLOYMENT_TAG는 워크플로우 내부에서 생성된 값 (날짜+SHA)
         NEW_ORIGIN_PATH="/releases/$DEPLOYMENT_TAG"
 
         echo "🔄 CloudFront Origin Path 업데이트 중..."
@@ -160,9 +161,18 @@ jobs:
 
         echo "   현재 ETag: $ETAG"
 
-        # Origin Path 업데이트 (Default Origin만)
+        # Default Behavior의 TargetOriginId 확인
+        DEFAULT_ORIGIN_ID=$(jq -r '.DistributionConfig.DefaultCacheBehavior.TargetOriginId' /tmp/cf-config.json)
+        echo "   Default Origin ID: $DEFAULT_ORIGIN_ID"
+
+        # Origin Path 업데이트 (Default Behavior가 사용하는 Origin만)
+        # S3-root Origin은 Origin Path가 비어있어야 하므로 건드리지 않음
         jq --arg path "$NEW_ORIGIN_PATH" \
-           '.DistributionConfig.Origins.Items[0].OriginPath = $path' \
+           --arg originId "$DEFAULT_ORIGIN_ID" \
+           '.DistributionConfig.Origins.Items = [
+              .DistributionConfig.Origins.Items[] |
+              if .Id == $originId then .OriginPath = $path else . end
+            ]' \
            /tmp/cf-config.json | jq '.DistributionConfig' > /tmp/cf-config-updated.json
 
         # CloudFront 업데이트

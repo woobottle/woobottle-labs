@@ -102,6 +102,7 @@ jobs:
         ROLLBACK_TARGET: ${{ env.ROLLBACK_TARGET }}
         DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
       run: |
+        # Note: ROLLBACK_TARGET comes from releases-metadata.json (validated internally)
         NEW_ORIGIN_PATH="/releases/$ROLLBACK_TARGET"
 
         echo "🔄 CloudFront Origin Path 업데이트 중..."
@@ -111,14 +112,23 @@ jobs:
         # 현재 설정 가져오기
         aws cloudfront get-distribution-config --id "$DISTRIBUTION_ID" > /tmp/cf-config.json
         ETAG=$(jq -r '.ETag' /tmp/cf-config.json)
-        CURRENT_PATH=$(jq -r '.DistributionConfig.Origins.Items[0].OriginPath' /tmp/cf-config.json)
 
+        # Default Behavior의 TargetOriginId 확인
+        DEFAULT_ORIGIN_ID=$(jq -r '.DistributionConfig.DefaultCacheBehavior.TargetOriginId' /tmp/cf-config.json)
+        CURRENT_PATH=$(jq -r --arg id "$DEFAULT_ORIGIN_ID" \
+          '.DistributionConfig.Origins.Items[] | select(.Id == $id) | .OriginPath' /tmp/cf-config.json)
+
+        echo "   Default Origin ID: $DEFAULT_ORIGIN_ID"
         echo "   현재 Origin Path: $CURRENT_PATH"
         echo "   ETag: $ETAG"
 
-        # Origin Path 업데이트
+        # Origin Path 업데이트 (Default Behavior가 사용하는 Origin만)
         jq --arg path "$NEW_ORIGIN_PATH" \
-           '.DistributionConfig.Origins.Items[0].OriginPath = $path' \
+           --arg originId "$DEFAULT_ORIGIN_ID" \
+           '.DistributionConfig.Origins.Items = [
+              .DistributionConfig.Origins.Items[] |
+              if .Id == $originId then .OriginPath = $path else . end
+            ]' \
            /tmp/cf-config.json | jq '.DistributionConfig' > /tmp/cf-config-updated.json
 
         # CloudFront 업데이트
