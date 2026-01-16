@@ -426,6 +426,20 @@ PWA 에셋(`sw.js`, `manifest.json`, `icons/`)을 release 폴더에 포함하면
 
 ### 파일 배치
 
+**프로젝트 구조:**
+```
+project/
+├── pwa/                    ← PWA 전용 폴더 (Next.js 빌드와 분리)
+│   ├── manifest.json
+│   ├── sw.js
+│   └── icons/
+│       ├── icon-192.png
+│       └── icon-512.png
+├── public/                 ← Next.js public (PWA 에셋 X)
+└── src/
+```
+
+**S3 구조:**
 ```
 S3:
 ├── sw.js              ← 루트 (버전과 무관, 항상 최신)
@@ -436,6 +450,68 @@ S3:
 └── releases/
     └── (버전별 앱 코드)
 ```
+
+### PWA 에셋을 별도 폴더로 관리하는 이유
+
+`basePath`가 설정되면 `public/` 폴더의 파일 경로도 버전 경로가 포함됩니다:
+
+```
+❌ public/ 폴더에 PWA 에셋을 두면:
+
+빌드 결과:
+  ./out/releases/deploy-xxx/manifest.json
+
+manifest.json 내부 경로:
+  "start_url": "/releases/deploy-xxx/"  ← 버전 종속!
+  "icons": [{ "src": "/releases/deploy-xxx/icons/..." }]
+
+✅ pwa/ 폴더로 분리하면:
+
+빌드와 무관하게 항상:
+  "start_url": "/"
+  "icons": [{ "src": "/icons/..." }]
+```
+
+### 배포 시 PWA 업데이트
+
+deploy.yml에서 `pwa/` 폴더를 S3 루트에 업로드:
+
+```yaml
+- name: Upload PWA assets to root
+  run: |
+    BUCKET="woo-bottle.com"
+
+    if [ -d ./pwa ]; then
+      aws s3 sync ./pwa/ "s3://$BUCKET/"
+      echo "✅ PWA 에셋 업로드 완료"
+    fi
+```
+
+**배포 흐름:**
+1. `pwa/manifest.json` 수정 → 커밋
+2. 배포 워크플로우 실행
+3. `pwa/` 폴더가 S3 루트에 sync
+4. PWA 에셋 자동 업데이트
+
+### sw.js가 chunk를 캐시하지 않는 이유
+
+이 아키텍처에서 sw.js는 `/releases/*` 경로를 **캐시하지 않습니다**:
+
+```javascript
+if (url.pathname.startsWith('/releases/')) {
+  event.respondWith(fetch(event.request));  // 항상 네트워크
+  return;
+}
+```
+
+**장점:**
+- 앱 버전이 바뀌어도 sw.js 수정 불필요
+- chunk 파일 목록을 관리할 필요 없음
+- 버전 전환 시 항상 올바른 chunk 로드
+
+**sw.js가 캐시하는 것:**
+- `/manifest.json` - 자주 안 바뀜
+- `/icons/*` - 자주 안 바뀜
 
 ### manifest.json
 
