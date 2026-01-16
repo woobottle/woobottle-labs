@@ -11,7 +11,7 @@ const nextConfig = {
   output: "export", // Static export for S3 deployment
   trailingSlash: true,
   assetPrefix: assetPrefix,
-  basePath: assetPrefix,
+  // basePath 제거: CloudFront Origin Path가 버전 라우팅을 처리하므로 중복 적용 방지
   images: {
     domains: [],
     unoptimized: false,
