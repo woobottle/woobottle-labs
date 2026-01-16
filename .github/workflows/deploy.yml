@@ -81,6 +81,30 @@ jobs:
 
         echo "✅ S3 업로드 완료"
 
+    - name: Upload PWA assets to root
+      run: |
+        BUCKET="woo-bottle.com"
+
+        echo "📱 PWA 에셋을 루트에 업로드 중..."
+
+        # PWA 에셋이 존재하면 루트에 업로드
+        if [ -f ./out/manifest.json ]; then
+          aws s3 cp ./out/manifest.json "s3://$BUCKET/manifest.json"
+          echo "   ✓ manifest.json"
+        fi
+
+        if [ -f ./out/sw.js ]; then
+          aws s3 cp ./out/sw.js "s3://$BUCKET/sw.js"
+          echo "   ✓ sw.js"
+        fi
+
+        if [ -d ./out/icons ]; then
+          aws s3 sync ./out/icons/ "s3://$BUCKET/icons/"
+          echo "   ✓ icons/"
+        fi
+
+        echo "✅ PWA 에셋 업로드 완료"
+
     - name: Update releases metadata
       env:
         DEPLOYMENT_TAG: ${{ env.DEPLOYMENT_TAG }}
