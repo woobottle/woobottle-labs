@@ -6,7 +6,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -16,8 +16,8 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-northeast-2 # 본인의 S3 버킷 리전으로 변경
-    
+        aws-region: ap-northeast-2
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
@@ -52,94 +52,163 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
-    - name: Build and deploy
-      run: |
-        pnpm build # (선택사항, React/Vue/Angular 프로젝트의 경우)
-    
     - name: Generate deployment tag
       run: |
-        # 배포 태그 생성 (날짜-시간-커밋해시)
         DEPLOYMENT_TAG="deploy-$(date +%Y%m%d-%H%M%S)-$(echo $GITHUB_SHA | cut -c1-7)"
         echo "DEPLOYMENT_TAG=$DEPLOYMENT_TAG" >> $GITHUB_ENV
         echo "Generated deployment tag: $DEPLOYMENT_TAG"
-    
-    - name: Sync files to S3 bucket
+
+    - name: Build with versioned asset prefix
+      env:
+        DEPLOYMENT_TAG: ${{ env.DEPLOYMENT_TAG }}
+      run: |
+        echo "🔨 빌드 시작 (assetPrefix: /releases/$DEPLOYMENT_TAG)"
+        pnpm build
+
+    - name: Upload to versioned release path
+      env:
+        DEPLOYMENT_TAG: ${{ env.DEPLOYMENT_TAG }}
       run: |
         BUCKET="woo-bottle.com"
-        DEPLOYMENT_TAG="${{ env.DEPLOYMENT_TAG }}"
-        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-        
+        RELEASE_PATH="releases/$DEPLOYMENT_TAG"
+
         echo "🚀 배포 시작: $DEPLOYMENT_TAG"
-        
-        # AWS S3 sync를 사용하여 동기화
-        aws s3 sync ./out/ "s3://$BUCKET/" \
-          --delete \
-          --metadata "deployment=$DEPLOYMENT_TAG,version=$(jq -r .version package.json 2>/dev/null || echo 'unknown'),build-timestamp=$TIMESTAMP"
-        
-        echo "✅ 배포 완료: $DEPLOYMENT_TAG"
-    
-    - name: Generate deployment manifest
+        echo "📁 릴리스 경로: s3://$BUCKET/$RELEASE_PATH/"
+
+        # 버전별 경로에 업로드
+        aws s3 sync ./out/ "s3://$BUCKET/$RELEASE_PATH/" \
+          --metadata "deployment=$DEPLOYMENT_TAG,version=$(jq -r .version package.json 2>/dev/null || echo 'unknown'),build-timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+        echo "✅ S3 업로드 완료"
+
+    - name: Update releases metadata
+      env:
+        DEPLOYMENT_TAG: ${{ env.DEPLOYMENT_TAG }}
       run: |
         BUCKET="woo-bottle.com"
-        DEPLOYMENT_TAG="${{ env.DEPLOYMENT_TAG }}"
-        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-        MANIFEST_KEY="batch-operations/deploy-manifest-${TIMESTAMP}.csv"
-        
-        echo "📋 배포 매니페스트 생성 중..."
-        
-        # 현재 배포된 파일들의 매니페스트 생성
-        echo "Bucket,Key,VersionId" > /tmp/deploy_manifest.csv
-        
-        # 방금 배포된 파일들의 최신 버전 ID 수집
-        aws s3api list-objects-v2 --bucket $BUCKET --query "Contents[].Key" --output text | tr '\t' '\n' | while read -r key; do
-          if [ -n "$key" ] && [ "$key" != "None" ]; then
-            # 최신 버전 ID 가져오기
-            VERSION_ID=$(aws s3api list-object-versions --bucket $BUCKET --prefix "$key" --query "Versions[?Key=='$key'] | sort_by(@, &LastModified) | reverse(@) | [0].VersionId" --output text)
-            
-            if [ -n "$VERSION_ID" ] && [ "$VERSION_ID" != "None" ]; then
-              # 메타데이터 확인하여 현재 배포 태그인지 검증
-              METADATA=$(aws s3api head-object --bucket "$BUCKET" --key "$key" --version-id "$VERSION_ID" --query "Metadata.deployment" --output text 2>/dev/null || echo "")
-              
-              if [ "$METADATA" = "$DEPLOYMENT_TAG" ]; then
-                echo "$BUCKET,$key,$VERSION_ID" >> /tmp/deploy_manifest.csv
-                echo "✅ 매니페스트에 추가: $key (버전: $VERSION_ID)"
-              fi
-            fi
-          fi
-        done
-        
-        # 매니페스트 파일 수 확인
-        MANIFEST_SIZE=$(wc -l < /tmp/deploy_manifest.csv)
-        if [ $MANIFEST_SIZE -gt 1 ]; then
-          echo "📤 배포 매니페스트를 S3에 업로드 중..."
-          
-          # 매니페스트에 메타데이터 추가하여 업로드
-          aws s3 cp /tmp/deploy_manifest.csv s3://$BUCKET/$MANIFEST_KEY \
-            --metadata "deployment-tag=$DEPLOYMENT_TAG,manifest-type=deployment,created-by=github-actions,total-files=$((MANIFEST_SIZE - 1)),build-timestamp=$TIMESTAMP"
-          
-          # 배포 태그 추가
-          aws s3api put-object-tagging \
-            --bucket "$BUCKET" \
-            --key "$MANIFEST_KEY" \
-            --tagging "TagSet=[{Key=type,Value=deployment},{Key=deployment-tag,Value=$DEPLOYMENT_TAG},{Key=created-time,Value=$TIMESTAMP}]"
-          
-          echo "✅ 배포 매니페스트 생성 완료: s3://$BUCKET/$MANIFEST_KEY"
-          echo "📊 포함된 파일 수: $((MANIFEST_SIZE - 1))개"
-          
-          # 매니페스트 분석 정보
-          echo "📈 배포 파일 분석:"
-          tail -n +2 /tmp/deploy_manifest.csv | cut -d',' -f2 | sed 's/.*\.//' | sort | uniq -c | sort -nr | head -5 | while read count ext; do
-            echo "   $ext: $count개"
-          done
+        METADATA_KEY="releases-metadata.json"
+
+        echo "📋 릴리스 메타데이터 업데이트 중..."
+
+        # 기존 메타데이터 다운로드 (없으면 초기화)
+        if aws s3 cp "s3://$BUCKET/$METADATA_KEY" /tmp/metadata.json 2>/dev/null; then
+          echo "   기존 메타데이터 로드 완료"
         else
-          echo "⚠️ 배포된 파일이 없어 매니페스트를 생성하지 않습니다."
+          echo "   메타데이터 파일 없음, 새로 생성"
+          echo '{"current":"","releases":[],"maxReleases":5}' > /tmp/metadata.json
         fi
-        
-        # 임시 파일 정리
-        rm -f /tmp/deploy_manifest.csv
-    
-    - name: Invalidate CloudFront cache
+
+        # 새 릴리스 정보 생성
+        NEW_RELEASE=$(jq -n \
+          --arg tag "$DEPLOYMENT_TAG" \
+          --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --arg commitSha "$(echo $GITHUB_SHA | cut -c1-7)" \
+          --arg version "$(jq -r .version package.json 2>/dev/null || echo 'unknown')" \
+          '{tag: $tag, timestamp: $timestamp, commitSha: $commitSha, version: $version}')
+
+        # 메타데이터 업데이트: 새 릴리스 추가, current 업데이트
+        jq --argjson newRelease "$NEW_RELEASE" \
+           --arg current "$DEPLOYMENT_TAG" \
+           '.current = $current | .releases = [$newRelease] + .releases' \
+           /tmp/metadata.json > /tmp/metadata-updated.json
+
+        # S3에 업로드
+        aws s3 cp /tmp/metadata-updated.json "s3://$BUCKET/$METADATA_KEY" \
+          --content-type "application/json"
+
+        echo "✅ 메타데이터 업데이트 완료"
+        echo "   현재 버전: $DEPLOYMENT_TAG"
+        echo "   총 릴리스 수: $(jq '.releases | length' /tmp/metadata-updated.json)"
+
+    - name: Update CloudFront Origin Path
+      env:
+        DEPLOYMENT_TAG: ${{ env.DEPLOYMENT_TAG }}
+        DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
       run: |
-        aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+        NEW_ORIGIN_PATH="/releases/$DEPLOYMENT_TAG"
+
+        echo "🔄 CloudFront Origin Path 업데이트 중..."
+        echo "   새 Origin Path: $NEW_ORIGIN_PATH"
+
+        # 현재 설정 가져오기
+        aws cloudfront get-distribution-config --id "$DISTRIBUTION_ID" > /tmp/cf-config.json
+        ETAG=$(jq -r '.ETag' /tmp/cf-config.json)
+
+        echo "   현재 ETag: $ETAG"
+
+        # Origin Path 업데이트 (Default Origin만)
+        jq --arg path "$NEW_ORIGIN_PATH" \
+           '.DistributionConfig.Origins.Items[0].OriginPath = $path' \
+           /tmp/cf-config.json | jq '.DistributionConfig' > /tmp/cf-config-updated.json
+
+        # CloudFront 업데이트
+        aws cloudfront update-distribution \
+          --id "$DISTRIBUTION_ID" \
+          --if-match "$ETAG" \
+          --distribution-config file:///tmp/cf-config-updated.json > /dev/null
+
+        echo "✅ CloudFront Origin Path 업데이트 완료"
+
+    - name: Cleanup old releases
+      run: |
+        BUCKET="woo-bottle.com"
+        MAX_RELEASES=5
+
+        echo "🧹 오래된 릴리스 정리 중..."
+
+        # 메타데이터에서 릴리스 목록 가져오기
+        aws s3 cp "s3://$BUCKET/releases-metadata.json" /tmp/metadata.json
+
+        TOTAL_RELEASES=$(jq '.releases | length' /tmp/metadata.json)
+        echo "   현재 릴리스 수: $TOTAL_RELEASES"
+
+        if [ "$TOTAL_RELEASES" -gt "$MAX_RELEASES" ]; then
+          echo "   최대 $MAX_RELEASES개 초과, 정리 시작..."
+
+          # 삭제할 릴리스 태그 목록
+          RELEASES_TO_DELETE=$(jq -r ".releases[$MAX_RELEASES:][].tag" /tmp/metadata.json)
+
+          for TAG in $RELEASES_TO_DELETE; do
+            echo "   🗑️ 삭제 중: $TAG"
+            aws s3 rm "s3://$BUCKET/releases/$TAG/" --recursive
+          done
+
+          # 메타데이터에서도 제거
+          jq ".releases = .releases[:$MAX_RELEASES]" /tmp/metadata.json > /tmp/metadata-cleaned.json
+          aws s3 cp /tmp/metadata-cleaned.json "s3://$BUCKET/releases-metadata.json" \
+            --content-type "application/json"
+
+          echo "✅ 정리 완료: $((TOTAL_RELEASES - MAX_RELEASES))개 릴리스 삭제됨"
+        else
+          echo "   정리 불필요 (최대 $MAX_RELEASES개 이하)"
+        fi
+
+    - name: Invalidate CloudFront cache
+      env:
+        DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+      run: |
+        echo "🔄 CloudFront 캐시 무효화 중..."
+
+        INVALIDATION_ID=$(aws cloudfront create-invalidation \
+          --distribution-id "$DISTRIBUTION_ID" \
+          --paths "/*" \
+          --query 'Invalidation.Id' --output text)
+
+        echo "✅ 캐시 무효화 요청 완료"
+        echo "   Invalidation ID: $INVALIDATION_ID"
+
+    - name: Deployment summary
+      env:
+        DEPLOYMENT_TAG: ${{ env.DEPLOYMENT_TAG }}
+      run: |
+        echo ""
+        echo "==================================="
+        echo "🎉 배포 완료!"
+        echo "==================================="
+        echo "📌 배포 태그: $DEPLOYMENT_TAG"
+        echo "📁 S3 경로: s3://woo-bottle.com/releases/$DEPLOYMENT_TAG/"
+        echo "🌐 CloudFront Origin Path: /releases/$DEPLOYMENT_TAG"
+        echo ""
+        echo "💡 이전 버전 사용자도 /releases/* Behavior를 통해"
+        echo "   청크 에러 없이 이전 버전을 계속 사용합니다."
+        echo "==================================="
