@@ -8,7 +8,8 @@
 5. [사용자 경험 시나리오](#사용자-경험-시나리오)
 6. [PWA 대응](#pwa-대응)
 7. [CloudFront 설정](#cloudfront-설정)
-8. [트러블슈팅](#트러블슈팅)
+8. [마이그레이션 가이드](#마이그레이션-가이드)
+9. [트러블슈팅](#트러블슈팅)
 
 ---
 
@@ -700,6 +701,142 @@ CloudFront에서 **Origin Path는 Behavior가 아닌 Origin에 설정**됩니다
 | 스토리지 | 단일 버전 | 5개 버전 |
 | 복잡도 | 낮음 | 중간 |
 | PWA 호환 | 완벽 | 설정 필요 |
+
+---
+
+## 마이그레이션 가이드
+
+기존에 S3 루트에 직접 배포하던 프로젝트에서 이 아키텍처로 마이그레이션하는 방법입니다.
+
+### 기존 상태 확인
+
+```
+기존 구조:
+┌─────────────────────────────────────────┐
+│ Origin: S3 (Origin Path: 없음)          │
+│ Behavior: Default (*) → 이 Origin       │
+└─────────────────────────────────────────┘
+
+S3:
+├── index.html
+├── _next/static/...
+└── (모든 파일이 루트에)
+```
+
+### 단계 1: CloudFront 설정 변경
+
+#### A. 새 Origin 추가 (S3-versioned)
+
+CloudFront Console → Distribution → Origins 탭 → Create Origin
+
+```
+- Origin domain: 기존과 동일한 S3 버킷
+- Origin path: /releases/deploy-xxx (첫 배포 태그)
+- Name: S3-woo-bottle-versioned
+- Origin access: 기존 Origin과 동일 (OAC 또는 OAI)
+```
+
+#### B. Behaviors 추가
+
+기존 Origin (S3-root)을 사용하는 Behavior 추가:
+
+| Path Pattern | Origin | 설명 |
+|--------------|--------|------|
+| `/releases/*` | 기존 S3 Origin | 버전별 chunk 접근 |
+| `/sw.js` | 기존 S3 Origin | PWA |
+| `/manifest.json` | 기존 S3 Origin | PWA |
+| `/icons/*` | 기존 S3 Origin | PWA |
+
+#### C. Default Behavior 변경
+
+Default Behavior의 Origin을 **S3-versioned** (새로 만든 것)로 변경
+
+### 단계 2: 코드 설정
+
+#### next.config.ts
+
+```typescript
+const deploymentTag = process.env.DEPLOYMENT_TAG || "";
+const assetPrefix = deploymentTag ? `/releases/${deploymentTag}` : "";
+
+const nextConfig = {
+  output: "export",
+  trailingSlash: true,
+  assetPrefix: assetPrefix,
+  basePath: assetPrefix,
+  // ...
+};
+```
+
+#### deploy.yml, rollback.yml
+
+Origin ID로 찾아서 Origin Path 업데이트하도록 설정 (Items[0] 사용 금지)
+
+```yaml
+DEFAULT_ORIGIN_ID=$(jq -r '.DistributionConfig.DefaultCacheBehavior.TargetOriginId' /tmp/cf-config.json)
+
+jq --arg path "$NEW_ORIGIN_PATH" \
+   --arg originId "$DEFAULT_ORIGIN_ID" \
+   '.DistributionConfig.Origins.Items = [
+      .DistributionConfig.Origins.Items[] |
+      if .Id == $originId then .OriginPath = $path else . end
+    ]' \
+   /tmp/cf-config.json
+```
+
+### 단계 3: 첫 배포 실행
+
+```bash
+# GitHub Actions에서 deploy workflow 실행
+# → S3에 /releases/deploy-xxx/ 폴더 생성
+# → CloudFront Origin Path 업데이트
+```
+
+### 단계 4: 최종 구조 확인
+
+```
+CloudFront:
+┌─────────────────────────────────────────────┐
+│ S3-versioned │ Origin Path: /releases/xxx   │ ← 새로 추가
+│ S3-root      │ Origin Path: (없음)          │ ← 기존 Origin
+└─────────────────────────────────────────────┘
+
+S3:
+├── sw.js                    ← 루트 (PWA)
+├── manifest.json            ← 루트 (PWA)
+├── icons/                   ← 루트 (PWA)
+├── index.html               ← 기존 파일 (나중에 삭제)
+├── _next/                   ← 기존 파일 (나중에 삭제)
+└── releases/
+    └── deploy-xxx/          ← 새 버전
+        ├── index.html
+        └── _next/static/...
+```
+
+### 단계 5: 기존 파일 정리 (선택)
+
+마이그레이션 후 안정화되면 S3 루트의 기존 파일 삭제:
+
+```bash
+# ⚠️ 주의: releases/, sw.js, manifest.json, icons/는 유지!
+
+aws s3 rm s3://bucket/index.html
+aws s3 rm s3://bucket/_next/ --recursive
+aws s3 rm s3://bucket/about/ --recursive
+aws s3 rm s3://bucket/timer/ --recursive
+# ... 기타 페이지 폴더
+```
+
+### 마이그레이션 체크리스트
+
+- [ ] CloudFront에 S3-versioned Origin 추가 (Origin Path: /releases/첫태그)
+- [ ] `/releases/*`, `/sw.js`, `/manifest.json`, `/icons/*` Behaviors 추가 → 기존 Origin
+- [ ] Default Behavior → S3-versioned로 변경
+- [ ] next.config.ts에 assetPrefix/basePath 설정
+- [ ] deploy.yml에 Origin ID 기반 업데이트 로직 적용
+- [ ] rollback.yml에 Origin ID 기반 업데이트 로직 적용
+- [ ] 첫 배포 실행 및 테스트
+- [ ] 안정화 후 기존 루트 파일 정리
 
 ---
 
