@@ -495,48 +495,101 @@ self.addEventListener('fetch', (event) => {
 
 ## CloudFront 설정
 
+### 중요: Origin Path는 Origin 레벨에서 설정됨
+
+CloudFront에서 **Origin Path는 Behavior가 아닌 Origin에 설정**됩니다. 따라서 다른 Origin Path가 필요한 경우 **별도의 Origin을 생성**해야 합니다.
+
+```
+❌ 잘못된 이해:
+   Behavior마다 다른 Origin Path 설정 가능
+
+✅ 올바른 이해:
+   Origin에 Origin Path 설정 → 해당 Origin을 사용하는 모든 Behavior에 적용
+   → 다른 Origin Path가 필요하면 별도 Origin 필요
+```
+
+### 필요한 Origins
+
+| Origin ID | S3 Bucket | Origin Path | 용도 |
+|-----------|-----------|-------------|------|
+| `S3-versioned` | woo-bottle.com | `/releases/deploy-xxx` | 현재 버전 (Default) |
+| `S3-root` | woo-bottle.com | (없음) | releases/*, PWA |
+
 ### 필요한 Behaviors
 
-| 우선순위 | Path Pattern | Origin | Origin Path | 용도 |
-|---------|--------------|--------|-------------|------|
-| 0 | `/sw.js` | S3 | (없음) | Service Worker |
-| 1 | `/manifest.json` | S3 | (없음) | PWA 매니페스트 |
-| 2 | `/icons/*` | S3 | (없음) | 앱 아이콘 |
-| 3 | `/releases/*` | S3 | (없음) | 모든 버전 접근 |
-| 4 | `Default (*)` | S3 | `/releases/현재버전` | 새 사용자 라우팅 |
+| 우선순위 | Path Pattern | Origin | 결과 S3 경로 |
+|---------|--------------|--------|-------------|
+| 0 | `/sw.js` | S3-root | `s3://bucket/sw.js` |
+| 1 | `/manifest.json` | S3-root | `s3://bucket/manifest.json` |
+| 2 | `/icons/*` | S3-root | `s3://bucket/icons/*` |
+| 3 | `/releases/*` | S3-root | `s3://bucket/releases/*` |
+| 4 | `Default (*)` | S3-versioned | `s3://bucket/releases/deploy-xxx/*` |
 
-### 설정 방법 (콘솔)
+### 설정 방법
+
+#### 옵션 A: 스크립트 사용 (권장)
+
+```bash
+./scripts/setup-cloudfront-behaviors.sh <DISTRIBUTION_ID>
+```
+
+#### 옵션 B: AWS 콘솔에서 수동 설정
 
 ```
 1. CloudFront Console → Distribution 선택
 
-2. Origins 탭 → 기존 S3 Origin 확인
-   - Origin Path: 비어있어야 함 (또는 첫 배포 시 설정됨)
+2. Origins 탭 → Create Origin
+   - Origin domain: woo-bottle.com.s3.ap-northeast-2.amazonaws.com
+   - Origin path: (비워두기)
+   - Name: S3-woo-bottle-root
+   - Origin access: 기존 Origin과 동일하게 설정 (OAC 또는 OAI)
 
 3. Behaviors 탭 → Create Behavior (4번 반복)
 
    Behavior 1:
    - Path Pattern: /sw.js
-   - Origin: 기존 S3 Origin
-   - Origin Path: (비워두기)
+   - Origin: S3-woo-bottle-root (새로 만든 Origin)
 
    Behavior 2:
    - Path Pattern: /manifest.json
-   - Origin: 기존 S3 Origin
-   - Origin Path: (비워두기)
+   - Origin: S3-woo-bottle-root
 
    Behavior 3:
    - Path Pattern: /icons/*
-   - Origin: 기존 S3 Origin
-   - Origin Path: (비워두기)
+   - Origin: S3-woo-bottle-root
 
    Behavior 4:
    - Path Pattern: /releases/*
-   - Origin: 기존 S3 Origin
-   - Origin Path: (비워두기)
+   - Origin: S3-woo-bottle-root
 
-4. Default Behavior는 deploy.yml이 자동 관리
-   - 배포 시 Origin Path가 새 버전으로 업데이트됨
+4. Default Behavior
+   - Origin: 기존 S3 Origin (S3-versioned)
+   - deploy.yml이 배포 시 이 Origin의 Origin Path를 자동 업데이트
+```
+
+### 경로 흐름 예시
+
+```
+1. 새 사용자가 / 접속
+   GET /
+   → Default Behavior → S3-versioned (Origin Path: /releases/deploy-v3)
+   → S3: /releases/deploy-v3/index.html ✓
+
+2. HTML에서 청크 로드 (assetPrefix로 경로 포함)
+   GET /releases/deploy-v3/_next/static/chunks/main.js
+   → /releases/* Behavior → S3-root (Origin Path: 없음)
+   → S3: /releases/deploy-v3/_next/static/chunks/main.js ✓
+
+3. 새 배포 후 (v4) 기존 사용자가 v3 청크 요청
+   GET /releases/deploy-v3/_next/static/chunks/page.js
+   → /releases/* Behavior → S3-root
+   → S3: /releases/deploy-v3/_next/static/chunks/page.js ✓
+   (v3 파일이 아직 S3에 존재하므로 정상 로드)
+
+4. PWA manifest 요청
+   GET /manifest.json
+   → /manifest.json Behavior → S3-root
+   → S3: /manifest.json ✓
 ```
 
 ### 필요한 IAM 권한
