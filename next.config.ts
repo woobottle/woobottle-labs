@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 
-// CloudFront Origin Path가 버전 라우팅(/releases/deploy-xxx)을 처리하므로
-// assetPrefix와 basePath는 설정하지 않음 (경로 중복 방지)
+// 배포 시 DEPLOYMENT_TAG 환경변수로 버전 경로 설정
+// CloudFront /releases/* Behavior가 Origin Path 없이 S3 직접 접근
+const deploymentTag = process.env.DEPLOYMENT_TAG || "";
+const assetPrefix = deploymentTag ? `/releases/${deploymentTag}` : "";
 
 const nextConfig = {
   experimental: {
@@ -9,6 +11,8 @@ const nextConfig = {
   },
   output: "export", // Static export for S3 deployment
   trailingSlash: true,
+  assetPrefix: assetPrefix,
+  basePath: assetPrefix,
   images: {
     domains: [],
     unoptimized: false,
