@@ -1,7 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Implement fast rollback system with CloudFront Behavior routing\n\n- Add versioned release paths \\(/releases/{deployment-tag}/\\)\n- Configure assetPrefix in next.config.ts for chunk versioning\n- Update deploy.yml for versioned deployments with Origin Path switching\n- Simplify rollback.yml to only change CloudFront Origin Path\n- Add /releases/* Behavior for accessing previous version chunks\n- Keep last 5 releases for rollback capability\n- Remove version polling from layout.tsx \\(no longer needed\\)\n\nThis enables zero-downtime rollbacks without chunk loading errors\nby allowing users to continue accessing their current version''s\nassets while new users get the updated version.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Skill(commit-push)",
+      "Bash(chmod:*)",
+      "Bash(curl:*)",
+      "Bash(./scripts/setup-cloudfront-behaviors.sh:*)"
     ]
   }
 }
