@@ -1,0 +1,27 @@
+{
+  "name": "WooBottle Labs - 웹 유틸리티 모음",
+  "short_name": "WooBottle Labs",
+  "description": "글자수 카운터, 아이콘 생성기, 타이머 등 다양한 웹 유틸리티를 제공합니다.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/pwa/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "productivity"]
+}
