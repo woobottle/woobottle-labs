@@ -8,6 +8,8 @@
 5. [사용자 경험 시나리오](#사용자-경험-시나리오)
 6. [PWA 대응](#pwa-대응)
 7. [CloudFront 설정](#cloudfront-설정)
+8. [마이그레이션 가이드](#마이그레이션-가이드)
+9. [트러블슈팅](#트러블슈팅)
 
 ---
 
@@ -67,18 +69,27 @@ s3://woo-bottle.com/
 
 ### CloudFront 구조
 
+**중요**: CloudFront에서 Origin Path는 **Origin 레벨**에서 설정됩니다. 따라서 다른 Origin Path가 필요한 경우 **2개의 Origin**이 필요합니다.
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        CloudFront Distribution                   │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
+│  Origins:                                                        │
+│    ┌─────────────────────────────────────────────────────────┐  │
+│    │ S3-versioned │ Origin Path: /releases/deploy-xxx        │  │
+│    ├─────────────────────────────────────────────────────────┤  │
+│    │ S3-root      │ Origin Path: (없음)                      │  │
+│    └─────────────────────────────────────────────────────────┘  │
+│                                                                  │
 │  Behaviors (우선순위 순):                                         │
 │                                                                  │
-│  1. /sw.js           → Origin: S3 (Origin Path: 없음)           │
-│  2. /manifest.json   → Origin: S3 (Origin Path: 없음)           │
-│  3. /icons/*         → Origin: S3 (Origin Path: 없음)           │
-│  4. /releases/*      → Origin: S3 (Origin Path: 없음)           │
-│  5. Default (*)      → Origin: S3 (Origin Path: /releases/v3)   │
+│  1. /sw.js           → Origin: S3-root                          │
+│  2. /manifest.json   → Origin: S3-root                          │
+│  3. /icons/*         → Origin: S3-root                          │
+│  4. /releases/*      → Origin: S3-root      ← 핵심! 이전 버전 접근│
+│  5. Default (*)      → Origin: S3-versioned ← 새 사용자 라우팅   │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -87,6 +98,26 @@ s3://woo-bottle.com/
 │                         S3 Bucket                                │
 │                      woo-bottle.com                              │
 └─────────────────────────────────────────────────────────────────┘
+```
+
+### 왜 2개의 Origin이 필요한가?
+
+```
+❌ Origin 1개만 사용하면 (Origin Path: /releases/deploy-xxx):
+
+   요청: /releases/deploy-v2/_next/static/chunk.js
+   ↓
+   Origin Path + 요청 경로 = 중복!
+   ↓
+   S3: /releases/deploy-xxx/releases/deploy-v2/_next/... → 404
+
+✅ Origin 2개 사용:
+
+   요청: /releases/deploy-v2/_next/static/chunk.js
+   ↓
+   /releases/* Behavior → S3-root (Origin Path 없음)
+   ↓
+   S3: /releases/deploy-v2/_next/static/chunk.js → 200 ✓
 ```
 
 ---
@@ -145,9 +176,14 @@ s3://woo-bottle.com/
 │ 4. CloudFront Origin Path 변경                                   │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  Default Behavior의 Origin Path:                                 │
+│  S3-versioned Origin의 Origin Path 업데이트:                     │
 │    이전: /releases/deploy-20250116-120000-def5678               │
 │    변경: /releases/deploy-20250117-090000-ghi9012               │
+│                                                                  │
+│  ⚠️ 중요: Origin ID로 찾아서 업데이트 (배열 인덱스 X)              │
+│    - Default Behavior의 TargetOriginId 확인                      │
+│    - 해당 Origin만 Origin Path 변경                              │
+│    - S3-root Origin은 건드리지 않음                               │
 │                                                                  │
 │  → 새 사용자는 새 버전으로 라우팅                                  │
 │                                                                  │
@@ -368,11 +404,45 @@ s3://woo-bottle.com/
 
 ## PWA 대응
 
-### 파일 배치
+### 왜 PWA 에셋은 루트에 배치해야 하는가?
+
+PWA 에셋(`sw.js`, `manifest.json`, `icons/`)을 release 폴더에 포함하면 **chunk 파일 문제**가 발생합니다:
 
 ```
+❌ PWA 에셋이 release 폴더에 있으면:
+
+1. 사용자가 v2에서 sw.js 등록
+2. sw.js가 /_next/static/... 경로를 precache (루트 기준)
+3. 새 배포 (v3) → CloudFront Origin Path 변경
+4. 구 sw.js가 캐시한 chunk 파일 경로와 실제 경로 불일치
+5. 404 에러 또는 잘못된 버전 로드
+
+✅ PWA 에셋이 루트에 있으면:
+
+1. sw.js는 항상 최신 버전 (루트에서 제공)
+2. /releases/* 요청은 캐시 안 함 → 항상 네트워크에서 로드
+3. 버전 전환 시에도 올바른 chunk 로드
+```
+
+### 파일 배치
+
+**프로젝트 구조:**
+```
+project/
+├── pwa/                    ← PWA 전용 폴더 (Next.js 빌드와 분리)
+│   ├── manifest.json
+│   ├── sw.js
+│   └── icons/
+│       ├── icon-192.png
+│       └── icon-512.png
+├── public/                 ← Next.js public (PWA 에셋 X)
+└── src/
+```
+
+**S3 구조:**
+```
 S3:
-├── sw.js              ← 루트 (버전과 무관)
+├── sw.js              ← 루트 (버전과 무관, 항상 최신)
 ├── manifest.json      ← 루트 (버전과 무관)
 ├── icons/
 │   ├── icon-192.png
@@ -380,6 +450,68 @@ S3:
 └── releases/
     └── (버전별 앱 코드)
 ```
+
+### PWA 에셋을 별도 폴더로 관리하는 이유
+
+`basePath`가 설정되면 `public/` 폴더의 파일 경로도 버전 경로가 포함됩니다:
+
+```
+❌ public/ 폴더에 PWA 에셋을 두면:
+
+빌드 결과:
+  ./out/releases/deploy-xxx/manifest.json
+
+manifest.json 내부 경로:
+  "start_url": "/releases/deploy-xxx/"  ← 버전 종속!
+  "icons": [{ "src": "/releases/deploy-xxx/icons/..." }]
+
+✅ pwa/ 폴더로 분리하면:
+
+빌드와 무관하게 항상:
+  "start_url": "/"
+  "icons": [{ "src": "/icons/..." }]
+```
+
+### 배포 시 PWA 업데이트
+
+deploy.yml에서 `pwa/` 폴더를 S3 루트에 업로드:
+
+```yaml
+- name: Upload PWA assets to root
+  run: |
+    BUCKET="woo-bottle.com"
+
+    if [ -d ./pwa ]; then
+      aws s3 sync ./pwa/ "s3://$BUCKET/"
+      echo "✅ PWA 에셋 업로드 완료"
+    fi
+```
+
+**배포 흐름:**
+1. `pwa/manifest.json` 수정 → 커밋
+2. 배포 워크플로우 실행
+3. `pwa/` 폴더가 S3 루트에 sync
+4. PWA 에셋 자동 업데이트
+
+### sw.js가 chunk를 캐시하지 않는 이유
+
+이 아키텍처에서 sw.js는 `/releases/*` 경로를 **캐시하지 않습니다**:
+
+```javascript
+if (url.pathname.startsWith('/releases/')) {
+  event.respondWith(fetch(event.request));  // 항상 네트워크
+  return;
+}
+```
+
+**장점:**
+- 앱 버전이 바뀌어도 sw.js 수정 불필요
+- chunk 파일 목록을 관리할 필요 없음
+- 버전 전환 시 항상 올바른 chunk 로드
+
+**sw.js가 캐시하는 것:**
+- `/manifest.json` - 자주 안 바뀜
+- `/icons/*` - 자주 안 바뀜
 
 ### manifest.json
 
@@ -645,3 +777,216 @@ CloudFront에서 **Origin Path는 Behavior가 아닌 Origin에 설정**됩니다
 | 스토리지 | 단일 버전 | 5개 버전 |
 | 복잡도 | 낮음 | 중간 |
 | PWA 호환 | 완벽 | 설정 필요 |
+
+---
+
+## 마이그레이션 가이드
+
+기존에 S3 루트에 직접 배포하던 프로젝트에서 이 아키텍처로 마이그레이션하는 방법입니다.
+
+### 기존 상태 확인
+
+```
+기존 구조:
+┌─────────────────────────────────────────┐
+│ Origin: S3 (Origin Path: 없음)          │
+│ Behavior: Default (*) → 이 Origin       │
+└─────────────────────────────────────────┘
+
+S3:
+├── index.html
+├── _next/static/...
+└── (모든 파일이 루트에)
+```
+
+### 단계 1: CloudFront 설정 변경
+
+#### A. 새 Origin 추가 (S3-versioned)
+
+CloudFront Console → Distribution → Origins 탭 → Create Origin
+
+```
+- Origin domain: 기존과 동일한 S3 버킷
+- Origin path: /releases/deploy-xxx (첫 배포 태그)
+- Name: S3-woo-bottle-versioned
+- Origin access: 기존 Origin과 동일 (OAC 또는 OAI)
+```
+
+#### B. Behaviors 추가
+
+기존 Origin (S3-root)을 사용하는 Behavior 추가:
+
+| Path Pattern | Origin | 설명 |
+|--------------|--------|------|
+| `/releases/*` | 기존 S3 Origin | 버전별 chunk 접근 |
+| `/sw.js` | 기존 S3 Origin | PWA |
+| `/manifest.json` | 기존 S3 Origin | PWA |
+| `/icons/*` | 기존 S3 Origin | PWA |
+
+#### C. Default Behavior 변경
+
+Default Behavior의 Origin을 **S3-versioned** (새로 만든 것)로 변경
+
+### 단계 2: 코드 설정
+
+#### next.config.ts
+
+```typescript
+const deploymentTag = process.env.DEPLOYMENT_TAG || "";
+const assetPrefix = deploymentTag ? `/releases/${deploymentTag}` : "";
+
+const nextConfig = {
+  output: "export",
+  trailingSlash: true,
+  assetPrefix: assetPrefix,
+  basePath: assetPrefix,
+  // ...
+};
+```
+
+#### deploy.yml, rollback.yml
+
+Origin ID로 찾아서 Origin Path 업데이트하도록 설정 (Items[0] 사용 금지)
+
+```yaml
+DEFAULT_ORIGIN_ID=$(jq -r '.DistributionConfig.DefaultCacheBehavior.TargetOriginId' /tmp/cf-config.json)
+
+jq --arg path "$NEW_ORIGIN_PATH" \
+   --arg originId "$DEFAULT_ORIGIN_ID" \
+   '.DistributionConfig.Origins.Items = [
+      .DistributionConfig.Origins.Items[] |
+      if .Id == $originId then .OriginPath = $path else . end
+    ]' \
+   /tmp/cf-config.json
+```
+
+### 단계 3: 첫 배포 실행
+
+```bash
+# GitHub Actions에서 deploy workflow 실행
+# → S3에 /releases/deploy-xxx/ 폴더 생성
+# → CloudFront Origin Path 업데이트
+```
+
+### 단계 4: 최종 구조 확인
+
+```
+CloudFront:
+┌─────────────────────────────────────────────┐
+│ S3-versioned │ Origin Path: /releases/xxx   │ ← 새로 추가
+│ S3-root      │ Origin Path: (없음)          │ ← 기존 Origin
+└─────────────────────────────────────────────┘
+
+S3:
+├── sw.js                    ← 루트 (PWA)
+├── manifest.json            ← 루트 (PWA)
+├── icons/                   ← 루트 (PWA)
+├── index.html               ← 기존 파일 (나중에 삭제)
+├── _next/                   ← 기존 파일 (나중에 삭제)
+└── releases/
+    └── deploy-xxx/          ← 새 버전
+        ├── index.html
+        └── _next/static/...
+```
+
+### 단계 5: 기존 파일 정리 (선택)
+
+마이그레이션 후 안정화되면 S3 루트의 기존 파일 삭제:
+
+```bash
+# ⚠️ 주의: releases/, sw.js, manifest.json, icons/는 유지!
+
+aws s3 rm s3://bucket/index.html
+aws s3 rm s3://bucket/_next/ --recursive
+aws s3 rm s3://bucket/about/ --recursive
+aws s3 rm s3://bucket/timer/ --recursive
+# ... 기타 페이지 폴더
+```
+
+### 마이그레이션 체크리스트
+
+- [ ] CloudFront에 S3-versioned Origin 추가 (Origin Path: /releases/첫태그)
+- [ ] `/releases/*`, `/sw.js`, `/manifest.json`, `/icons/*` Behaviors 추가 → 기존 Origin
+- [ ] Default Behavior → S3-versioned로 변경
+- [ ] next.config.ts에 assetPrefix/basePath 설정
+- [ ] deploy.yml에 Origin ID 기반 업데이트 로직 적용
+- [ ] rollback.yml에 Origin ID 기반 업데이트 로직 적용
+- [ ] 첫 배포 실행 및 테스트
+- [ ] 안정화 후 기존 루트 파일 정리
+
+---
+
+## 트러블슈팅
+
+### 404 에러: chunk 파일을 찾을 수 없음
+
+**증상:**
+```
+GET https://woo-bottle.com/releases/deploy-xxx/_next/static/chunks/xxx.js 404
+```
+
+**원인 1: `/releases/*` Behavior가 없음**
+- 모든 요청이 Default Behavior로 처리됨
+- Default Behavior의 Origin Path가 추가되어 경로 중복
+
+**해결:**
+```bash
+./scripts/setup-cloudfront-behaviors.sh <DISTRIBUTION_ID>
+```
+
+또는 AWS 콘솔에서 `/releases/*` Behavior 추가 (S3-root Origin 사용)
+
+---
+
+**원인 2: S3-root Origin이 없음**
+- `/releases/*` Behavior가 있지만 Origin Path가 있는 Origin을 사용
+
+**해결:**
+Origin Path가 비어있는 새 Origin (S3-root) 생성 후 Behavior에서 사용
+
+---
+
+**원인 3: deploy.yml에서 잘못된 Origin 업데이트**
+- `Items[0]`으로 Origin을 찾아서 S3-root Origin이 업데이트됨
+
+**해결:**
+Origin ID로 찾아서 업데이트 (deploy.yml, rollback.yml 확인)
+
+```yaml
+# ❌ 잘못된 방식
+jq '.DistributionConfig.Origins.Items[0].OriginPath = $path'
+
+# ✅ 올바른 방식
+DEFAULT_ORIGIN_ID=$(jq -r '.DistributionConfig.DefaultCacheBehavior.TargetOriginId' ...)
+jq 'if .Id == $originId then .OriginPath = $path else . end'
+```
+
+---
+
+### PWA가 이전 버전을 계속 로드함
+
+**원인:** Service Worker가 chunk 파일을 캐시함
+
+**해결:** sw.js에서 `/releases/*` 경로는 캐시하지 않도록 설정
+
+```javascript
+if (url.pathname.startsWith('/releases/')) {
+  event.respondWith(fetch(event.request));
+  return;
+}
+```
+
+---
+
+### 배포 후에도 이전 버전이 보임
+
+**원인 1:** CloudFront 캐시가 무효화되지 않음
+
+**해결:**
+```bash
+aws cloudfront create-invalidation --distribution-id <ID> --paths "/*"
+```
+
+**원인 2:** 브라우저 캐시
+
+**해결:** 강력 새로고침 (Ctrl+Shift+R) 또는 시크릿 모드에서 확인

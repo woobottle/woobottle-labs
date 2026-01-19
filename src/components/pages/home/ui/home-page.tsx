@@ -21,7 +21,7 @@ import { VisionOsHeroCanvas, type VisionOsHeroOrb } from 'widgets/visionos-hero'
 const tools = [
   {
     id: 'text-counter',
-    title: '글자수 카운터2',
+    title: '글자수 카운터3',
     description: '실시간으로 글자, 단어, 줄 수를 계산합니다',
     icon: FileText,
     href: '/text-counter',
