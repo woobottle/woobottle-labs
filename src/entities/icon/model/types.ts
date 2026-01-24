@@ -1,15 +1,15 @@
+export type Platform = "ios" | "android" | "web" | "macos";
+
 export interface IconSize {
   name: string;
   size: number;
   description: string;
-  platform: 'ios' | 'android' | 'web';
+  platform: Platform;
 }
 
 export interface GeneratedIcon {
   name: string;
   size: number;
   dataUrl: string;
-  platform: 'ios' | 'android' | 'web';
+  platform: Platform;
 }
-
-export type Platform = 'ios' | 'android' | 'web';
