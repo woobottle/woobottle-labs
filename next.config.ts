@@ -12,7 +12,8 @@ const nextConfig = {
   output: "export", // Static export for S3 deployment
   trailingSlash: true,
   assetPrefix: assetPrefix,
-  basePath: assetPrefix,
+  // basePath 제거: CloudFront Origin Path가 라우팅 매핑을 처리하므로
+  // Link 컴포넌트가 /calculator/ 같은 깔끔한 URL을 사용하도록 함
   images: {
     domains: [],
     unoptimized: false,
