@@ -1,10 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-
-import { ThemeToggle } from 'shared/ui/theme-toggle';
+import React from "react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 interface LandingLayoutProps {
   children: React.ReactNode;
@@ -19,22 +17,17 @@ export const LandingLayout: React.FC<LandingLayoutProps> = ({ children }) => {
             <div className="h-9 w-9 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg" />
             <div className="leading-tight">
               <div className="text-sm font-semibold">WooBottle Labs</div>
-              <div className="text-xs text-gray-600 dark:text-gray-300">Productivity tools</div>
+              <div className="text-xs text-gray-600 dark:text-gray-300">
+                Productivity tools
+              </div>
             </div>
           </Link>
-
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-          </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6">{children}</main>
+      <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6">
+        {children}
+      </main>
     </div>
   );
 };
-
-
-
-
-

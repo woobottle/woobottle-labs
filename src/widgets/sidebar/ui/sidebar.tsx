@@ -1,18 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Hash, Menu, Search, Star, X } from 'lucide-react';
+import React, { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Hash, Menu, Search, Star, X } from "lucide-react";
 
-import { TOOLS } from 'entities/tool';
-import { useToolFavorites } from 'features/tool-favorites';
-import { ThemeToggle } from 'shared/ui/theme-toggle';
-import { Input } from 'shared/ui/input';
+import { TOOLS } from "entities/tool";
+import { useToolFavorites } from "features/tool-favorites";
+import { Input } from "shared/ui/input";
 
 export const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const pathname = usePathname();
   const { favoritesSet, toggleFavorite } = useToolFavorites();
 
@@ -45,28 +44,34 @@ export const Sidebar: React.FC = () => {
         onClick={() => setIsOpen(false)}
         className={`
           w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200
-          ${isActive
-            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-[1.02]'
-            : 'text-gray-700 hover:bg-white/60 hover:shadow-md dark:text-gray-300 dark:hover:bg-gray-800/60'
+          ${
+            isActive
+              ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-[1.02]"
+              : "text-gray-700 hover:bg-white/60 hover:shadow-md dark:text-gray-300 dark:hover:bg-gray-800/60"
           }
         `}
       >
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className={`
+          <div
+            className={`
             p-2 rounded-lg transition-colors duration-200
-            ${isActive
-              ? 'bg-white/20'
-              : 'bg-gray-100 dark:bg-gray-800'
-            }
-          `}>
-            <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`} />
+            ${isActive ? "bg-white/20" : "bg-gray-100 dark:bg-gray-800"}
+          `}
+          >
+            <Icon
+              className={`w-4 h-4 ${isActive ? "text-white" : "text-gray-600 dark:text-gray-400"}`}
+            />
           </div>
           <div className="min-w-0 text-left">
-            <p className={`truncate font-medium ${isActive ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
+            <p
+              className={`truncate font-medium ${isActive ? "text-white" : "text-gray-800 dark:text-gray-200"}`}
+            >
               {item.label}
             </p>
             {item.description && (
-              <p className={`truncate text-xs ${isActive ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+              <p
+                className={`truncate text-xs ${isActive ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`}
+              >
                 {item.description}
               </p>
             )}
@@ -75,11 +80,11 @@ export const Sidebar: React.FC = () => {
 
         <button
           type="button"
-          aria-label={isFavorite ? '즐겨찾기 해제' : '즐겨찾기 등록'}
-          title={isFavorite ? '즐겨찾기 해제' : '즐겨찾기 등록'}
+          aria-label={isFavorite ? "즐겨찾기 해제" : "즐겨찾기 등록"}
+          title={isFavorite ? "즐겨찾기 해제" : "즐겨찾기 등록"}
           className={`
             flex h-8 w-8 items-center justify-center rounded-lg transition-colors
-            ${isActive ? 'hover:bg-white/15' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}
+            ${isActive ? "hover:bg-white/15" : "hover:bg-gray-100 dark:hover:bg-gray-800"}
           `}
           onClick={(e) => {
             e.preventDefault();
@@ -90,9 +95,9 @@ export const Sidebar: React.FC = () => {
           <Star
             className={`
               h-4 w-4
-              ${isActive ? 'text-white' : isFavorite ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500'}
+              ${isActive ? "text-white" : isFavorite ? "text-yellow-500" : "text-gray-400 dark:text-gray-500"}
             `}
-            fill={isFavorite ? 'currentColor' : 'none'}
+            fill={isFavorite ? "currentColor" : "none"}
           />
         </button>
       </Link>
@@ -118,13 +123,15 @@ export const Sidebar: React.FC = () => {
       )}
 
       {/* Sidebar */}
-      <div className={`
+      <div
+        className={`
         fixed left-0 top-0 w-64 h-[100dvh] bg-white/90 backdrop-blur-lg border-r border-white/30 shadow-xl z-40
         dark:bg-gray-900/90 dark:border-gray-700/30
         flex flex-col
         transform transition-transform duration-300 ease-in-out
-        lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+        lg:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
+      >
         {/* Header */}
         <div className="p-6 border-b border-gray-200/50 dark:border-gray-700/50 flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -132,8 +139,12 @@ export const Sidebar: React.FC = () => {
               <Hash className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100">WooBottle</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">생산성 도구</p>
+              <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100">
+                WooBottle
+              </h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                생산성 도구
+              </p>
             </div>
           </div>
         </div>
@@ -188,11 +199,6 @@ export const Sidebar: React.FC = () => {
 
         {/* Bottom Section */}
         <div className="flex-shrink-0 border-t border-gray-200/50 dark:border-gray-700/50">
-          {/* Theme Toggle */}
-          <div className="p-4">
-            <ThemeToggle />
-          </div>
-
           {/* Footer */}
           <div className="px-4 pb-4">
             <div className="text-center text-xs text-gray-500 dark:text-gray-400">
