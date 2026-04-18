@@ -13,6 +13,20 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   primaryHref = "#tools",
   secondaryHref = "/text-counter",
 }) => {
+  const primaryClassName =
+    "inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-black transition-colors duration-150 hover:bg-neutral-200";
+  const PrimaryCTA = primaryHref.startsWith("#") ? (
+    <a href={primaryHref} className={primaryClassName}>
+      도구 둘러보기
+      <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+    </a>
+  ) : (
+    <Link href={primaryHref} className={primaryClassName}>
+      도구 둘러보기
+      <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+    </Link>
+  );
+
   return (
     <section className="min-h-[80vh] flex flex-col justify-center py-16">
       <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-6">
@@ -29,13 +43,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
         생산성을 한 곳에서.
       </p>
       <div className="flex flex-wrap gap-3">
-        <a
-          href={primaryHref}
-          className="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-black transition-colors duration-150 hover:bg-neutral-200"
-        >
-          도구 둘러보기
-          <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
-        </a>
+        {PrimaryCTA}
         <Link
           href={secondaryHref}
           className="inline-flex items-center rounded-lg border border-[#2A2A2A] px-5 py-3 text-sm font-medium text-white transition-colors duration-150 hover:border-white"
