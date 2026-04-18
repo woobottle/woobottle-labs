@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = 'light' | 'dark';
+type Theme = "light" | "dark";
 
 interface ThemeContextType {
   theme: Theme;
@@ -20,8 +20,8 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
-  defaultTheme = 'light',
-  storageKey = 'theme',
+  defaultTheme = "light",
+  storageKey = "theme",
 }) => {
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [mounted, setMounted] = useState(false);
@@ -38,23 +38,21 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     if (!mounted) return;
 
     const root = window.document.documentElement;
-    
-    // 다크모드 적용
-    const isDarkMode = theme === 'dark';
 
-    root.classList.remove('light', 'dark');
-    root.classList.add(isDarkMode ? 'dark' : 'light');
+    // 다크모드 적용
+    const isDarkMode = theme === "dark";
+
+    root.classList.remove("light", "dark");
+    root.classList.add(isDarkMode ? "dark" : "light");
 
     // localStorage에 저장
     localStorage.setItem(storageKey, theme);
   }, [theme, mounted, storageKey]);
 
-
-
   const value = {
     theme,
     setTheme,
-    isDark: mounted ? theme === 'dark' : false,
+    isDark: mounted ? theme === "dark" : false,
   };
 
   if (!mounted) {
@@ -62,16 +60,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   }
 
   return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 };
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    return { theme: "dark" as Theme, setTheme: () => {}, isDark: true };
   }
   return context;
 };
