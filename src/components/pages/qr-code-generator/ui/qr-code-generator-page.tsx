@@ -1,8 +1,19 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import { AppLayout } from "widgets/app-layout";
-import { QrCodeGenerator } from "features/qr-code-generation";
+
+const QrCodeGenerator = dynamic(
+  () =>
+    import("features/qr-code-generation").then((mod) => mod.QrCodeGenerator),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="text-sm text-[#525252]">QR 생성기 로드 중…</div>
+    ),
+  },
+);
 
 export const QrCodeGeneratorPage: React.FC = () => {
   return (
