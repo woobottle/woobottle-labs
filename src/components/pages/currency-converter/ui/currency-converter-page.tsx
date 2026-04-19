@@ -1,29 +1,21 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { AppLayout } from 'widgets/app-layout';
-import { CurrencyConverter } from 'features/currency-conversion';
+import React from "react";
+import { AppLayout } from "widgets/app-layout";
+import { CurrencyConverter } from "features/currency-conversion";
 
 export const CurrencyConverterPage: React.FC = () => {
   return (
     <AppLayout>
-      <div className="text-center mb-12">
-        <div className="mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl mb-4">
-            <span className="text-2xl">💱</span>
-          </div>
+      <div className="mb-10">
+        <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
+          CONVERT
         </div>
-        <h1 className="text-5xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-          환율 변환기
-        </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-          실시간 공개 API를 사용해 다양한 통화 간 금액을 간편하게 변환하세요.
-        </p>
+        <h1 className="text-3xl font-semibold text-white">환율 변환기</h1>
+        <p className="mt-2 text-[#A3A3A3]">실시간 공개 API 기반 통화 변환</p>
       </div>
 
       <CurrencyConverter />
     </AppLayout>
   );
 };
-
-
