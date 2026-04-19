@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { formatTime, TimerPhase } from 'entities/timer';
+import React from "react";
+import { formatTime, TimerPhase } from "entities/timer";
 
 interface TimerDisplayProps {
   timeLeft: number;
@@ -20,57 +20,36 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
   completedSessions,
   isRunning,
 }) => {
-  const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0;
-  
-  const getPhaseColor = () => {
-    switch (phase) {
-      case 'focus':
-        return 'text-red-600 dark:text-red-400';
-      case 'shortBreak':
-        return 'text-green-600 dark:text-green-400';
-      case 'longBreak':
-        return 'text-blue-600 dark:text-blue-400';
-      default:
-        return 'text-gray-600 dark:text-gray-400';
-    }
-  };
+  const progress =
+    totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0;
 
-  const getProgressColor = () => {
-    switch (phase) {
-      case 'focus':
-        return 'stroke-red-500';
-      case 'shortBreak':
-        return 'stroke-green-500';
-      case 'longBreak':
-        return 'stroke-blue-500';
-      default:
-        return 'stroke-gray-500';
-    }
+  const getPhaseColor = () => {
+    return "text-white";
   };
 
   const getPhaseEmoji = () => {
     switch (phase) {
-      case 'focus':
-        return '🍅';
-      case 'shortBreak':
-        return '☕';
-      case 'longBreak':
-        return '🌴';
+      case "focus":
+        return "🍅";
+      case "shortBreak":
+        return "☕";
+      case "longBreak":
+        return "🌴";
       default:
-        return '⏰';
+        return "⏰";
     }
   };
 
   const getPhaseLabel = () => {
     switch (phase) {
-      case 'focus':
-        return '집중 시간';
-      case 'shortBreak':
-        return '짧은 휴식';
-      case 'longBreak':
-        return '긴 휴식';
+      case "focus":
+        return "집중 시간";
+      case "shortBreak":
+        return "짧은 휴식";
+      case "longBreak":
+        return "긴 휴식";
       default:
-        return '타이머';
+        return "타이머";
     }
   };
 
@@ -90,7 +69,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
             stroke="currentColor"
             strokeWidth="8"
             fill="transparent"
-            className="text-gray-200 dark:text-gray-700"
+            className="text-[#1A1A1A]"
           />
           {/* 진행률 원 */}
           <circle
@@ -103,10 +82,10 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
-            className={`transition-all duration-1000 ease-in-out ${getProgressColor()}`}
+            className="text-white transition-[stroke-dashoffset] duration-1000 ease-in-out"
           />
         </svg>
-        
+
         {/* 중앙 시간 표시 */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="text-6xl mb-2">{getPhaseEmoji()}</div>
@@ -124,22 +103,16 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
 
       {/* 세션 정보 */}
       <div className="flex items-center space-x-8 text-center">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-white/20 dark:border-gray-700/20">
-          <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-            {currentSession}
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            현재 세션
-          </div>
+        <div className="bg-[#0A0A0A] border border-[#1A1A1A] rounded-xl p-4">
+          <div className="text-2xl font-bold text-white">{currentSession}</div>
+          <div className="text-sm text-[#A3A3A3]">현재 세션</div>
         </div>
-        
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-white/20 dark:border-gray-700/20">
-          <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+
+        <div className="bg-[#0A0A0A] border border-[#1A1A1A] rounded-xl p-4">
+          <div className="text-2xl font-bold text-white">
             {completedSessions}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            완료된 세션
-          </div>
+          <div className="text-sm text-[#A3A3A3]">완료된 세션</div>
         </div>
       </div>
     </div>

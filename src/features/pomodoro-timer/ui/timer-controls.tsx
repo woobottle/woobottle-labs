@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Button } from 'shared/ui/button';
-import { Play, Pause, RotateCcw, SkipForward } from 'lucide-react';
+import React from "react";
+import { Button } from "shared/ui/button";
+import { Play, Pause, RotateCcw, SkipForward } from "lucide-react";
 
 interface TimerControlsProps {
   isRunning: boolean;
@@ -33,7 +33,7 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
           onClick={onPause}
           className="flex items-center gap-2 px-8 py-4 text-lg"
         >
-          <Pause className="w-5 h-5" />
+          <Pause className="w-5 h-5" strokeWidth={1.5} />
           일시정지
         </Button>
       ) : (
@@ -43,8 +43,8 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
           onClick={onStart}
           className="flex items-center gap-2 px-8 py-4 text-lg"
         >
-          <Play className="w-5 h-5" />
-          {isPaused ? '계속하기' : '시작'}
+          <Play className="w-5 h-5" strokeWidth={1.5} />
+          {isPaused ? "계속하기" : "시작"}
         </Button>
       )}
 
@@ -56,7 +56,7 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
         disabled={isIdle}
         className="flex items-center gap-2 px-6 py-4 text-lg"
       >
-        <RotateCcw className="w-5 h-5" />
+        <RotateCcw className="w-5 h-5" strokeWidth={1.5} />
         리셋
       </Button>
 
@@ -67,7 +67,7 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
         onClick={onSkip}
         className="flex items-center gap-2 px-6 py-4 text-lg"
       >
-        <SkipForward className="w-5 h-5" />
+        <SkipForward className="w-5 h-5" strokeWidth={1.5} />
         건너뛰기
       </Button>
     </div>
