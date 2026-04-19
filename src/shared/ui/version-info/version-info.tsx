@@ -124,7 +124,7 @@ WooBottle Labs - 버전 정보
           {isExpanded ? "접기" : "자세히"}
         </button>
         {isExpanded && (
-          <div className="absolute z-10 mt-8 p-3 bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg shadow-lg text-sm">
+          <div className="absolute z-10 mt-8 p-3 bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg text-sm">
             <div className="space-y-1">
               <div>
                 <strong>빌드:</strong>{" "}
