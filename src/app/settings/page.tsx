@@ -1,77 +1,98 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Settings as SettingsIcon, Moon, Sun, Globe, Save, Bell, Palette, Info } from 'lucide-react';
-import AppLayout from '../../components/AppLayout';
-import { VersionInfo } from '../../shared/ui/version-info';
+import React, { useState } from "react";
+import {
+  Settings as SettingsIcon,
+  Moon,
+  Sun,
+  Globe,
+  Save,
+  Bell,
+  Palette,
+  Info,
+} from "lucide-react";
+import AppLayout from "../../components/AppLayout";
+import { VersionInfo } from "../../shared/ui/version-info";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
-    theme: 'light',
-    language: 'ko',
+    theme: "light",
+    language: "ko",
     notifications: true,
-    fontSize: 'medium',
+    fontSize: "medium",
     autoSave: true,
-    soundEnabled: false
+    soundEnabled: false,
   });
 
   const [saved, setSaved] = useState(false);
 
   const handleSettingChange = (key: string, value: string | boolean) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSave = () => {
-    // Here you would typically save to localStorage or send to server
-    console.log('Settings saved:', settings);
+    console.log("Settings saved:", settings);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
   const SettingCard = ({ children }: { children: React.ReactNode }) => (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20">
+    <div className="bg-[#0A0A0A] border border-[#1A1A1A] rounded-xl p-6">
       {children}
     </div>
   );
 
-  const SettingRow = ({ icon: Icon, title, description, children }: {
-    icon: React.ComponentType<{ className?: string }>;
+  const SettingRow = ({
+    icon: Icon,
+    title,
+    description,
+    children,
+  }: {
+    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
     title: string;
     description: string;
     children: React.ReactNode;
   }) => (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-blue-50">
-          <Icon className="w-5 h-5 text-blue-600" />
+        <div className="p-2 rounded-lg bg-[#0A0A0A] border border-[#1A1A1A]">
+          <Icon className="w-5 h-5 text-white" strokeWidth={1.5} />
         </div>
         <div>
-          <h3 className="font-medium text-gray-800">{title}</h3>
-          <p className="text-sm text-gray-600">{description}</p>
+          <h3 className="font-medium text-white">{title}</h3>
+          <p className="text-sm text-[#A3A3A3]">{description}</p>
         </div>
       </div>
       <div>{children}</div>
     </div>
   );
 
-  const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) => (
+  const Toggle = ({
+    checked,
+    onChange,
+  }: {
+    checked: boolean;
+    onChange: (checked: boolean) => void;
+  }) => (
     <button
       onClick={() => onChange(!checked)}
-      className={`
-        relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-        ${checked ? 'bg-blue-600' : 'bg-gray-300'}
-      `}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 ${
+        checked ? "bg-white" : "bg-[#1A1A1A]"
+      }`}
     >
       <span
-        className={`
-          inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-          ${checked ? 'translate-x-6' : 'translate-x-1'}
-        `}
+        className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
+          checked ? "translate-x-6 bg-black" : "translate-x-1 bg-[#525252]"
+        }`}
       />
     </button>
   );
 
-  const Select = ({ value, onChange, options }: {
+  const Select = ({
+    value,
+    onChange,
+    options,
+  }: {
     value: string;
     onChange: (value: string) => void;
     options: { value: string; label: string }[];
@@ -79,9 +100,9 @@ export default function SettingsPage() {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      className="px-3 py-2 border border-[#1A1A1A] rounded-lg focus:outline-none focus:ring-1 focus:ring-white bg-[#0A0A0A] text-white"
     >
-      {options.map(option => (
+      {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}
         </option>
@@ -92,37 +113,35 @@ export default function SettingsPage() {
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            설정
-          </h1>
-          <p className="text-gray-600 text-lg">
-            앱 환경을 원하는 대로 설정하세요
-          </p>
+        <div className="mb-10">
+          <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
+            SETTINGS
+          </div>
+          <h1 className="text-3xl font-semibold text-white">설정</h1>
+          <p className="mt-2 text-[#A3A3A3]">앱 환경 설정</p>
         </div>
 
         <div className="space-y-6">
           {/* Appearance Settings */}
           <SettingCard>
-            <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-              <Palette className="w-5 h-5" />
+            <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+              <Palette className="w-5 h-5" strokeWidth={1.5} />
               외관 설정
             </h2>
-            
+
             <div className="space-y-6">
               <SettingRow
-                icon={settings.theme === 'dark' ? Moon : Sun}
+                icon={settings.theme === "dark" ? Moon : Sun}
                 title="테마"
                 description="라이트 모드 또는 다크 모드 선택"
               >
                 <Select
                   value={settings.theme}
-                  onChange={(value) => handleSettingChange('theme', value)}
+                  onChange={(value) => handleSettingChange("theme", value)}
                   options={[
-                    { value: 'light', label: '라이트' },
-                    { value: 'dark', label: '다크' },
-                    { value: 'auto', label: '시스템 설정' }
+                    { value: "light", label: "라이트" },
+                    { value: "dark", label: "다크" },
+                    { value: "auto", label: "시스템 설정" },
                   ]}
                 />
               </SettingRow>
@@ -134,11 +153,11 @@ export default function SettingsPage() {
               >
                 <Select
                   value={settings.language}
-                  onChange={(value) => handleSettingChange('language', value)}
+                  onChange={(value) => handleSettingChange("language", value)}
                   options={[
-                    { value: 'ko', label: '한국어' },
-                    { value: 'en', label: 'English' },
-                    { value: 'ja', label: '日本語' }
+                    { value: "ko", label: "한국어" },
+                    { value: "en", label: "English" },
+                    { value: "ja", label: "日本語" },
                   ]}
                 />
               </SettingRow>
@@ -150,11 +169,11 @@ export default function SettingsPage() {
               >
                 <Select
                   value={settings.fontSize}
-                  onChange={(value) => handleSettingChange('fontSize', value)}
+                  onChange={(value) => handleSettingChange("fontSize", value)}
                   options={[
-                    { value: 'small', label: '작게' },
-                    { value: 'medium', label: '보통' },
-                    { value: 'large', label: '크게' }
+                    { value: "small", label: "작게" },
+                    { value: "medium", label: "보통" },
+                    { value: "large", label: "크게" },
                   ]}
                 />
               </SettingRow>
@@ -163,11 +182,11 @@ export default function SettingsPage() {
 
           {/* Functionality Settings */}
           <SettingCard>
-            <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-              <SettingsIcon className="w-5 h-5" />
+            <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+              <SettingsIcon className="w-5 h-5" strokeWidth={1.5} />
               기능 설정
             </h2>
-            
+
             <div className="space-y-6">
               <SettingRow
                 icon={Bell}
@@ -176,7 +195,9 @@ export default function SettingsPage() {
               >
                 <Toggle
                   checked={settings.notifications}
-                  onChange={(checked) => handleSettingChange('notifications', checked)}
+                  onChange={(checked) =>
+                    handleSettingChange("notifications", checked)
+                  }
                 />
               </SettingRow>
 
@@ -187,7 +208,9 @@ export default function SettingsPage() {
               >
                 <Toggle
                   checked={settings.autoSave}
-                  onChange={(checked) => handleSettingChange('autoSave', checked)}
+                  onChange={(checked) =>
+                    handleSettingChange("autoSave", checked)
+                  }
                 />
               </SettingRow>
 
@@ -198,7 +221,9 @@ export default function SettingsPage() {
               >
                 <Toggle
                   checked={settings.soundEnabled}
-                  onChange={(checked) => handleSettingChange('soundEnabled', checked)}
+                  onChange={(checked) =>
+                    handleSettingChange("soundEnabled", checked)
+                  }
                 />
               </SettingRow>
             </div>
@@ -206,23 +231,24 @@ export default function SettingsPage() {
 
           {/* Data & Privacy */}
           <SettingCard>
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+            <h2 className="text-xl font-semibold text-white mb-6">
               데이터 및 개인정보
             </h2>
-            
+
             <div className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-800 mb-2">데이터 저장</h4>
-                <p className="text-sm text-blue-700">
-                  모든 데이터는 브라우저에 로컬로 저장되며, 외부 서버로 전송되지 않습니다.
+              <div className="p-4 bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg">
+                <h4 className="font-medium text-white mb-2">데이터 저장</h4>
+                <p className="text-sm text-[#A3A3A3]">
+                  모든 데이터는 브라우저에 로컬로 저장되며, 외부 서버로 전송되지
+                  않습니다.
                 </p>
               </div>
-              
+
               <div className="flex gap-3">
-                <button className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors">
+                <button className="px-4 py-2 bg-[#0A0A0A] border border-[#1A1A1A] text-white rounded-lg transition-colors duration-150 hover:bg-[#141414]">
                   모든 데이터 삭제
                 </button>
-                <button className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors">
+                <button className="px-4 py-2 bg-[#0A0A0A] border border-[#1A1A1A] text-white rounded-lg transition-colors duration-150 hover:bg-[#141414]">
                   데이터 내보내기
                 </button>
               </div>
@@ -231,8 +257,8 @@ export default function SettingsPage() {
 
           {/* Version Information */}
           <SettingCard>
-            <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-              <Info className="w-5 h-5" />
+            <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+              <Info className="w-5 h-5" strokeWidth={1.5} />
               버전 정보
             </h2>
             <VersionInfo />
@@ -242,17 +268,15 @@ export default function SettingsPage() {
           <div className="flex justify-center pt-6">
             <button
               onClick={handleSave}
-              className={`
-                px-8 py-3 rounded-xl font-semibold transition-all duration-200
-                ${saved 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-blue-500 hover:bg-blue-600 text-white'
-                }
-              `}
+              className={`px-8 py-3 rounded-xl font-semibold transition-colors duration-150 ${
+                saved
+                  ? "bg-[#0A0A0A] border border-[#1A1A1A] text-white"
+                  : "bg-white text-black hover:bg-[#E5E5E5]"
+              }`}
             >
               <div className="flex items-center gap-2">
-                <Save className="w-5 h-5" />
-                {saved ? '저장됨!' : '설정 저장'}
+                <Save className="w-5 h-5" strokeWidth={1.5} />
+                {saved ? "저장됨" : "설정 저장"}
               </div>
             </button>
           </div>

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useDiceRoller } from '../model/use-dice-roller';
-import { DiceDisplay } from './dice-display';
+import { useDiceRoller } from "../model/use-dice-roller";
+import { DiceDisplay } from "./dice-display";
 
 export const DiceRoller: React.FC = () => {
   const { value, isRolling, roll } = useDiceRoller();
@@ -14,21 +14,24 @@ export const DiceRoller: React.FC = () => {
         onClick={roll}
         disabled={isRolling}
         className={`
-          px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200
+          px-8 py-4 rounded-lg font-semibold text-base
           ${
             isRolling
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
-              : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl hover:scale-105'
+              ? "bg-[#0A0A0A] border border-[#1A1A1A] text-[#525252] cursor-not-allowed"
+              : "bg-white text-black hover:bg-neutral-200"
           }
         `}
       >
-        {isRolling ? '굴리는 중...' : '주사위 굴리기'}
+        {isRolling ? "굴리는 중..." : "주사위 굴리기"}
       </button>
 
       {value && !isRolling && (
-        <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">
-          결과: <span className="text-blue-600 dark:text-blue-400">{value}</span>
-        </p>
+        <div className="bg-[#0A0A0A] border border-[#1A1A1A] rounded-xl px-6 py-4">
+          <p className="text-[#A3A3A3] text-sm">
+            결과:{" "}
+            <span className="text-white text-xl font-semibold">{value}</span>
+          </p>
+        </div>
       )}
     </div>
   );

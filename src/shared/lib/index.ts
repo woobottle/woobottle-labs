@@ -1,2 +1,1 @@
-export * from './utils';
-export * from './theme-provider';
+export * from "./utils";
