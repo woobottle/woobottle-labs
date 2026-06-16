@@ -2,95 +2,296 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"/>
-<title>Pillog 지원 / Support</title>
+<title>Pillog — 약 챙기는 가장 간단한 방법</title>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="잠금화면 알림에서 바로 '먹었어요' 한 번. 복용 기간, 캘린더 히트맵, 월간 리포트까지 — 약 챙기기가 습관이 되는 복약 관리 앱 Pillog."/>
 <meta name="robots" content="index"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
 <style>
-  :root {
-    --bg: #14110e;
-    --card: #221d18;
-    --text: #f7efe2;
-    --text2: rgba(247,239,226,0.66);
-    --text3: rgba(247,239,226,0.45);
-    --ember: #E8703A;
-    --gold: #D9A65A;
-    --border: rgba(247,239,226,0.1);
+  :root{
+    --bg:#14110e; --bg2:#1b1712; --card:#221d18; --card2:#2a241d;
+    --text:#f7efe2; --text2:rgba(247,239,226,.66); --text3:rgba(247,239,226,.42);
+    --ember:#E8703A; --ember-soft:#f08a52; --gold:#D9A65A; --border:rgba(247,239,226,.1);
+    --glow:rgba(232,112,58,.22);
   }
-  * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
-      "Apple SD Gothic Neo", "Segoe UI", system-ui, sans-serif;
-    line-height: 1.7;
-    letter-spacing: -0.01em;
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:"Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;
+    line-height:1.7;letter-spacing:-0.01em;overflow-x:hidden;
   }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 48px 20px 96px; }
-  header { margin-bottom: 32px; }
-  .brand {
-    display: inline-flex; align-items: center; gap: 12px;
-    font-size: 14px; font-weight: 700; color: var(--gold);
-    letter-spacing: 0.06em; text-transform: uppercase;
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  .serif{font-family:"Fraunces",serif}
+
+  /* atmosphere */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-2;
+    background:
+      radial-gradient(900px 600px at 78% -8%, var(--glow), transparent 60%),
+      radial-gradient(700px 500px at 8% 18%, rgba(217,166,90,.10), transparent 55%);
+    pointer-events:none;
   }
-  .cap {
-    width: 34px; height: 19px; border-radius: 999px; position: relative; overflow: hidden;
-    transform: rotate(-26deg); flex-shrink: 0;
-    box-shadow: inset 0 -2px 3px rgba(0,0,0,.2), inset 0 1px 1px rgba(255,255,255,.5);
-    background: linear-gradient(90deg, #3D2A1B 0 50%, #C98A3C 50% 100%);
+  body::after{
+    content:"";position:fixed;inset:0;z-index:-1;opacity:.035;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
-  h1 { font-size: 30px; font-weight: 800; margin: 18px 0 6px; letter-spacing: -0.02em; }
-  .sub { color: var(--text2); font-size: 15px; margin: 0; }
-  .card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
-    padding: 24px 24px; margin-top: 20px;
-  }
-  h2 { font-size: 17px; font-weight: 700; margin: 0 0 10px; color: var(--gold); }
-  p { margin: 8px 0; color: var(--text2); font-size: 15px; }
-  a { color: var(--ember); text-decoration: none; font-weight: 600; }
-  a:hover { text-decoration: underline; }
-  .mail {
-    display: inline-block; margin-top: 6px; font-size: 18px; font-weight: 700; color: var(--text);
-  }
-  .q { color: var(--text); font-weight: 700; margin: 16px 0 4px; font-size: 15px; }
-  .q:first-of-type { margin-top: 0; }
-  footer { margin-top: 32px; color: var(--text3); font-size: 13px; }
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+    background:rgba(20,17,14,.6);border-bottom:1px solid var(--border)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:inline-flex;align-items:center;gap:11px;font-weight:800;font-size:17px;letter-spacing:-0.02em}
+  .cap{width:30px;height:17px;border-radius:999px;transform:rotate(-24deg);flex-shrink:0;
+    box-shadow:inset 0 -2px 3px rgba(0,0,0,.25),inset 0 1px 1px rgba(255,255,255,.5);
+    background:linear-gradient(90deg,#3D2A1B 0 50%,#C98A3C 50% 100%)}
+  .nav-links{display:flex;gap:28px;font-size:14px;color:var(--text2);font-weight:500}
+  .nav-links a:hover{color:var(--text)}
+  @media(max-width:680px){.nav-links{display:none}}
+
+  /* hero */
+  .hero{position:relative;padding:84px 0 64px}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+  @media(max-width:880px){.hero-grid{grid-template-columns:1fr;text-align:center}}
+  .eyebrow{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--gold);margin-bottom:20px}
+  h1{font-size:clamp(38px,6vw,62px);line-height:1.08;font-weight:700;letter-spacing:-0.03em}
+  h1 em{font-style:normal;color:var(--ember);position:relative}
+  .hero p.sub{margin:22px 0 0;font-size:clamp(16px,2.2vw,19px);color:var(--text2);max-width:30ch}
+  @media(max-width:880px){.hero p.sub{margin-left:auto;margin-right:auto}}
+  .cta{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap}
+  @media(max-width:880px){.cta{justify-content:center}}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 22px;border-radius:14px;
+    font-weight:700;font-size:15px;transition:transform .15s,box-shadow .25s}
+  .btn-primary{background:linear-gradient(135deg,var(--ember),var(--ember-soft));color:#fff;
+    box-shadow:0 10px 30px -8px var(--glow)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -8px var(--glow)}
+  .btn-ghost{border:1px solid var(--border);color:var(--text2)}
+  .btn-ghost:hover{color:var(--text);border-color:rgba(247,239,226,.25)}
+  .soon{font-size:12px;color:var(--text3);margin-top:14px}
+  @media(max-width:880px){.soon{text-align:center}}
+
+  /* phone mockup */
+  .phone{width:clamp(220px,30vw,290px);aspect-ratio:1290/2796;margin:0 auto;position:relative;
+    border-radius:38px;padding:9px;background:linear-gradient(160deg,#2b251e,#171310);
+    border:1px solid rgba(247,239,226,.12);
+    box-shadow:0 40px 80px -24px rgba(0,0,0,.7),0 0 0 1px rgba(0,0,0,.4)}
+  .phone::before{content:"";position:absolute;top:14px;left:50%;transform:translateX(-50%);
+    width:34%;height:7px;border-radius:99px;background:#0c0a08;z-index:2}
+  .phone img{width:100%;height:100%;object-fit:cover;border-radius:30px;display:block}
+  .hero-phone{position:relative}
+  .hero-phone .halo{position:absolute;inset:-12% -6%;z-index:-1;border-radius:50%;
+    background:radial-gradient(closest-side,var(--glow),transparent);filter:blur(8px)}
+
+  /* sections */
+  section{padding:72px 0}
+  .sec-head{max-width:34ch;margin-bottom:48px}
+  .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+  .kicker{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  h2{font-size:clamp(27px,4vw,40px);line-height:1.15;font-weight:700;letter-spacing:-0.025em;margin-top:14px}
+  h2 .serif{font-style:italic;color:var(--ember-soft);font-weight:500}
+
+  /* feature rows */
+  .feat{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin:0 0 96px}
+  .feat:nth-child(even) .feat-media{order:-1}
+  @media(max-width:880px){.feat{grid-template-columns:1fr;gap:32px;margin-bottom:64px}
+    .feat:nth-child(even) .feat-media{order:0}}
+  .feat-num{font-family:"Fraunces",serif;font-size:15px;color:var(--ember);font-weight:600;letter-spacing:.05em}
+  .feat h3{font-size:clamp(22px,3vw,30px);font-weight:700;letter-spacing:-0.02em;margin:10px 0 14px;line-height:1.2}
+  .feat p{color:var(--text2);font-size:16px;max-width:38ch}
+  .feat-media{display:flex;justify-content:center}
+
+  /* gallery */
+  .gallery{display:flex;gap:20px;overflow-x:auto;padding:8px 24px 28px;scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch}
+  .gallery::-webkit-scrollbar{height:7px}
+  .gallery::-webkit-scrollbar-thumb{background:var(--card2);border-radius:99px}
+  .gallery .phone{flex:0 0 auto;scroll-snap-align:center;width:230px}
+
+  /* faq */
+  .faq{max-width:760px;margin:0 auto}
+  details{border:1px solid var(--border);border-radius:16px;background:var(--card);
+    padding:0 22px;margin-bottom:12px;overflow:hidden;transition:border-color .2s}
+  details[open]{border-color:rgba(232,112,58,.35)}
+  summary{list-style:none;cursor:pointer;padding:18px 0;font-weight:700;font-size:16px;
+    display:flex;justify-content:space-between;align-items:center;gap:16px}
+  summary::-webkit-details-marker{display:none}
+  summary .plus{color:var(--ember);font-size:22px;transition:transform .25s;flex-shrink:0}
+  details[open] summary .plus{transform:rotate(45deg)}
+  details p{color:var(--text2);font-size:15px;padding:0 0 20px;margin:0}
+
+  /* contact + footer */
+  .contact{text-align:center;background:linear-gradient(160deg,var(--card),var(--bg2));
+    border:1px solid var(--border);border-radius:26px;padding:54px 24px;margin:24px 0}
+  .contact a.mail{display:inline-block;margin-top:8px;font-family:"Fraunces",serif;
+    font-size:clamp(24px,4vw,34px);font-weight:600;color:var(--ember-soft)}
+  .contact a.mail:hover{color:var(--ember)}
+  footer{border-top:1px solid var(--border);padding:36px 0 60px;color:var(--text3);font-size:13.5px}
+  .foot-in{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+  .foot-links{display:flex;gap:22px}
+  .foot-links a:hover{color:var(--text2)}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+  /* hero load stagger */
+  .hero .eyebrow,.hero h1,.hero .sub,.hero .cta,.hero .soon,.hero-phone{
+    opacity:0;animation:rise .8s cubic-bezier(.2,.7,.2,1) forwards}
+  .hero h1{animation-delay:.08s}.hero .sub{animation-delay:.18s}
+  .hero .cta{animation-delay:.28s}.hero .soon{animation-delay:.36s}.hero-phone{animation-delay:.2s}
+  @keyframes rise{to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
+
+<nav>
+  <div class="wrap nav-in">
     <span class="brand"><span class="cap"></span> Pillog</span>
-    <h1>지원 / Support</h1>
-    <p class="sub">복약 알림과 기록을 가장 간단하게 — Pillog 사용에 도움이 필요하신가요?</p>
-  </header>
-
-  <div class="card">
-    <h2>문의하기</h2>
-    <p>버그 신고, 기능 제안, 그 밖의 문의는 아래 이메일로 보내주세요. 보통 2~3일 내에 답변드립니다.</p>
-    <a class="mail" href="mailto:dkrnfls@gmail.com?subject=Pillog%20문의">dkrnfls@gmail.com</a>
+    <div class="nav-links">
+      <a href="#features">기능</a>
+      <a href="#screens">화면</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">문의</a>
+    </div>
   </div>
+</nav>
 
-  <div class="card">
-    <h2>자주 묻는 질문</h2>
-
-    <p class="q">복용 알림이 오지 않아요.</p>
-    <p>설정 → 알림에서 Pillog 알림이 켜져 있는지, 그리고 앱 안 [내 정보 → 알림]에서 권한이 허용돼 있는지 확인해 주세요. 기기의 집중 모드(방해 금지)도 알림을 가릴 수 있습니다.</p>
-
-    <p class="q">데이터는 어디에 저장되나요?</p>
-    <p>모든 약·복용 기록은 기기 안에만 저장되며 서버로 전송되지 않습니다. 회원가입도 필요 없습니다. 자세한 내용은 <a href="privacy.html">개인정보 처리방침</a>을 참고하세요.</p>
-
-    <p class="q">기기를 바꾸면 기록이 옮겨지나요?</p>
-    <p>현재 버전은 기기 내 저장만 지원합니다. 데이터 백업/이전 기능은 다음 업데이트에서 준비 중입니다.</p>
-
-    <p class="q">알림에서 바로 복용 체크할 수 있나요?</p>
-    <p>네. 복용 알림의 “먹었어요” 버튼을 누르면 앱을 열지 않아도 복용 완료로 기록됩니다. “10분 후”로 미룰 수도 있어요.</p>
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">복약 알림 · 기록</span>
+      <h1>약 챙기는 게<br/><em>습관</em>이 되도록.</h1>
+      <p class="sub">잠금화면 알림에서 바로 “먹었어요” 한 번이면 끝. 복용 기간부터 캘린더 히트맵, 월간 리포트까지 — 약 챙기기가 자연스러운 하루의 일부가 됩니다.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#screens">화면 둘러보기</a>
+        <a class="btn btn-ghost" href="#contact">문의하기</a>
+      </div>
+      <p class="soon">곧 App Store에서 만나요 · iPhone 전용 · 무료</p>
+    </div>
+    <div class="hero-phone">
+      <span class="halo"></span>
+      <div class="phone"><img src="screenshots/01-home.png" alt="Pillog 홈 화면 — 오늘의 복용과 진행률"/></div>
+    </div>
   </div>
+</header>
 
-  <footer>
-    Pillog · <a href="privacy.html">개인정보 처리방침</a> · <a href="terms.html">이용약관</a>
-  </footer>
-</div>
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker">왜 Pillog인가</span>
+      <h2>복잡함은 빼고,<br/><span class="serif">습관</span>만 남겼어요.</h2>
+    </div>
+
+    <div class="feat reveal">
+      <div>
+        <span class="feat-num">01</span>
+        <h3>알림에서 바로 “먹었어요”</h3>
+        <p>복용 시간 알림이 오면 잠금화면에서 한 번만 누르세요. 앱을 열 필요도 없이 복용 완료로 기록됩니다. 바쁠 땐 “10분 후”로 미뤄둘 수도 있어요.</p>
+      </div>
+      <div class="feat-media"><div class="phone"><img src="screenshots/01-home.png" alt="홈 화면"/></div></div>
+    </div>
+
+    <div class="feat reveal">
+      <div>
+        <span class="feat-num">02</span>
+        <h3>약마다 복용 기간 설정</h3>
+        <p>처방받은 기간만큼만 챙기세요. 종료 예정일과 남은 일수를 보여주고, 복용이 끝나갈 때 미리 알려드립니다. 영양제는 기간 없이 무기한으로.</p>
+      </div>
+      <div class="feat-media"><div class="phone"><img src="screenshots/05-med-detail.png" alt="약 상세 — 복용 기간"/></div></div>
+    </div>
+
+    <div class="feat reveal">
+      <div>
+        <span class="feat-num">03</span>
+        <h3>한눈에 보이는 기록</h3>
+        <p>한 달 복용 현황이 색으로 보이는 캘린더 히트맵, 날짜별로 어떤 약을 언제 먹었는지 보여주는 타임라인. 복용을 중단한 약의 기록도 사라지지 않고 보관됩니다.</p>
+      </div>
+      <div class="feat-media"><div class="phone"><img src="screenshots/02-record-calendar.png" alt="기록 — 캘린더 히트맵"/></div></div>
+    </div>
+
+    <div class="feat reveal">
+      <div>
+        <span class="feat-num">04</span>
+        <h3>매달 돌아보는 리포트</h3>
+        <p>복약률, 연속 복용 일수, 약별 복용률로 이번 달 습관을 점검하세요. 잘 지킨 날도, 놓친 날도 한눈에.</p>
+      </div>
+      <div class="feat-media"><div class="phone"><img src="screenshots/04-report.png" alt="월간 리포트"/></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="screens" style="padding-top:24px">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="kicker">화면 미리보기</span>
+      <h2>따뜻하게, 또렷하게.</h2>
+    </div>
+  </div>
+  <div class="gallery reveal">
+    <div class="phone"><img src="screenshots/01-home.png" alt="홈"/></div>
+    <div class="phone"><img src="screenshots/02-record-calendar.png" alt="캘린더"/></div>
+    <div class="phone"><img src="screenshots/03-record-timeline.png" alt="타임라인"/></div>
+    <div class="phone"><img src="screenshots/04-report.png" alt="리포트"/></div>
+    <div class="phone"><img src="screenshots/05-med-detail.png" alt="약 상세"/></div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="kicker">자주 묻는 질문</span>
+      <h2>궁금한 점이 있나요?</h2>
+    </div>
+    <div class="faq reveal">
+      <details open>
+        <summary>복용 알림이 오지 않아요. <span class="plus">+</span></summary>
+        <p>설정 → 알림에서 Pillog 알림이 켜져 있는지, 앱 안 [내 정보 → 알림]에서 권한이 허용돼 있는지 확인해 주세요. 기기의 집중 모드(방해 금지)도 알림을 가릴 수 있습니다.</p>
+      </details>
+      <details>
+        <summary>데이터는 어디에 저장되나요? <span class="plus">+</span></summary>
+        <p>모든 약·복용 기록은 기기 안에만 저장되며 서버로 전송되지 않습니다. 회원가입도 필요 없습니다. 자세한 내용은 <a href="privacy.html" style="color:var(--ember);font-weight:600">개인정보 처리방침</a>을 참고하세요.</p>
+      </details>
+      <details>
+        <summary>기기를 바꾸면 기록이 옮겨지나요? <span class="plus">+</span></summary>
+        <p>현재 버전은 기기 내 저장만 지원합니다. 데이터 백업/이전 기능은 다음 업데이트에서 준비 중입니다.</p>
+      </details>
+      <details>
+        <summary>알림에서 바로 복용 체크할 수 있나요? <span class="plus">+</span></summary>
+        <p>네. 복용 알림의 “먹었어요” 버튼을 누르면 앱을 열지 않아도 복용 완료로 기록됩니다. “10분 후”로 미룰 수도 있어요.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="contact" style="padding-top:24px">
+  <div class="wrap">
+    <div class="contact reveal">
+      <span class="kicker">문의</span>
+      <p style="color:var(--text2);margin-top:10px">버그 신고, 기능 제안, 그 밖의 문의를 보내주세요. 보통 2~3일 내에 답변드립니다.</p>
+      <a class="mail" href="mailto:dkrnfls@gmail.com?subject=Pillog%20문의">dkrnfls@gmail.com</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-in">
+    <span class="brand" style="font-size:15px"><span class="cap"></span> Pillog</span>
+    <div class="foot-links">
+      <a href="privacy.html">개인정보 처리방침</a>
+      <a href="terms.html">이용약관</a>
+      <a href="mailto:dkrnfls@gmail.com">문의</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
 </body>
 </html>
