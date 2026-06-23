@@ -1,96 +1,203 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8"/>
-<title>모닝보이스 지원 / Support</title>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta name="robots" content="index"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>모닝보이스 — 사랑하는 사람의 목소리로 여는 아침</title>
+<meta name="description" content="기계음 대신 진짜 그 목소리로. 엄마·연인·아이의 목소리를 녹음해 원하는 시간에 알람으로. 모든 녹음은 기기에만 저장됩니다.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap">
 <style>
-  :root {
-    --bg: #14110e;
-    --card: #221d18;
-    --text: #f7efe2;
-    --text2: rgba(247,239,226,0.66);
-    --text3: rgba(247,239,226,0.45);
-    --ember: #FF3B30;
-    --gold: #D9A65A;
-    --border: rgba(247,239,226,0.1);
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--accent:#FF3B30;--panel:#16140F;--ink:#1A1813;--paper:#F4EFE6;--surface:#F7F6F2;
+        --line:rgba(26,24,19,.14);--dim:rgba(26,24,19,.55);--faint:rgba(26,24,19,.34);--mono:'Space Mono',ui-monospace,monospace}
+  html{scroll-behavior:smooth}
+  body{font-family:'Pretendard Variable',Pretendard,sans-serif;color:var(--ink);background:#fff;letter-spacing:-.01em;line-height:1.5}
+  .mono{font-family:var(--mono)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  a{color:inherit}
+  .eyebrow{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.18em;color:var(--accent)}
+
+  /* hero */
+  .hero{background:var(--panel);color:#fff;border-radius:0 0 36px 36px;overflow:hidden;position:relative}
+  .hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.4px);background-size:7px 7px;pointer-events:none}
+  .hero .wrap{position:relative;padding:34px 24px 0}
+  .nav{display:flex;align-items:center;justify-content:space-between}
+  .nav .brand{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.14em}
+  .nav .links{display:flex;gap:18px;font-size:13px;color:rgba(255,255,255,.6)}
+  .nav .links a{text-decoration:none}
+  .hero-main{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center;padding:54px 0 0}
+  .hero h1{font-size:52px;line-height:1.1;font-weight:800;letter-spacing:-1.2px;white-space:pre-line}
+  .hero p.lead{font-size:17px;line-height:1.7;color:rgba(255,255,255,.78);margin-top:20px;max-width:440px}
+  .cta-row{display:flex;gap:12px;align-items:center;margin-top:28px;flex-wrap:wrap}
+  .badge{display:inline-flex;align-items:center;gap:9px;background:#fff;color:var(--panel);font-weight:700;font-size:15px;padding:14px 20px;border-radius:13px;text-decoration:none}
+  .badge .dot{width:13px;height:13px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px rgba(255,59,48,.6)}
+  .soon{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:rgba(255,255,255,.5)}
+  .hero-phone{display:flex;justify-content:center;align-items:flex-end;height:540px}
+  .phone{width:262px;border-radius:40px;background:#000;padding:9px;box-shadow:0 30px 70px rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12)}
+  .phone img{width:100%;display:block;border-radius:32px}
+
+  /* features */
+  section{padding:88px 0}
+  .feat{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+  .feat+.feat{margin-top:80px}
+  .feat.rev .copy{order:2}
+  .feat .copy h2{font-size:32px;line-height:1.25;font-weight:700;letter-spacing:-.6px;margin-top:12px}
+  .feat .copy p{font-size:16px;line-height:1.7;color:var(--dim);margin-top:14px;max-width:420px}
+  .feat .shot{display:flex;justify-content:center}
+  .feat .phone{width:248px}
+  .feat.rev .shot .phone{margin-left:auto}
+
+  /* gallery */
+  .gallery{background:var(--paper);border-radius:36px;margin:0 24px;padding:72px 0}
+  .gallery .head{text-align:center;margin-bottom:44px}
+  .gallery h2{font-size:30px;font-weight:700;letter-spacing:-.5px;margin-top:10px}
+  .strip{display:flex;gap:20px;overflow-x:auto;padding:4px 24px 16px;scroll-snap-type:x mandatory}
+  .strip .phone{width:220px;flex:0 0 auto;scroll-snap-align:center;background:var(--panel)}
+
+  /* faq + contact */
+  .panel-sec{max-width:760px}
+  .sec-title{font-size:28px;font-weight:700;letter-spacing:-.5px;margin-top:10px}
+  .faq{margin-top:28px}
+  .qa{padding:22px 0;border-top:1px solid var(--line)}
+  .qa .q{font-size:17px;font-weight:700}
+  .qa .a{font-size:15px;color:var(--dim);margin-top:8px;line-height:1.65}
+  .contact{margin-top:48px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px}
+  .contact h3{font-size:18px;font-weight:700}
+  .contact p{color:var(--dim);font-size:14.5px;margin-top:6px}
+  .mail{display:inline-block;margin-top:14px;font-family:var(--mono);font-weight:700;font-size:16px;color:var(--accent);text-decoration:none}
+
+  footer{background:var(--panel);color:rgba(255,255,255,.6);text-align:center;padding:40px 24px;font-size:13px;margin-top:40px}
+  footer a{color:rgba(255,255,255,.85);text-decoration:none}
+  footer .fb{font-family:var(--mono);font-weight:700;letter-spacing:.14em;color:#fff;font-size:13px;margin-bottom:10px}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  @media(max-width:760px){
+    .hero h1{font-size:36px}
+    .hero-main{grid-template-columns:1fr;gap:8px;padding:36px 0 0}
+    .hero-phone{height:auto;margin-top:20px}
+    .nav .links{display:none}
+    .feat,.feat.rev{grid-template-columns:1fr;gap:24px}
+    .feat.rev .copy{order:0}
+    section{padding:60px 0}
+    .feat+.feat{margin-top:56px}
   }
-  * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
-      "Apple SD Gothic Neo", "Segoe UI", system-ui, sans-serif;
-    line-height: 1.7;
-    letter-spacing: -0.01em;
-  }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 48px 20px 96px; }
-  header { margin-bottom: 32px; }
-  .brand {
-    display: inline-flex; align-items: center; gap: 12px;
-    font-size: 14px; font-weight: 700; color: var(--gold);
-    letter-spacing: 0.06em; text-transform: uppercase;
-  }
-  .cap {
-    width: 34px; height: 19px; border-radius: 999px; position: relative; overflow: hidden;
-    transform: rotate(-26deg); flex-shrink: 0;
-    box-shadow: inset 0 -2px 3px rgba(0,0,0,.2), inset 0 1px 1px rgba(255,255,255,.5);
-    background: linear-gradient(90deg, #3D2A1B 0 50%, #C98A3C 50% 100%);
-  }
-  h1 { font-size: 30px; font-weight: 800; margin: 18px 0 6px; letter-spacing: -0.02em; }
-  .sub { color: var(--text2); font-size: 15px; margin: 0; }
-  .card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
-    padding: 24px 24px; margin-top: 20px;
-  }
-  h2 { font-size: 17px; font-weight: 700; margin: 0 0 10px; color: var(--gold); }
-  p { margin: 8px 0; color: var(--text2); font-size: 15px; }
-  a { color: var(--ember); text-decoration: none; font-weight: 600; }
-  a:hover { text-decoration: underline; }
-  .mail {
-    display: inline-block; margin-top: 6px; font-size: 18px; font-weight: 700; color: var(--text);
-  }
-  .q { color: var(--text); font-weight: 700; margin: 16px 0 4px; font-size: 15px; }
-  .q:first-of-type { margin-top: 0; }
-  footer { margin-top: 32px; color: var(--text3); font-size: 13px; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <span class="brand"><span class="cap"></span> 모닝보이스</span>
-    <h1>지원 / Support</h1>
-    <p class="sub">사랑하는 사람의 목소리로 여는 아침 — 모닝보이스 사용에 도움이 필요하신가요?</p>
-  </header>
 
-  <div class="card">
-    <h2>문의하기</h2>
-    <p>버그 신고, 기능 제안, 그 밖의 문의는 아래 이메일로 보내주세요. 보통 2~3일 내에 답변드립니다.</p>
-    <a class="mail" href="mailto:dkrnfls@gmail.com?subject=모닝보이스%20문의">dkrnfls@gmail.com</a>
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="nav">
+      <span class="brand">MORNINGVOICE™</span>
+      <nav class="links"><a href="#features">기능</a><a href="#faq">FAQ</a><a href="privacy.html">개인정보</a></nav>
+    </div>
+    <div class="hero-main">
+      <div>
+        <span class="eyebrow">VOICE ALARM</span>
+        <h1>기계음 대신,
+진짜 그 목소리로</h1>
+        <p class="lead">사랑하는 사람이 직접 녹음한 목소리로 아침을 열어요. 엄마·연인·아이의 목소리를 30초 안에 녹음해, 원하는 시간에 알람으로 — 차가운 알람음은 이제 그만.</p>
+        <div class="cta-row">
+          <a class="badge" href="mailto:dkrnfls@gmail.com?subject=모닝보이스%20출시%20알림"><span class="dot"></span>출시 알림 받기</a>
+          <span class="soon">COMING SOON · iOS 26+</span>
+        </div>
+      </div>
+      <div class="hero-phone">
+        <div class="phone"><img src="screenshots/2-library.png" alt="모닝보이스 라이브러리 화면"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- FEATURES -->
+<section id="features" class="wrap">
+  <div class="feat reveal">
+    <div class="copy">
+      <span class="eyebrow">NEW RECORDING</span>
+      <h2>30초면 충분해요</h2>
+      <p>앱에서 바로 30초 이내로 목소리를 녹음하고 라이브러리에 차곡차곡 모아두세요. 미리듣기로 확인하고, 마음에 들 때 저장하면 끝. 녹음 중에는 파형이 살아 움직여 더 생생해요.</p>
+    </div>
+    <div class="shot"><div class="phone"><img src="screenshots/3-record.png" alt="목소리 녹음 화면"></div></div>
   </div>
 
-  <div class="card">
-    <h2>자주 묻는 질문</h2>
-
-    <p class="q">알람이 울리지 않아요.</p>
-    <p>설정 → 모닝보이스에서 <strong>알림(알람) 권한</strong>이 허용돼 있는지 확인해 주세요. 모닝보이스의 알람은 <strong>iOS 26 이상</strong>에서 동작합니다. 집중 모드(방해 금지)도 알람을 가릴 수 있습니다.</p>
-
-    <p class="q">데이터는 어디에 저장되나요?</p>
-    <p>녹음한 목소리와 알람 설정은 모두 기기 안에만 저장되며 서버로 전송되지 않습니다. 회원가입도 필요 없습니다. 자세한 내용은 <a href="privacy.html">개인정보 처리방침</a>을 참고하세요.</p>
-
-    <p class="q">녹음한 목소리가 재생되지 않아요.</p>
-    <p>이전 버전에서 녹음한 일부 클립은 다시 녹음이 필요할 수 있습니다. 해당 클립을 삭제하고 새로 녹음해 주세요.</p>
-
-    <p class="q">다른 사람의 목소리를 녹음해도 되나요?</p>
-    <p>반드시 목소리 주인의 동의를 받은 뒤 사용해 주세요. 앱은 ‘소중한 사람’ 목소리를 저장할 때 동의 확인을 요청합니다.</p>
+  <div class="feat rev reveal">
+    <div class="copy">
+      <span class="eyebrow">WAKE UP</span>
+      <h2>원하는 시간에,<br>그 목소리로</h2>
+      <p>시간과 반복 요일만 정하면 예약한 순간에 녹음한 목소리가 그대로 흘러나옵니다. 평일만, 주말만, 매일 — 요일별로 자유롭게 설정하세요.</p>
+    </div>
+    <div class="shot"><div class="phone"><img src="screenshots/4-alarm.png" alt="알람 설정 화면"></div></div>
   </div>
 
-  <footer>
-    모닝보이스 · <a href="privacy.html">개인정보 처리방침</a> · <a href="terms.html">이용약관</a>
-  </footer>
+  <div class="feat reveal">
+    <div class="copy">
+      <span class="eyebrow">PRIVATE BY DESIGN</span>
+      <h2>소중한 만큼,<br>안전하게</h2>
+      <p>모든 녹음과 설정은 오직 당신의 기기에만 저장됩니다. 서버 전송도, 계정 가입도, 광고 추적도 없습니다. 타인의 목소리는 동의를 받아 안전하게 사용하세요.</p>
+    </div>
+    <div class="shot"><div class="phone"><img src="screenshots/1-onboarding.png" alt="온보딩 화면"></div></div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<div class="gallery reveal">
+  <div class="head">
+    <span class="eyebrow">SCREENS</span>
+    <h2>한눈에 보기</h2>
+  </div>
+  <div class="strip">
+    <div class="phone"><img src="screenshots/1-onboarding.png" alt=""></div>
+    <div class="phone"><img src="screenshots/2-library.png" alt=""></div>
+    <div class="phone"><img src="screenshots/3-record.png" alt=""></div>
+    <div class="phone"><img src="screenshots/4-alarm.png" alt=""></div>
+  </div>
 </div>
+
+<!-- FAQ + CONTACT (support) -->
+<section id="faq" class="wrap">
+  <div class="panel-sec">
+    <span class="eyebrow">SUPPORT</span>
+    <h2 class="sec-title">자주 묻는 질문</h2>
+    <div class="faq">
+      <div class="qa">
+        <div class="q">알람이 울리지 않아요.</div>
+        <div class="a">설정 → 모닝보이스에서 <b>알림(알람) 권한</b>이 허용돼 있는지 확인해 주세요. 모닝보이스의 알람은 <b>iOS 26 이상</b>에서 동작합니다. 집중 모드(방해 금지)도 알람을 가릴 수 있어요.</div>
+      </div>
+      <div class="qa">
+        <div class="q">녹음한 목소리가 재생되지 않아요.</div>
+        <div class="a">이전 버전에서 녹음한 일부 클립은 다시 녹음이 필요할 수 있습니다. 해당 클립을 삭제하고 새로 녹음해 주세요.</div>
+      </div>
+      <div class="qa">
+        <div class="q">녹음한 목소리는 어디에 저장되나요?</div>
+        <div class="a">모든 녹음과 설정은 기기 안에만 저장되며 서버로 전송되지 않습니다. 회원가입도 필요 없어요. 자세한 내용은 <a href="privacy.html" style="color:var(--accent);font-weight:600">개인정보 처리방침</a>을 참고하세요.</div>
+      </div>
+      <div class="qa">
+        <div class="q">다른 사람의 목소리를 녹음해도 되나요?</div>
+        <div class="a">반드시 목소리 주인의 동의를 받은 뒤 사용해 주세요. 앱은 ‘소중한 사람’ 목소리를 저장할 때 동의 확인을 요청합니다.</div>
+      </div>
+    </div>
+
+    <div class="contact">
+      <h3>문의하기</h3>
+      <p>버그 신고·기능 제안·그 밖의 문의는 이메일로 보내주세요. 보통 2~3일 내 답변드립니다. 사용 기기와 iOS 버전을 함께 알려주시면 빠른 도움이 됩니다.</p>
+      <a class="mail" href="mailto:dkrnfls@gmail.com?subject=모닝보이스%20문의">dkrnfls@gmail.com</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="fb">MORNINGVOICE™</div>
+  © 2026 모닝보이스 · <a href="privacy.html">개인정보 처리방침</a> · <a href="terms.html">이용약관</a>
+</footer>
+
+<script>
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.15});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el)});
+</script>
 </body>
 </html>
