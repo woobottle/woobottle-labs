@@ -8,14 +8,18 @@
 <meta name="robots" content="index"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
 <style>
   :root{
-    --bg:#14110e; --bg2:#1b1712; --card:#221d18; --card2:#2a241d;
-    --text:#f7efe2; --text2:rgba(247,239,226,.66); --text3:rgba(247,239,226,.42);
-    --ember:#E8703A; --ember-soft:#f08a52; --gold:#D9A65A; --border:rgba(247,239,226,.1);
-    --glow:rgba(232,112,58,.22);
+    /* Bold 에디토리얼 — 잉크/크림/버밀리언 (앱과 동일) */
+    --ink:#16130F; --cream:#F4EFE6; --on-cta:#16130F;
+    --mono:"Space Mono",ui-monospace,SFMono-Regular,monospace;
+    /* 레거시 변수명 → Bold 값으로 리포인트(인라인 참조 호환) */
+    --bg:#16130F; --bg2:#1A1612; --card:#221E18; --card2:#2A241E;
+    --text:#F4EFE6; --text2:rgba(244,239,230,.66); --text3:rgba(244,239,230,.46);
+    --ember:#F2542A; --ember-soft:#E8421C; --gold:#E5A53C; --border:rgba(244,239,230,.16);
+    --glow:rgba(232,66,28,.30);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
@@ -26,14 +30,15 @@
   }
   a{color:inherit;text-decoration:none}
   .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-  .serif{font-family:"Fraunces",serif}
+  /* '.serif' → Bold 강조어: 버밀리언 ExtraBold (세리프 대체) */
+  .serif{font-family:inherit;font-style:normal;font-weight:800;color:var(--ember)}
 
-  /* atmosphere */
+  /* atmosphere — 버밀리언 글로우 (잠금화면 에코) */
   body::before{
     content:"";position:fixed;inset:0;z-index:-2;
     background:
       radial-gradient(900px 600px at 78% -8%, var(--glow), transparent 60%),
-      radial-gradient(700px 500px at 8% 18%, rgba(217,166,90,.10), transparent 55%);
+      radial-gradient(700px 500px at 8% 18%, rgba(244,239,230,.05), transparent 55%);
     pointer-events:none;
   }
   body::after{
@@ -45,11 +50,12 @@
   nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
     background:rgba(20,17,14,.6);border-bottom:1px solid var(--border)}
   .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .brand{display:inline-flex;align-items:center;gap:11px;font-weight:800;font-size:17px;letter-spacing:-0.02em}
+  .brand{display:inline-flex;align-items:center;gap:11px;font-weight:800;font-size:17px;letter-spacing:-0.03em}
   .cap{width:30px;height:17px;border-radius:999px;transform:rotate(-24deg);flex-shrink:0;
     box-shadow:inset 0 -2px 3px rgba(0,0,0,.25),inset 0 1px 1px rgba(255,255,255,.5);
     background:linear-gradient(90deg,#3D2A1B 0 50%,#C98A3C 50% 100%)}
-  .nav-links{display:flex;gap:28px;font-size:14px;color:var(--text2);font-weight:500}
+  .nav-links{display:flex;gap:28px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--text3)}
   .nav-links a:hover{color:var(--text)}
   @media(max-width:680px){.nav-links{display:none}}
 
@@ -57,22 +63,22 @@
   .hero{position:relative;padding:84px 0 64px}
   .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
   @media(max-width:880px){.hero-grid{grid-template-columns:1fr;text-align:center}}
-  .eyebrow{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.16em;
-    text-transform:uppercase;color:var(--gold);margin-bottom:20px}
-  h1{font-size:clamp(38px,6vw,62px);line-height:1.08;font-weight:700;letter-spacing:-0.03em}
+  .eyebrow{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ember);margin-bottom:20px}
+  h1{font-size:clamp(40px,6.4vw,66px);line-height:1.04;font-weight:800;letter-spacing:-0.045em}
   h1 em{font-style:normal;color:var(--ember);position:relative}
   .hero p.sub{margin:22px 0 0;font-size:clamp(16px,2.2vw,19px);color:var(--text2);max-width:30ch}
   @media(max-width:880px){.hero p.sub{margin-left:auto;margin-right:auto}}
   .cta{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap}
   @media(max-width:880px){.cta{justify-content:center}}
-  .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 22px;border-radius:14px;
-    font-weight:700;font-size:15px;transition:transform .15s,box-shadow .25s}
-  .btn-primary{background:linear-gradient(135deg,var(--ember),var(--ember-soft));color:#fff;
-    box-shadow:0 10px 30px -8px var(--glow)}
-  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -8px var(--glow)}
-  .btn-ghost{border:1px solid var(--border);color:var(--text2)}
-  .btn-ghost:hover{color:var(--text);border-color:rgba(247,239,226,.25)}
-  .soon{font-size:12px;color:var(--text3);margin-top:14px}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:15px 22px;border-radius:4px;
+    font-weight:800;font-size:15px;letter-spacing:-0.01em;transition:transform .15s,opacity .2s,box-shadow .25s}
+  .btn-primary{background:var(--cream);color:var(--on-cta);
+    box-shadow:0 14px 34px -12px rgba(0,0,0,.6)}
+  .btn-primary:hover{transform:translateY(-2px);opacity:.94}
+  .btn-ghost{border:1px solid var(--border);color:var(--text)}
+  .btn-ghost:hover{border-color:rgba(244,239,230,.34)}
+  .soon{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--text3);margin-top:16px}
   @media(max-width:880px){.soon{text-align:center}}
 
   /* phone mockup */
@@ -91,17 +97,17 @@
   section{padding:72px 0}
   .sec-head{max-width:34ch;margin-bottom:48px}
   .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
-  .kicker{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
-  h2{font-size:clamp(27px,4vw,40px);line-height:1.15;font-weight:700;letter-spacing:-0.025em;margin-top:14px}
-  h2 .serif{font-style:italic;color:var(--ember-soft);font-weight:500}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ember)}
+  h2{font-size:clamp(28px,4.2vw,42px);line-height:1.12;font-weight:800;letter-spacing:-0.035em;margin-top:14px}
+  h2 .serif{font-weight:800;color:var(--ember)}
 
   /* feature rows */
   .feat{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin:0 0 96px}
   .feat:nth-child(even) .feat-media{order:-1}
   @media(max-width:880px){.feat{grid-template-columns:1fr;gap:32px;margin-bottom:64px}
     .feat:nth-child(even) .feat-media{order:0}}
-  .feat-num{font-family:"Fraunces",serif;font-size:15px;color:var(--ember);font-weight:600;letter-spacing:.05em}
-  .feat h3{font-size:clamp(22px,3vw,30px);font-weight:700;letter-spacing:-0.02em;margin:10px 0 14px;line-height:1.2}
+  .feat-num{font-family:var(--mono);font-size:13px;color:var(--ember);font-weight:700;letter-spacing:.1em}
+  .feat h3{font-size:clamp(22px,3vw,31px);font-weight:800;letter-spacing:-0.03em;margin:12px 0 14px;line-height:1.16}
   .feat p{color:var(--text2);font-size:16px;max-width:38ch}
   .feat-media{display:flex;justify-content:center}
 
@@ -114,9 +120,9 @@
 
   /* faq */
   .faq{max-width:760px;margin:0 auto}
-  details{border:1px solid var(--border);border-radius:16px;background:var(--card);
+  details{border:1px solid var(--border);border-radius:8px;background:var(--card);
     padding:0 22px;margin-bottom:12px;overflow:hidden;transition:border-color .2s}
-  details[open]{border-color:rgba(232,112,58,.35)}
+  details[open]{border-color:rgba(242,84,42,.45)}
   summary{list-style:none;cursor:pointer;padding:18px 0;font-weight:700;font-size:16px;
     display:flex;justify-content:space-between;align-items:center;gap:16px}
   summary::-webkit-details-marker{display:none}
@@ -125,14 +131,14 @@
   details p{color:var(--text2);font-size:15px;padding:0 0 20px;margin:0}
 
   /* contact + footer */
-  .contact{text-align:center;background:linear-gradient(160deg,var(--card),var(--bg2));
-    border:1px solid var(--border);border-radius:26px;padding:54px 24px;margin:24px 0}
-  .contact a.mail{display:inline-block;margin-top:8px;font-family:"Fraunces",serif;
-    font-size:clamp(24px,4vw,34px);font-weight:600;color:var(--ember-soft)}
-  .contact a.mail:hover{color:var(--ember)}
+  .contact{text-align:center;background:var(--card);
+    border:1px solid var(--border);border-radius:16px;padding:54px 24px;margin:24px 0}
+  .contact a.mail{display:inline-block;margin-top:8px;
+    font-size:clamp(24px,4vw,34px);font-weight:800;letter-spacing:-0.03em;color:var(--ember)}
+  .contact a.mail:hover{opacity:.85}
   footer{border-top:1px solid var(--border);padding:36px 0 60px;color:var(--text3);font-size:13.5px}
   .foot-in{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
-  .foot-links{display:flex;gap:22px}
+  .foot-links{display:flex;gap:22px;font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase}
   .foot-links a:hover{color:var(--text2)}
 
   /* reveal */
