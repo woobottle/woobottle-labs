@@ -6,7 +6,7 @@ import { Input } from "shared/ui/input";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import {
-  convertPngFileToWebp,
+  convertImageFileToWebp,
   downloadDataUrl,
   WebpConversionResult,
 } from "../lib/png-to-webp";
@@ -23,7 +23,7 @@ export const PngToWebpConverter: React.FC = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files || []).filter((f) =>
-      /\.png$/i.test(f.name),
+      /\.(png|jpe?g)$/i.test(f.name),
     );
     setFiles(selected);
   };
@@ -33,7 +33,7 @@ export const PngToWebpConverter: React.FC = () => {
     setIsConverting(true);
     try {
       const converted = await Promise.all(
-        files.map((file) => convertPngFileToWebp(file, quality)),
+        files.map((file) => convertImageFileToWebp(file, quality)),
       );
       const withPreview: ConvertedItem[] = converted.map((item) => ({
         ...item,
@@ -73,11 +73,11 @@ export const PngToWebpConverter: React.FC = () => {
         <div className="grid md:grid-cols-3 gap-4 items-end">
           <div>
             <label className="block text-sm font-medium mb-2 text-[#A3A3A3]">
-              PNG 파일 선택
+              PNG·JPEG 파일 선택
             </label>
             <Input
               type="file"
-              accept="image/png"
+              accept="image/png,image/jpeg"
               multiple
               onChange={handleFileChange}
             />
