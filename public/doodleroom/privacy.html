@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<title>낙서방 개인정보 처리방침</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="index"/>
+<style>
+  :root{
+    --bg:#14110e; --card:#221d18; --text:#f7efe2; --text2:rgba(247,239,226,.66);
+    --text3:rgba(247,239,226,.45); --ember:#4FE0C9; --gold:#FBD24E; --border:rgba(247,239,226,.1);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",system-ui,sans-serif;
+    line-height:1.75;letter-spacing:-0.01em}
+  .wrap{max-width:780px;margin:0 auto;padding:48px 20px 96px}
+  header{margin-bottom:28px}
+  .brand{display:inline-flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase}
+  .paw{font-size:20px;transform:rotate(-12deg)}
+  h1{font-size:28px;font-weight:800;margin:16px 0 6px;letter-spacing:-0.02em}
+  .meta{color:var(--text3);font-size:13px;margin:0}
+  .lead{color:var(--text2);font-size:15px;margin:18px 0 0}
+  .note{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:22px 0;color:var(--text2);font-size:14px}
+  h2{font-size:18px;font-weight:700;margin:36px 0 10px;color:var(--gold);letter-spacing:-0.01em}
+  h3{font-size:15px;font-weight:700;margin:18px 0 6px;color:var(--text)}
+  p{margin:8px 0;color:var(--text2);font-size:15px}
+  ul{margin:8px 0;padding-left:20px;color:var(--text2);font-size:15px}
+  li{margin:4px 0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;color:var(--text2);vertical-align:top}
+  th{color:var(--text);font-weight:700;background:rgba(247,239,226,.04)}
+  a{color:var(--ember);text-decoration:none;font-weight:600}
+  a:hover{text-decoration:underline}
+  strong{color:var(--text)}
+  hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+  footer{margin-top:36px;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="brand"><span class="paw">🐾</span> 낙서방</span>
+    <h1>개인정보 처리방침</h1>
+    <p class="meta">시행일 2026-06-28 · 최종 개정일 2026-06-28</p>
+  </header>
+
+  <p class="lead">정우병(이하 "운영자")는 「개인정보 보호법」 제30조에 따라 정보주체의 개인정보를 보호하고 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
+
+  <div class="note">
+    <strong>핵심 요약 —</strong> 낙서방(이하 "앱")은 친구들과 하나의 캔버스에 함께 그림을 그리는 서비스로,
+    원활한 공동 작업·동기화·알림을 위해 <strong>일부 정보를 서버(클라우드)에 저장</strong>합니다.
+    앱은 이름·생년월일·전화번호 등을 받지 않으며, 익명 또는 Apple 로그인으로 시작합니다.
+    이용자는 <strong>앱 내 "계정 삭제"로 언제든 계정과 본인 데이터를 영구 삭제</strong>할 수 있습니다.
+  </div>
+
+  <h2>제1조 (개인정보의 처리 목적)</h2>
+  <p>앱은 다음의 목적을 위하여 개인정보를 처리합니다. 처리하는 정보는 아래 목적 이외의 용도로 이용되지 않으며, 목적이 변경되는 경우 「개인정보 보호법」 제18조에 따라 필요한 조치를 이행합니다.</p>
+  <ul>
+    <li>서비스 제공 — 방(공유 캔버스) 생성·참여, 그림·댓글·반응의 저장과 친구 간 동기화</li>
+    <li>계정 식별 — 익명 또는 Apple 로그인 기반의 이용자 식별 및 본인 콘텐츠 관리</li>
+    <li>알림 — 같은 방의 친구가 그림을 수정했을 때 푸시 알림 발송</li>
+    <li>위젯 — 이용자가 선택한 방의 최근 그림을 홈 화면 위젯에 표시</li>
+  </ul>
+
+  <h2>제2조 (처리하는 개인정보의 항목)</h2>
+  <p>앱은 이름·생년월일·연락처 등 직접적인 신원 정보를 수집하지 않습니다. 처리하는 항목은 다음과 같습니다.</p>
+  <table>
+    <tr><th>구분</th><th>항목</th><th>비고</th></tr>
+    <tr><td>계정</td><td>익명 계정 식별자(UUID)</td><td>로그인 없이 시작 시 자동 생성</td></tr>
+    <tr><td>계정(선택)</td><td>Apple 로그인 식별자, 이메일</td><td>Apple로 로그인 시. 이메일은 Apple의 가리기(릴레이) 주소일 수 있음</td></tr>
+    <tr><td>프로필</td><td>닉네임, 아바타 색상</td><td>이용자가 입력·선택(미입력 시 기본값)</td></tr>
+    <tr><td>이용자 생성 콘텐츠</td><td>그림(획·스티커·글자), 댓글, 반응</td><td>방 참여자 간 공유</td></tr>
+    <tr><td>기기</td><td>푸시 알림 토큰, 기기 OS(iOS/Android) 구분</td><td>알림 발송용. 알림 허용 시에만</td></tr>
+  </table>
+  <h3>자동 수집 항목</h3>
+  <p>앱은 광고식별자(ADID/IDFA), 쿠키, 위치정보를 <strong>수집하지 않습니다.</strong> 광고·추적 목적의 분석 도구를 사용하지 않습니다.</p>
+  <h3>기기 권한</h3>
+  <p>앱은 기능 제공을 위해 다음 권한을 사용할 수 있습니다. 권한은 기기 설정에서 언제든 변경할 수 있습니다.</p>
+  <ul>
+    <li>알림 — 친구의 그림 수정 알림 표시(허용은 선택)</li>
+  </ul>
+
+  <h2>제3조 (개인정보의 처리 및 보유 기간)</h2>
+  <p>앱은 이용 기간 동안 위 정보를 서버에 보관하며, 다음의 경우 지체 없이 파기합니다.</p>
+  <ul>
+    <li>이용자가 앱 내 <strong>"계정 삭제"</strong>를 실행한 경우 — 계정과 본인 데이터(이용자가 만든 방, 댓글, 반응, 푸시 토큰, 위젯 키 등)를 즉시 삭제</li>
+    <li>이용자가 방에서 나가거나 콘텐츠를 삭제한 경우 — 해당 데이터 삭제</li>
+  </ul>
+  <p>여러 친구가 함께 그린 공유 캔버스(방)의 그림 기록은 다른 참여자의 콘텐츠이기도 하므로, 계정 삭제 시 해당 그림에서 이용자의 작성자 표시는 익명화되며 공유 작품 자체는 다른 참여자를 위해 보존될 수 있습니다.</p>
+
+  <h2>제4조 (개인정보의 제3자 제공)</h2>
+  <p>운영자는 이용자의 개인정보를 제3자에게 판매하거나 마케팅 목적으로 제공하지 않습니다. 다만 같은 방에 참여한 친구에게는 서비스 특성상 닉네임·아바타 색상과 이용자가 그린 그림·댓글·반응이 공개됩니다.</p>
+
+  <h2>제5조 (개인정보 처리의 위탁)</h2>
+  <p>운영자는 안정적인 서비스 제공을 위해 아래와 같이 개인정보 처리업무를 위탁하고 있습니다.</p>
+  <table>
+    <tr><th>수탁자</th><th>위탁 업무</th><th>비고</th></tr>
+    <tr><td>Supabase, Inc.</td><td>데이터베이스·인증·저장소·서버 기능 호스팅</td><td>대한민국(서울) 리전 저장</td></tr>
+    <tr><td>Apple Inc.</td><td>Apple 로그인, 푸시 알림(APNs) 전송</td><td>이용자가 해당 기능 사용 시</td></tr>
+    <tr><td>Expo (650 Industries, Inc.)</td><td>푸시 알림 전송 중계</td><td>알림 토큰 처리</td></tr>
+  </table>
+
+  <h2>제6조 (개인정보의 파기 절차 및 방법)</h2>
+  <p>이용자가 앱 내 <strong>"계정 삭제"</strong>를 실행하면, 운영자의 서버에서 해당 계정과 본인 데이터가 복구 불가능한 방식으로 즉시 삭제됩니다. 보유 목적이 달성되거나 보유 기간이 지난 정보는 지체 없이 파기합니다.</p>
+
+  <h2>제7조 (정보주체와 법정대리인의 권리·의무 및 행사 방법)</h2>
+  <p>정보주체는 언제든지 다음의 권리를 행사할 수 있습니다.</p>
+  <ul>
+    <li>열람·정정 — 앱 내에서 프로필(닉네임·색상)과 본인이 만든 콘텐츠를 직접 확인·수정</li>
+    <li>삭제·처리정지 — 앱 내 "계정 삭제"로 계정과 본인 데이터를 영구 삭제</li>
+  </ul>
+  <p>14세 미만 아동의 경우 법정대리인이 위 권리를 대리하여 행사할 수 있습니다. 추가 문의는 아래 연락처로 하실 수 있습니다.</p>
+  <ul>
+    <li>이메일 <a href="mailto:logan@doctornow.co.kr">logan@doctornow.co.kr</a></li>
+  </ul>
+
+  <h2>제8조 (개인정보 자동 수집 장치의 설치·운영 및 거부)</h2>
+  <p>앱은 쿠키, 광고식별자 등 개인정보 자동 수집 장치를 <strong>설치·운영하지 않습니다.</strong> 따라서 별도의 거부 설정이 필요하지 않습니다.</p>
+
+  <h2>제9조 (개인정보의 안전성 확보 조치)</h2>
+  <p>운영자는 개인정보 보호를 위해 다음의 조치를 취하고 있습니다.</p>
+  <ul>
+    <li>전송 구간 암호화(HTTPS/TLS) 및 저장소 접근 제어</li>
+    <li>행 수준 보안(RLS) 정책으로 이용자가 본인이 참여한 방의 데이터에만 접근하도록 제한</li>
+    <li>최소 수집 원칙 — 신원 정보(이름·연락처 등)를 받지 않음</li>
+  </ul>
+
+  <h2>제10조 (개인정보 보호책임자)</h2>
+  <p>운영자는 개인정보 처리에 관한 업무를 총괄하여 책임지고, 개인정보 처리와 관련한 정보주체의 불만처리 및 피해구제를 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
+  <ul>
+    <li>성명 정우병</li>
+    <li>직책 운영자</li>
+    <li>이메일 <a href="mailto:logan@doctornow.co.kr">logan@doctornow.co.kr</a></li>
+  </ul>
+
+  <h2>제11조 (14세 미만 아동의 개인정보 처리)</h2>
+  <p>앱은 만 14세 미만 아동이 이용하는 경우 법정대리인(보호자)의 동의 및 지도·감독 하에 이용할 것을 권장합니다. 운영자는 이름·연락처 등 신원 정보를 수집하지 않으며, 법정대리인은 아동을 대리하여 앱 내 "계정 삭제" 등 권리를 행사할 수 있습니다.</p>
+
+  <hr/>
+
+  <h2>정보주체의 권익침해 구제 방법</h2>
+  <p>정보주체는 개인정보 침해로 인한 구제를 받기 위하여 아래 기관에 분쟁해결이나 상담 등을 신청할 수 있습니다.</p>
+  <ul>
+    <li>개인정보분쟁조정위원회 — 국번 없이 1833-6972 (www.kopico.go.kr)</li>
+    <li>개인정보침해신고센터 — 국번 없이 118 (privacy.kisa.or.kr)</li>
+    <li>대검찰청 — 국번 없이 1301 (www.spo.go.kr)</li>
+    <li>경찰청 — 국번 없이 182 (ecrm.police.go.kr)</li>
+  </ul>
+
+  <h2>개인정보 처리방침의 변경</h2>
+  <p>본 개인정보 처리방침은 시행일로부터 적용되며, 법령 및 방침에 따른 변경 내용의 추가·삭제·정정이 있는 경우 변경사항 시행 7일 전부터 앱 또는 본 페이지를 통해 고지합니다.</p>
+  <p><strong>개정 이력</strong></p>
+  <ul>
+    <li>2026-06-28 최초 제정</li>
+  </ul>
+
+  <footer>
+    본 처리방침은 2026-06-28부터 시행됩니다. · 낙서방 · <a href="support.html">지원</a> · <a href="terms.html">이용약관</a>
+  </footer>
+</div>
+</body>
+</html>

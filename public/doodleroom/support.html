@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<title>낙서방 지원 / Support</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="index"/>
+<style>
+  :root {
+    --bg: #14110e;
+    --card: #221d18;
+    --text: #f7efe2;
+    --text2: rgba(247,239,226,0.66);
+    --text3: rgba(247,239,226,0.45);
+    --ember: #4FE0C9;
+    --gold: #FBD24E;
+    --border: rgba(247,239,226,0.1);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+      "Apple SD Gothic Neo", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.7;
+    letter-spacing: -0.01em;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 48px 20px 96px; }
+  header { margin-bottom: 32px; }
+  .brand {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 14px; font-weight: 700; color: var(--gold);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .paw { font-size: 22px; transform: rotate(-12deg); }
+  h1 { font-size: 30px; font-weight: 800; margin: 18px 0 6px; letter-spacing: -0.02em; }
+  .sub { color: var(--text2); font-size: 15px; margin: 0; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 24px 24px; margin-top: 20px;
+  }
+  h2 { font-size: 17px; font-weight: 700; margin: 0 0 10px; color: var(--gold); }
+  p { margin: 8px 0; color: var(--text2); font-size: 15px; }
+  a { color: var(--ember); text-decoration: none; font-weight: 600; }
+  a:hover { text-decoration: underline; }
+  .mail {
+    display: inline-block; margin-top: 6px; font-size: 18px; font-weight: 700; color: var(--text);
+  }
+  .q { color: var(--text); font-weight: 700; margin: 16px 0 4px; font-size: 15px; }
+  .q:first-of-type { margin-top: 0; }
+  footer { margin-top: 32px; color: var(--text3); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="brand"><span class="paw">🐾</span> 낙서방</span>
+    <h1>지원 / Support</h1>
+    <p class="sub">친구들과 하나의 캔버스에 함께 그리는 낙서방 — 사용에 도움이 필요하신가요?</p>
+  </header>
+
+  <div class="card">
+    <h2>문의하기</h2>
+    <p>버그 신고, 기능 제안, 그 밖의 문의는 아래 이메일로 보내주세요. 보통 2~3일 내에 답변드립니다.</p>
+    <a class="mail" href="mailto:logan@doctornow.co.kr?subject=%EB%82%99%EC%84%9C%EB%B0%A9%20%EB%AC%B8%EC%9D%98">logan@doctornow.co.kr</a>
+  </div>
+
+  <div class="card">
+    <h2>자주 묻는 질문</h2>
+
+    <p class="q">친구와 어떻게 같이 그리나요?</p>
+    <p>방을 만든 뒤 [멤버] 화면에서 초대 링크를 복사해 친구에게 보내세요. 친구가 그 링크를 탭하면 같은 방에 입장해 함께 그릴 수 있어요. 한 번에 한 명이 편집하는 방식이라 그림이 겹치지 않아요.</p>
+
+    <p class="q">친구가 그림을 수정해도 알림이 안 와요.</p>
+    <p>기기 설정 → 알림에서 낙서방 알림이 켜져 있는지 확인해 주세요. 처음 실행 시 알림 권한을 허용해야 합니다. 집중 모드(방해 금지)도 알림을 가릴 수 있어요.</p>
+
+    <p class="q">홈 화면 위젯에 그림이 안 보여요.</p>
+    <p>위젯은 최근 활동한 방의 그림을 보여줍니다. 방에서 그림을 한 번 저장하면 위젯이 갱신돼요. 위젯은 약 30분 주기로도 자동 갱신됩니다.</p>
+
+    <p class="q">이전에 그려둔 부분도 지울 수 있나요?</p>
+    <p>네. 이어서 그릴 때 지우개로 친구가 그려둔 획도 지울 수 있어요. 캔버스를 두 손가락으로 확대(핀치)하면 더 세밀하게 그릴 수 있습니다.</p>
+
+    <p class="q">계정과 데이터를 삭제하고 싶어요.</p>
+    <p>프로필 화면에서 <strong>"계정 삭제"</strong>를 누르면 계정과 본인 데이터(내가 만든 방, 댓글, 반응 등)가 영구히 삭제됩니다. 자세한 내용은 <a href="privacy.html">개인정보 처리방침</a>을 참고하세요.</p>
+  </div>
+
+  <footer>
+    낙서방 · <a href="privacy.html">개인정보 처리방침</a> · <a href="terms.html">이용약관</a>
+  </footer>
+</div>
+</body>
+</html>
