@@ -43,7 +43,12 @@
     var openBtn = document.getElementById('open');
     openBtn.href = scheme;
     if (code) {
-      document.getElementById('codeline').innerHTML = '초대 코드 <b>' + code + '</b>';
+      // XSS 방지: 사용자 입력(code)은 textContent로만 삽입(innerHTML 금지).
+      var line = document.getElementById('codeline');
+      line.textContent = '초대 코드 ';
+      var b = document.createElement('b');
+      b.textContent = code;
+      line.appendChild(b);
       // 앱이 설치돼 있으면 바로 열기 시도(유니버설 링크가 안 잡힌 경우 폴백).
       setTimeout(function(){ location.href = scheme; }, 350);
     }
