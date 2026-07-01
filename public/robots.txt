@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://woo-bottle.com/imap/blog/sitemap.xml
+Sitemap: https://woo-bottle.com/pillog/blog/sitemap.xml
+Sitemap: https://woo-bottle.com/voicealarm/blog/sitemap.xml
