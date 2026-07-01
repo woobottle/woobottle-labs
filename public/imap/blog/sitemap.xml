@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://woo-bottle.com/imap/blog/</loc><lastmod>2026-07-01</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://woo-bottle.com/imap/blog/night-holiday-pediatric-clinic/</loc><lastmod>2026-07-01</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://woo-bottle.com/imap/blog/fever-emergency-when/</loc><lastmod>2026-07-01</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://woo-bottle.com/imap/blog/moonlight-childrens-hospital/</loc><lastmod>2026-07-01</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://woo-bottle.com/imap/blog/</loc><lastmod>2026-07-02</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://woo-bottle.com/imap/blog/child-gastroenteritis/</loc><lastmod>2026-07-02</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://woo-bottle.com/imap/blog/night-holiday-pharmacy/</loc><lastmod>2026-07-02</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://woo-bottle.com/imap/blog/busan-night-pediatric/</loc><lastmod>2026-07-02</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://woo-bottle.com/imap/blog/seoul-night-pediatric/</loc><lastmod>2026-07-01</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://woo-bottle.com/imap/blog/moonlight-childrens-hospital/</loc><lastmod>2026-07-01</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://woo-bottle.com/imap/blog/fever-emergency-when/</loc><lastmod>2026-07-01</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://woo-bottle.com/imap/blog/night-holiday-pediatric-clinic/</loc><lastmod>2026-07-01</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
 </urlset>
