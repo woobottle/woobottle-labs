@@ -1,0 +1,14 @@
+{
+  "updated": "2026-07-01",
+  "_comment": "woobottle 앱 교차홍보 카탈로그. woo-bottle.com/houseads.json 로 배포됨. HouseAd 컴포넌트가 fetch. 앱 추가/문구 변경은 이 파일만 고치고 재배포하면 모든 앱에 반영(앱 재빌드 불필요). id는 각 앱의 currentAppId와 일치시켜 자기 자신은 제외됨.",
+  "apps": [
+    {
+      "id": "foodMaker",
+      "name": "있는걸로",
+      "tagline": "냉장고 재료 사진 한 장, AI 요리추천",
+      "emoji": "🍳",
+      "url": "https://apps.apple.com/kr/app/id6784326939",
+      "platform": "ios"
+    }
+  ]
+}
