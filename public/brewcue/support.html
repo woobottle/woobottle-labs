@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<title>BrewCue — 내 손으로 내리는 완벽한 한 잔</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="V60부터 에어로프레스까지 10가지 레시피의 단계별 브루잉 타이머. 잠금화면 Live Activity로 붓는 순간을 놓치지 않는 iPhone용 커피 브루잉 앱, BrewCue."/>
+<meta name="robots" content="index"/>
+<meta property="og:title" content="BrewCue — 내 손으로 내리는 완벽한 한 잔"/>
+<meta property="og:description" content="10가지 레시피의 단계별 브루잉 타이머와 iOS Live Activity. iPhone 전용 · 무료."/>
+<meta property="og:type" content="website"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800;900&family=Oswald:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --navy:#28323b; --navy2:#202830; --ink:#181e24; --card:#2b3640;
+    --cream:#eaddca; --cream-bright:#f2ebdd; --cream-soft:#e7ddca;
+    --caramel:#c98a5b; --caramel-soft:#dba06f; --gold:#d9a65a;
+    --text:#f2ebdd; --text2:rgba(242,235,221,.66); --text3:rgba(242,235,221,.42);
+    --border:rgba(242,235,221,.11); --glow:rgba(201,138,91,.24);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--navy2);color:var(--text);
+    font-family:"Gothic A1","Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+    line-height:1.7;letter-spacing:-0.01em;overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  .disp{font-family:"Oswald",sans-serif}
+  .mono{font-family:"DM Mono",monospace}
+
+  /* atmosphere */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-2;
+    background:
+      radial-gradient(900px 620px at 80% -10%, var(--glow), transparent 60%),
+      radial-gradient(720px 520px at 6% 16%, rgba(217,166,90,.10), transparent 55%);
+    pointer-events:none;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;z-index:-1;opacity:.03;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+    background:rgba(32,40,48,.62);border-bottom:1px solid var(--border)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:inline-flex;align-items:center;gap:11px;font-weight:800;font-size:19px;letter-spacing:.02em}
+  .brand .disp{font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .cap{width:30px;height:17px;border-radius:999px;transform:rotate(-24deg);flex-shrink:0;
+    box-shadow:inset 0 -2px 3px rgba(0,0,0,.25),inset 0 1px 1px rgba(255,255,255,.4);
+    background:linear-gradient(90deg,#3D2A1B 0 50%,var(--caramel) 50% 100%)}
+  .nav-links{display:flex;gap:28px;font-size:14px;color:var(--text2);font-weight:500}
+  .nav-links a:hover{color:var(--text)}
+  @media(max-width:680px){.nav-links{display:none}}
+
+  /* hero */
+  .hero{position:relative;padding:80px 0 56px}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center}
+  @media(max-width:880px){.hero-grid{grid-template-columns:1fr;text-align:center}}
+  .eyebrow{display:inline-block;font-size:12.5px;font-weight:600;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--gold);margin-bottom:20px;font-family:"Oswald",sans-serif}
+  h1{font-size:clamp(38px,6vw,60px);line-height:1.1;font-weight:900;letter-spacing:-0.03em}
+  h1 em{font-style:normal;color:var(--caramel)}
+  .hero p.sub{margin:22px 0 0;font-size:clamp(16px,2.2vw,18.5px);color:var(--text2);max-width:32ch}
+  @media(max-width:880px){.hero p.sub{margin-left:auto;margin-right:auto}}
+  .cta{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap}
+  @media(max-width:880px){.cta{justify-content:center}}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 22px;border-radius:14px;
+    font-weight:700;font-size:15px;transition:transform .15s,box-shadow .25s}
+  .btn-primary{background:linear-gradient(135deg,var(--caramel),var(--caramel-soft));color:#241a10;
+    box-shadow:0 10px 30px -8px var(--glow)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -8px var(--glow)}
+  .btn-ghost{border:1px solid var(--border);color:var(--text2)}
+  .btn-ghost:hover{color:var(--text);border-color:rgba(242,235,221,.25)}
+  .soon{font-size:12.5px;color:var(--text3);margin-top:16px}
+  @media(max-width:880px){.soon{text-align:center}}
+
+  /* phone frame */
+  .phone{width:clamp(230px,30vw,286px);aspect-ratio:1179/2556;margin:0 auto;position:relative;
+    border-radius:42px;padding:10px;background:linear-gradient(160deg,#3a4048,#14181d);
+    border:1px solid rgba(242,235,221,.13);
+    box-shadow:0 44px 90px -26px rgba(0,0,0,.75),0 0 0 1px rgba(0,0,0,.4)}
+  .phone .screen{width:100%;height:100%;border-radius:33px;overflow:hidden;position:relative;background:var(--navy)}
+  .notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+    width:32%;height:26px;border-radius:99px;background:#0b0e12;z-index:6}
+  .hero-phone{position:relative}
+  .hero-phone .halo{position:absolute;inset:-14% -8%;z-index:-1;border-radius:50%;
+    background:radial-gradient(closest-side,var(--glow),transparent);filter:blur(10px)}
+
+  /* ===== in-phone: HOME screen reconstruction ===== */
+  .scr{position:absolute;inset:0;padding:44px 16px 0;display:flex;flex-direction:column;background:var(--navy)}
+  .scr-top{display:flex;align-items:center;justify-content:space-between;padding:0 4px 0}
+  .burger{display:flex;flex-direction:column;gap:4px}
+  .burger i{height:2px;background:var(--cream-soft);border-radius:2px;display:block}
+  .gear{width:30px;height:30px;border-radius:50%;background:rgba(231,221,202,.12);
+    border:1px solid rgba(231,221,202,.25);display:flex;align-items:center;justify-content:center;
+    color:rgba(231,221,202,.85);font-size:14px}
+  .scr-today{font-family:"Oswald",sans-serif;font-size:10px;letter-spacing:3px;color:rgba(231,221,202,.5);margin:18px 4px 5px}
+  .scr-title{font-family:"Gothic A1";font-weight:900;font-size:20px;line-height:1.2;color:var(--cream-bright);margin:0 4px;letter-spacing:-.5px}
+  .scr-chips{display:flex;gap:6px;margin:16px 4px 0;flex-wrap:wrap}
+  .scr-chip{font-family:"Oswald",sans-serif;font-size:8.5px;letter-spacing:1px;text-transform:uppercase;
+    padding:5px 9px;border-radius:99px;border:1px solid rgba(231,221,202,.35);color:rgba(231,221,202,.8)}
+  .scr-chip.on{background:var(--cream-soft);border-color:var(--cream-soft);color:var(--navy)}
+  .scr-card{margin:14px 4px 0;border-radius:16px;overflow:hidden;background:var(--cream);
+    box-shadow:0 14px 30px -12px rgba(0,0,0,.5)}
+  .scr-card-img{height:96px;position:relative;background:#2c2015;overflow:hidden}
+  .scr-card-img img{width:100%;height:100%;object-fit:cover}
+  .scr-badge{position:absolute;top:9px;left:9px;font-family:"Oswald",sans-serif;font-size:8px;letter-spacing:1px;
+    padding:3px 7px;border-radius:99px;background:rgba(23,24,27,.55);color:var(--cream-bright)}
+  .scr-card-body{padding:11px 13px 13px}
+  .scr-card-t{font-family:"Oswald",sans-serif;font-weight:700;font-size:17px;color:var(--navy);letter-spacing:.5px}
+  .scr-card-m{font-family:"Oswald",sans-serif;font-size:8px;letter-spacing:1.5px;color:#6b7580;margin-top:1px}
+  .scr-card-meta{font-family:"DM Mono",monospace;font-size:8.5px;color:#4a5560;margin-top:8px}
+  .scr-row{display:flex;align-items:center;gap:9px;margin:11px 6px 0;padding-bottom:11px;border-bottom:1px solid rgba(231,221,202,.13)}
+  .scr-row:last-child{border-bottom:none}
+  .scr-thumb{width:34px;height:34px;border-radius:9px;overflow:hidden;background:#2c2015;flex-shrink:0}
+  .scr-thumb img{width:100%;height:100%;object-fit:cover}
+  .scr-row-t{font-family:"Gothic A1";font-weight:700;font-size:12px;color:var(--cream-bright)}
+  .scr-row-m{font-family:"DM Mono",monospace;font-size:8px;color:rgba(231,221,202,.55);margin-top:1px}
+  .scr-tag{margin-left:auto;font-family:"Oswald",sans-serif;font-size:8px;letter-spacing:1px;
+    padding:3px 7px;border-radius:99px;border:1px solid rgba(231,221,202,.3);color:rgba(231,221,202,.7)}
+
+  /* ===== in-phone: BREWING screen reconstruction ===== */
+  .brew{position:absolute;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;padding:52px 20px 0}
+  .brew-step{font-family:"Oswald",sans-serif;font-size:10px;letter-spacing:3px;color:var(--caramel);text-transform:uppercase}
+  .ring{position:relative;width:170px;height:170px;margin:20px 0 6px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring-time{font-family:"Oswald",sans-serif;font-weight:600;font-size:44px;color:var(--cream-bright);letter-spacing:1px;line-height:1}
+  .ring-sub{font-family:"DM Mono",monospace;font-size:9px;color:rgba(242,235,221,.5);margin-top:6px}
+  .brew-name{font-family:"Gothic A1";font-weight:800;font-size:16px;color:var(--cream-bright);margin-top:14px}
+  .brew-instr{font-family:"Gothic A1";font-size:11px;color:var(--text2);margin-top:5px;text-align:center;padding:0 6px;line-height:1.5}
+  .brew-dots{display:flex;gap:5px;margin-top:16px}
+  .brew-dots i{width:6px;height:6px;border-radius:50%;background:rgba(242,235,221,.2)}
+  .brew-dots i.on{background:var(--caramel);width:18px;border-radius:99px}
+
+  /* ===== lock screen Live Activity ===== */
+  .lock{position:absolute;inset:0;padding:52px 16px 0;display:flex;flex-direction:column;align-items:center;
+    background:linear-gradient(180deg,#11161c,#1c242c)}
+  .lock-time{font-family:"Oswald",sans-serif;font-weight:500;font-size:52px;color:var(--cream-bright);letter-spacing:1px}
+  .lock-date{font-family:"Gothic A1";font-size:11px;color:var(--text2);margin-top:-2px}
+  .la{margin-top:auto;margin-bottom:26px;width:100%;background:rgba(20,24,29,.85);border:1px solid var(--border);
+    border-radius:20px;padding:14px 15px;backdrop-filter:blur(8px)}
+  .la-top{display:flex;align-items:center;gap:9px}
+  .la-cap{width:22px;height:13px;border-radius:99px;transform:rotate(-22deg);
+    background:linear-gradient(90deg,#3D2A1B 0 50%,var(--caramel) 50% 100%)}
+  .la-brand{font-family:"Oswald",sans-serif;font-weight:600;font-size:11px;letter-spacing:1.5px;color:var(--cream-bright);text-transform:uppercase}
+  .la-remain{margin-left:auto;font-family:"DM Mono",monospace;font-size:13px;color:var(--caramel-soft);font-weight:500}
+  .la-step{font-family:"Gothic A1";font-weight:700;font-size:13px;color:var(--cream-bright);margin-top:9px}
+  .la-bar{height:6px;border-radius:99px;background:rgba(242,235,221,.13);margin-top:9px;overflow:hidden}
+  .la-bar i{display:block;height:100%;width:62%;border-radius:99px;background:linear-gradient(90deg,var(--caramel),var(--gold))}
+
+  /* sections */
+  section{padding:70px 0}
+  .sec-head{max-width:36ch;margin-bottom:44px}
+  .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+  .kicker{font-family:"Oswald",sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+  h2{font-size:clamp(27px,4vw,38px);line-height:1.18;font-weight:900;letter-spacing:-0.025em;margin-top:13px}
+  h2 em{font-style:italic;color:var(--caramel-soft);font-weight:700;font-family:"Gothic A1"}
+
+  /* feature rows */
+  .feat{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;margin:0 0 88px}
+  .feat:nth-child(even) .feat-media{order:-1}
+  @media(max-width:880px){.feat{grid-template-columns:1fr;gap:30px;margin-bottom:60px}
+    .feat:nth-child(even) .feat-media{order:0}}
+  .feat-num{font-family:"Oswald",sans-serif;font-size:15px;color:var(--caramel);font-weight:600;letter-spacing:.08em}
+  .feat h3{font-size:clamp(21px,3vw,28px);font-weight:800;letter-spacing:-0.02em;margin:9px 0 13px;line-height:1.22}
+  .feat p{color:var(--text2);font-size:15.5px;max-width:40ch}
+  .feat-media{display:flex;justify-content:center}
+
+  /* recipe grid */
+  .rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;margin-top:8px}
+  .rcard{border-radius:16px;overflow:hidden;background:var(--card);border:1px solid var(--border);
+    transition:transform .2s,border-color .2s}
+  .rcard:hover{transform:translateY(-4px);border-color:rgba(201,138,91,.4)}
+  .rcard-img{aspect-ratio:4/3;overflow:hidden;background:#2c2015}
+  .rcard-img img{width:100%;height:100%;object-fit:cover}
+  .rcard-b{padding:11px 13px 14px}
+  .rcard-t{font-family:"Gothic A1";font-weight:700;font-size:14px;color:var(--cream-bright)}
+  .rcard-m{font-family:"DM Mono",monospace;font-size:10px;color:var(--text3);margin-top:3px}
+
+  /* faq */
+  .faq{max-width:760px;margin:0 auto}
+  details{border:1px solid var(--border);border-radius:16px;background:var(--card);
+    padding:0 22px;margin-bottom:12px;overflow:hidden;transition:border-color .2s}
+  details[open]{border-color:rgba(201,138,91,.38)}
+  summary{list-style:none;cursor:pointer;padding:18px 0;font-weight:700;font-size:15.5px;
+    display:flex;justify-content:space-between;align-items:center;gap:16px}
+  summary::-webkit-details-marker{display:none}
+  summary .plus{color:var(--caramel);font-size:22px;transition:transform .25s;flex-shrink:0}
+  details[open] summary .plus{transform:rotate(45deg)}
+  details p{color:var(--text2);font-size:14.5px;padding:0 0 20px;margin:0}
+
+  /* contact + footer */
+  .contact{text-align:center;background:linear-gradient(160deg,var(--card),var(--ink));
+    border:1px solid var(--border);border-radius:26px;padding:52px 24px;margin:20px 0}
+  .contact a.mail{display:inline-block;margin-top:10px;font-family:"Oswald",sans-serif;
+    font-size:clamp(22px,4vw,32px);font-weight:600;color:var(--caramel-soft);letter-spacing:.5px}
+  .contact a.mail:hover{color:var(--caramel)}
+  footer{border-top:1px solid var(--border);padding:34px 0 60px;color:var(--text3);font-size:13.5px}
+  .foot-in{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+  .foot-links{display:flex;gap:22px}
+  .foot-links a:hover{color:var(--text2)}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+  .hero .eyebrow,.hero h1,.hero .sub,.hero .cta,.hero .soon,.hero-phone{
+    opacity:0;animation:rise .8s cubic-bezier(.2,.7,.2,1) forwards}
+  .hero h1{animation-delay:.08s}.hero .sub{animation-delay:.18s}
+  .hero .cta{animation-delay:.28s}.hero .soon{animation-delay:.36s}.hero-phone{animation-delay:.2s}
+  @keyframes rise{to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <span class="brand"><span class="cap"></span> <span class="disp">BrewCue</span></span>
+    <div class="nav-links">
+      <a href="#features">기능</a>
+      <a href="#recipes">레시피</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">문의</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">iOS Live Activity · Brewing Timer</span>
+      <h1>내 손으로 내리는<br/><em>완벽한 한 잔.</em></h1>
+      <p class="sub">V60부터 에어로프레스까지, 레시피를 고르면 붓는 순간마다 큐를 알려주는 단계별 타이머가 시작됩니다. 잠금화면 Live Activity로 화면을 켜둘 필요도 없어요.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#features">기능 둘러보기</a>
+        <a class="btn btn-ghost" href="#contact">문의하기</a>
+      </div>
+      <p class="soon">곧 App Store에서 만나요 · iPhone 전용 · 무료</p>
+    </div>
+    <div class="hero-phone">
+      <span class="halo"></span>
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="scr">
+          <div class="scr-top">
+            <div class="burger"><i style="width:20px"></i><i style="width:13px"></i><i style="width:16px"></i></div>
+            <div class="gear">⚙</div>
+          </div>
+          <div class="scr-today">TODAY</div>
+          <div class="scr-title">오늘은 어떤<br/>커피를 내릴까요?</div>
+          <div class="scr-chips">
+            <span class="scr-chip on">전체</span>
+            <span class="scr-chip">핸드드립</span>
+            <span class="scr-chip">침출식</span>
+            <span class="scr-chip">아이스</span>
+          </div>
+          <div class="scr-card">
+            <div class="scr-card-img">
+              <img src="screenshots/v60-basic.jpg" alt=""/>
+              <span class="scr-badge">HOT</span>
+            </div>
+            <div class="scr-card-body">
+              <div class="scr-card-t">V60 기본 레시피</div>
+              <div class="scr-card-m">POUR OVER · HAND DRIP</div>
+              <div class="scr-card-meta">15g / 250g ···· 2:30 ···· 난이도 쉬움</div>
+            </div>
+          </div>
+          <div class="scr-row">
+            <div class="scr-thumb"><img src="screenshots/iced-handdrip.jpg" alt=""/></div>
+            <div><div class="scr-row-t">아이스 핸드드립</div><div class="scr-row-m">20g / 160g+얼음 · 보통</div></div>
+            <span class="scr-tag">ICED</span>
+          </div>
+          <div class="scr-row">
+            <div class="scr-thumb"><img src="screenshots/aeropress.jpg" alt=""/></div>
+            <div><div class="scr-row-t">에어로프레스</div><div class="scr-row-m">15g / 200g · 1:40 · 쉬움</div></div>
+            <span class="scr-tag">HOT</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker">왜 BrewCue인가</span>
+      <h2>계량은 끝냈으니,<br/><em>이제 붓기만.</em></h2>
+    </div>
+
+    <div class="feat reveal">
+      <div>
+        <span class="feat-num">01</span>
+        <h3>단계마다 알려주는 브루잉 타이머</h3>
+        <p>뜸 들이기 30초, 1차 푸어 120g까지 — 레시피의 각 단계를 큐로 안내합니다. 남은 시간이 큰 링으로 보이고, 다음 붓기가 언제인지 숫자로 정확히 짚어줘요. 손은 드리퍼에, 눈은 화면 한 번이면 충분합니다.</p>
+      </div>
+      <div class="feat-media"><div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="brew">
+          <div class="brew-step">STEP 2 · 1차 푸어</div>
+          <div class="ring">
+            <svg width="170" height="170" viewBox="0 0 170 170">
+              <circle cx="85" cy="85" r="76" fill="none" stroke="rgba(242,235,221,.12)" stroke-width="9"/>
+              <circle cx="85" cy="85" r="76" fill="none" stroke="#c98a5b" stroke-width="9" stroke-linecap="round"
+                stroke-dasharray="477" stroke-dashoffset="182"/>
+            </svg>
+            <div class="ring-c">
+              <div class="ring-time">0:18</div>
+              <div class="ring-sub">120g까지</div>
+            </div>
+          </div>
+          <div class="brew-name">V60 기본 레시피</div>
+          <div class="brew-instr">120g까지 천천히 부어주세요</div>
+          <div class="brew-dots"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+        </div>
+      </div></div></div>
+    </div>
+
+    <div class="feat reveal">
+      <div>
+        <span class="feat-num">02</span>
+        <h3>잠금화면에서 이어지는 Live Activity</h3>
+        <p>브루잉을 시작하면 잠금화면과 다이나믹 아일랜드에 현재 단계와 남은 시간이 뜹니다. 앱을 계속 켜둘 필요 없이, 폰을 내려놔도 진행 상황이 손 안에. 추출이 끝나면 알림이 마무리를 알려줘요.</p>
+      </div>
+      <div class="feat-media"><div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="lock">
+          <div class="lock-time">7:24</div>
+          <div class="lock-date">7월 4일 토요일</div>
+          <div class="la">
+            <div class="la-top">
+              <span class="la-cap"></span>
+              <span class="la-brand">BrewCue</span>
+              <span class="la-remain">-0:18</span>
+            </div>
+            <div class="la-step">1차 푸어 · 120g까지 천천히</div>
+            <div class="la-bar"><i></i></div>
+          </div>
+        </div>
+      </div></div></div>
+    </div>
+
+    <div class="feat reveal">
+      <div>
+        <span class="feat-num">03</span>
+        <h3>내린 뒤엔 기록으로 남겨요</h3>
+        <p>오늘 맛은 어땠나요? 별점과 짧은 메모, 소요 시간을 남겨두면 다음에 원두와 물을 어떻게 바꿀지 감이 잡힙니다. 모든 기록은 기기 안에만 저장되고, 서버로 올라가지 않아요.</p>
+      </div>
+      <div class="feat-media"><div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="scr" style="padding-top:44px;background:var(--cream)">
+          <div class="scr-today" style="color:#8a7d68">기록 완료</div>
+          <div class="scr-title" style="color:var(--navy)">잘 내렸어요!</div>
+          <div style="margin:16px 4px 0;font-family:'Oswald',sans-serif;font-size:34px;letter-spacing:4px;color:var(--gold)">★★★★☆</div>
+          <div style="margin:14px 4px 0;padding:13px;border-radius:14px;background:rgba(40,50,59,.06);border:1px solid rgba(40,50,59,.1)">
+            <div style="font-family:'Gothic A1';font-size:11px;color:#6b7580">메모</div>
+            <div style="font-family:'Gothic A1';font-weight:700;font-size:13px;color:var(--navy);margin-top:3px">산미 좋고 단맛 깔끔. 다음엔 물 2도 낮춰보기.</div>
+          </div>
+          <div style="display:flex;gap:8px;margin:12px 4px 0">
+            <div style="flex:1;padding:11px;border-radius:12px;background:rgba(40,50,59,.06);text-align:center">
+              <div style="font-family:'DM Mono',monospace;font-size:17px;color:var(--navy)">2:34</div>
+              <div style="font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:1px;color:#6b7580">소요 시간</div>
+            </div>
+            <div style="flex:1;padding:11px;border-radius:12px;background:rgba(40,50,59,.06);text-align:center">
+              <div style="font-family:'DM Mono',monospace;font-size:17px;color:var(--navy)">15g</div>
+              <div style="font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:1px;color:#6b7580">원두</div>
+            </div>
+          </div>
+        </div>
+      </div></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="recipes" style="padding-top:16px">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="kicker">레시피 10종</span>
+      <h2>기구가 뭐든,<br/><em>레시피는 준비돼 있어요.</em></h2>
+    </div>
+    <div class="rgrid reveal">
+      <div class="rcard"><div class="rcard-img"><img src="screenshots/v60-basic.jpg" alt="V60 기본 레시피"/></div><div class="rcard-b"><div class="rcard-t">V60 기본 레시피</div><div class="rcard-m">15g / 250g · 쉬움</div></div></div>
+      <div class="rcard"><div class="rcard-img"><img src="screenshots/kasuya-46.jpg" alt="4:6 메소드"/></div><div class="rcard-b"><div class="rcard-t">4:6 메소드</div><div class="rcard-m">20g / 300g · 보통</div></div></div>
+      <div class="rcard"><div class="rcard-img"><img src="screenshots/kalita-wave.jpg" alt="칼리타 웨이브"/></div><div class="rcard-b"><div class="rcard-t">칼리타 웨이브</div><div class="rcard-m">20g / 300g · 쉬움</div></div></div>
+      <div class="rcard"><div class="rcard-img"><img src="screenshots/chemex.jpg" alt="케멕스"/></div><div class="rcard-b"><div class="rcard-t">케멕스</div><div class="rcard-m">30g / 500g · 보통</div></div></div>
+      <div class="rcard"><div class="rcard-img"><img src="screenshots/aeropress.jpg" alt="에어로프레스"/></div><div class="rcard-b"><div class="rcard-t">에어로프레스</div><div class="rcard-m">15g / 200g · 쉬움</div></div></div>
+      <div class="rcard"><div class="rcard-img"><img src="screenshots/aeropress-inverted.jpg" alt="에어로프레스 인버티드"/></div><div class="rcard-b"><div class="rcard-t">에어로프레스 인버티드</div><div class="rcard-m">17g / 230g · 보통</div></div></div>
+      <div class="rcard"><div class="rcard-img"><img src="screenshots/french-press.jpg" alt="프렌치프레스"/></div><div class="rcard-b"><div class="rcard-t">프렌치프레스</div><div class="rcard-m">30g / 500g · 쉬움</div></div></div>
+      <div class="rcard"><div class="rcard-img"><img src="screenshots/clever.jpg" alt="클레버 드리퍼"/></div><div class="rcard-b"><div class="rcard-t">클레버 드리퍼</div><div class="rcard-m">20g / 300g · 쉬움</div></div></div>
+      <div class="rcard"><div class="rcard-img"><img src="screenshots/hario-switch.jpg" alt="하리오 스위치"/></div><div class="rcard-b"><div class="rcard-t">하리오 스위치</div><div class="rcard-m">20g / 280g · 쉬움</div></div></div>
+      <div class="rcard"><div class="rcard-img"><img src="screenshots/iced-handdrip.jpg" alt="아이스 핸드드립"/></div><div class="rcard-b"><div class="rcard-t">아이스 핸드드립</div><div class="rcard-m">20g / 160g+얼음 · 보통</div></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="kicker">자주 묻는 질문</span>
+      <h2>궁금한 점이 있나요?</h2>
+    </div>
+    <div class="faq reveal">
+      <details open>
+        <summary>Live Activity가 잠금화면에 안 보여요. <span class="plus">+</span></summary>
+        <p>설정 → BrewCue → Live Activity가 켜져 있는지 확인해 주세요. iOS 16.1 이상, iPhone에서 지원됩니다. 브루잉을 시작하면 잠금화면과 다이나믹 아일랜드에 자동으로 표시됩니다.</p>
+      </details>
+      <details>
+        <summary>데이터는 어디에 저장되나요? <span class="plus">+</span></summary>
+        <p>브루잉 기록과 앱 설정은 모두 기기 안에만 저장되며 서버로 전송되지 않습니다. 회원가입도, 네트워크 통신도 없습니다. 자세한 내용은 <a href="privacy.html" style="color:var(--caramel);font-weight:600">개인정보 처리방침</a>을 참고하세요.</p>
+      </details>
+      <details>
+        <summary>레시피대로 했는데 맛이 기대와 달라요. <span class="plus">+</span></summary>
+        <p>레시피의 시간·비율은 일반적인 참고 기준입니다. 원두 로스팅·분쇄도·물 온도에 따라 맛이 크게 달라지니, 기록 기능으로 조금씩 조정하며 나만의 값을 찾아보세요.</p>
+      </details>
+      <details>
+        <summary>기기를 바꾸면 기록이 옮겨지나요? <span class="plus">+</span></summary>
+        <p>현재 버전은 기기 내 저장만 지원합니다. 데이터 백업/이전 기능은 다음 업데이트에서 검토 중입니다.</p>
+      </details>
+      <details>
+        <summary>안드로이드 버전도 있나요? <span class="plus">+</span></summary>
+        <p>현재는 iPhone 전용입니다. Live Activity 등 iOS 기능을 중심으로 만들어졌어요. 안드로이드 지원은 수요를 보며 검토하겠습니다.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="contact" style="padding-top:20px">
+  <div class="wrap">
+    <div class="contact reveal">
+      <span class="kicker">문의</span>
+      <p style="color:var(--text2);margin-top:10px">버그 신고, 레시피 제안, 그 밖의 문의를 보내주세요. 보통 2~3일 내에 답변드립니다.</p>
+      <a class="mail" href="mailto:dkrnfls@gmail.com?subject=BrewCue%20문의">dkrnfls@gmail.com</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-in">
+    <span class="brand" style="font-size:15px"><span class="cap"></span> <span class="disp">BrewCue</span></span>
+    <div class="foot-links">
+      <a href="privacy.html">개인정보 처리방침</a>
+      <a href="terms.html">이용약관</a>
+      <a href="mailto:dkrnfls@gmail.com">문의</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
