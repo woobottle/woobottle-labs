@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<title>나가기 전 날씨 — 나가기 전에 오늘을 챙기세요</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="출근·퇴근·외출 전, 잠금화면 Live Activity로 '우산 챙기세요' 같은 행동 문구를 알려주는 시간 기반 날씨 브리핑 앱. iPhone 전용 · 무료."/>
+<meta name="robots" content="index"/>
+<meta property="og:title" content="나가기 전 날씨"/>
+<meta property="og:description" content="나가기 전에 오늘을 챙기세요 — 잠금화면 Live Activity 날씨 브리핑."/>
+<meta property="og:type" content="website"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
+<style>
+  :root{
+    --bg:#0b1120; --bg2:#0e1626; --card:#131b2c; --card2:#1a2438;
+    --text:#e8edf6; --text2:rgba(232,237,246,.66); --text3:rgba(232,237,246,.42);
+    --blue:#4f8cff; --blue-soft:#8fb4ff; --gold:#f5c76a; --border:rgba(232,237,246,.09);
+    --glow:rgba(79,140,255,.28);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:"Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;
+    line-height:1.7;letter-spacing:-0.01em;overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  .serif{font-family:"Fraunces",serif}
+
+  /* atmosphere */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-2;
+    background:
+      radial-gradient(900px 620px at 80% -10%, var(--glow), transparent 60%),
+      radial-gradient(720px 520px at 6% 16%, rgba(31,158,201,.14), transparent 55%);
+    pointer-events:none;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;z-index:-1;opacity:.03;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+    background:rgba(11,17,32,.62);border-bottom:1px solid var(--border)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-0.02em}
+  .brand .ico{font-size:20px;line-height:1}
+  .nav-links{display:flex;gap:28px;font-size:14px;color:var(--text2);font-weight:500}
+  .nav-links a:hover{color:var(--text)}
+  @media(max-width:680px){.nav-links{display:none}}
+
+  /* hero */
+  .hero{position:relative;padding:84px 0 60px}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center}
+  @media(max-width:880px){.hero-grid{grid-template-columns:1fr;text-align:center}}
+  .eyebrow{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--gold);margin-bottom:20px}
+  h1{font-size:clamp(38px,6vw,62px);line-height:1.08;font-weight:700;letter-spacing:-0.03em}
+  h1 em{font-style:normal;color:var(--blue-soft)}
+  .hero p.sub{margin:22px 0 0;font-size:clamp(16px,2.2vw,19px);color:var(--text2);max-width:32ch}
+  @media(max-width:880px){.hero p.sub{margin-left:auto;margin-right:auto}}
+  .cta{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap}
+  @media(max-width:880px){.cta{justify-content:center}}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 22px;border-radius:14px;
+    font-weight:700;font-size:15px;transition:transform .15s,box-shadow .25s}
+  .btn-primary{background:linear-gradient(135deg,var(--blue),#2f6bf5);color:#fff;
+    box-shadow:0 10px 30px -8px var(--glow)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -8px var(--glow)}
+  .btn-ghost{border:1px solid var(--border);color:var(--text2)}
+  .btn-ghost:hover{color:var(--text);border-color:rgba(232,237,246,.25)}
+  .soon{font-size:12px;color:var(--text3);margin-top:14px}
+  @media(max-width:880px){.soon{text-align:center}}
+
+  /* phone mockup */
+  .phone{width:clamp(220px,30vw,286px);aspect-ratio:1206/2622;margin:0 auto;position:relative;
+    border-radius:40px;padding:9px;background:linear-gradient(160deg,#26314a,#0e1626);
+    border:1px solid rgba(232,237,246,.12);
+    box-shadow:0 40px 80px -24px rgba(0,0,0,.72),0 0 0 1px rgba(0,0,0,.4)}
+  .phone::before{content:"";position:absolute;top:15px;left:50%;transform:translateX(-50%);
+    width:32%;height:8px;border-radius:99px;background:#05070d;z-index:2}
+  .phone img{width:100%;height:100%;object-fit:cover;border-radius:32px;display:block}
+  .hero-phone{position:relative}
+  .hero-phone .halo{position:absolute;inset:-14% -8%;z-index:-1;border-radius:50%;
+    background:radial-gradient(closest-side,var(--glow),transparent);filter:blur(10px)}
+
+  /* sections */
+  section{padding:70px 0}
+  .sec-head{max-width:36ch;margin-bottom:44px}
+  .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+  .kicker{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  h2{font-size:clamp(27px,4vw,40px);line-height:1.15;font-weight:700;letter-spacing:-0.025em;margin-top:14px}
+  h2 .serif{font-style:italic;color:var(--blue-soft);font-weight:500}
+
+  /* feature rows */
+  .feat{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin:0 0 88px}
+  .feat:nth-child(even) .feat-media{order:-1}
+  @media(max-width:880px){.feat{grid-template-columns:1fr;gap:30px;margin-bottom:60px}
+    .feat:nth-child(even) .feat-media{order:0}}
+  .feat-num{font-family:"Fraunces",serif;font-size:15px;color:var(--blue);font-weight:600;letter-spacing:.05em}
+  .feat h3{font-size:clamp(22px,3vw,30px);font-weight:700;letter-spacing:-0.02em;margin:10px 0 14px;line-height:1.2}
+  .feat p{color:var(--text2);font-size:16px;max-width:40ch}
+  @media(max-width:880px){.feat p{margin-left:auto;margin-right:auto}}
+  .feat-media{display:flex;justify-content:center}
+
+  /* faux lock-screen live activity card */
+  .lock{width:clamp(260px,34vw,330px);border-radius:30px;padding:22px;position:relative;
+    background:linear-gradient(165deg,#20304f,#0b1322);
+    border:1px solid rgba(232,237,246,.12);box-shadow:0 30px 60px -22px rgba(0,0,0,.7)}
+  .lock .lt{text-align:center;color:var(--text3);font-size:12px;font-weight:600;letter-spacing:.04em}
+  .lock .clock{text-align:center;font-weight:700;font-size:56px;letter-spacing:-0.02em;
+    color:#fff;margin:2px 0 18px;font-variant-numeric:tabular-nums}
+  .la{display:flex;align-items:center;gap:14px;background:rgba(9,13,22,.72);
+    border:1px solid rgba(232,237,246,.1);border-radius:20px;padding:15px 17px}
+  .la img{width:46px;height:46px;flex-shrink:0}
+  .la .txt{min-width:0}
+  .la .h{font-weight:700;font-size:15px;color:#fff}
+  .la .s{font-size:12.5px;color:var(--text2);margin-top:2px}
+  .la .tmp{margin-left:auto;font-weight:800;font-size:20px;color:#fff}
+
+  /* icon tile */
+  .tile{width:clamp(240px,32vw,320px);aspect-ratio:1/1;border-radius:34px;display:flex;
+    align-items:center;justify-content:center;
+    background:linear-gradient(160deg,#1a2438,#0d1524);border:1px solid var(--border);
+    box-shadow:0 30px 60px -24px rgba(0,0,0,.6)}
+  .tile img{width:52%;filter:drop-shadow(0 16px 26px rgba(0,0,0,.45))}
+
+  /* gallery */
+  .gallery{display:flex;gap:20px;overflow-x:auto;padding:8px 24px 28px;scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;justify-content:center}
+  @media(max-width:700px){.gallery{justify-content:flex-start}}
+  .gallery::-webkit-scrollbar{height:7px}
+  .gallery::-webkit-scrollbar-thumb{background:var(--card2);border-radius:99px}
+  .gallery .phone{flex:0 0 auto;scroll-snap-align:center;width:232px}
+
+  /* faq */
+  .faq{max-width:760px;margin:0 auto}
+  details{border:1px solid var(--border);border-radius:16px;background:var(--card);
+    padding:0 22px;margin-bottom:12px;overflow:hidden;transition:border-color .2s}
+  details[open]{border-color:rgba(79,140,255,.4)}
+  summary{list-style:none;cursor:pointer;padding:18px 0;font-weight:700;font-size:16px;
+    display:flex;justify-content:space-between;align-items:center;gap:16px}
+  summary::-webkit-details-marker{display:none}
+  summary .plus{color:var(--blue);font-size:22px;transition:transform .25s;flex-shrink:0}
+  details[open] summary .plus{transform:rotate(45deg)}
+  details p{color:var(--text2);font-size:15px;padding:0 0 20px;margin:0}
+
+  /* contact + footer */
+  .contact{text-align:center;background:linear-gradient(160deg,var(--card),var(--bg2));
+    border:1px solid var(--border);border-radius:26px;padding:54px 24px;margin:24px 0}
+  .contact a.mail{display:inline-block;margin-top:8px;font-family:"Fraunces",serif;
+    font-size:clamp(24px,4vw,34px);font-weight:600;color:var(--blue-soft)}
+  .contact a.mail:hover{color:var(--blue)}
+  footer{border-top:1px solid var(--border);padding:36px 0 60px;color:var(--text3);font-size:13.5px}
+  .foot-in{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+  .foot-links{display:flex;gap:22px}
+  .foot-links a:hover{color:var(--text2)}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+  .hero .eyebrow,.hero h1,.hero .sub,.hero .cta,.hero .soon,.hero-phone{
+    opacity:0;animation:rise .8s cubic-bezier(.2,.7,.2,1) forwards}
+  .hero h1{animation-delay:.08s}.hero .sub{animation-delay:.18s}
+  .hero .cta{animation-delay:.28s}.hero .soon{animation-delay:.36s}.hero-phone{animation-delay:.2s}
+  @keyframes rise{to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <span class="brand"><span class="ico">⛅</span> 나가기 전 날씨</span>
+    <div class="nav-links">
+      <a href="#features">기능</a>
+      <a href="#screens">화면</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">문의</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">시간 기반 날씨 브리핑</span>
+      <h1>나가기 전에<br/><em>오늘</em>을 챙기세요.</h1>
+      <p class="sub">출근·퇴근·외출 전, 잠금화면 Live Activity가 “우산 챙기세요” 같은 <strong>행동 문구</strong>로 딱 필요한 것만 알려줍니다. 예보를 읽지 말고, 바로 판단하세요.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#screens">화면 둘러보기</a>
+        <a class="btn btn-ghost" href="#contact">문의하기</a>
+      </div>
+      <p class="soon">곧 App Store에서 만나요 · iPhone 전용 · 무료</p>
+    </div>
+    <div class="hero-phone">
+      <span class="halo"></span>
+      <div class="phone"><img src="screenshots/home.png" alt="나가기 전 날씨 홈 화면 — 현재 날씨와 브리핑"/></div>
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker">왜 나가기 전 날씨인가</span>
+      <h2>숫자 말고,<br/><span class="serif">행동</span>을 알려줘요.</h2>
+    </div>
+
+    <div class="feat reveal">
+      <div>
+        <span class="feat-num">01</span>
+        <h3>잠금화면에서 바로 판단</h3>
+        <p>기온·강수확률 숫자를 해석할 필요 없어요. “우산 챙겨서 나가세요”, “겉옷이 필요해요”처럼 지금 해야 할 행동을 잠금화면과 Dynamic Island에 바로 띄웁니다.</p>
+      </div>
+      <div class="feat-media">
+        <div class="lock">
+          <div class="lt">잠금화면 · Live Activity</div>
+          <div class="clock">7:32</div>
+          <div class="la">
+            <img src="screenshots/icon-umbrella.png" alt="우산"/>
+            <div class="txt">
+              <div class="h">우산 챙겨서 나가세요</div>
+              <div class="s">40분 뒤 비가 시작될 가능성이 높아요</div>
+            </div>
+            <div class="tmp">8°</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feat reveal">
+      <div>
+        <span class="feat-num">02</span>
+        <h3>출근·퇴근 시간대에 딱 맞춰</h3>
+        <p>브리핑을 받을 시간대와 요일을 정해두면, 그 시간에만 자동으로 브리핑이 시작됩니다. 아침엔 출근 브리핑, 저녁엔 퇴근 브리핑 — 필요할 때만 조용히.</p>
+      </div>
+      <div class="feat-media"><div class="phone"><img src="screenshots/home.png" alt="시간대별 브리핑 카드"/></div></div>
+    </div>
+
+    <div class="feat reveal">
+      <div>
+        <span class="feat-num">03</span>
+        <h3>말투도 취향대로</h3>
+        <p>“우산 챙겨서 나가세요”(담백하게), “지금 나가면 비 만나요!”(친근하게), “비 옵니다. 우산 없이 나가면 젖어요.”(강하게) — 나에게 맞는 톤으로 브리핑을 받으세요.</p>
+      </div>
+      <div class="feat-media"><div class="phone"><img src="screenshots/onboarding.png" alt="온보딩 — 나가기 전, 날씨를 행동으로"/></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="screens" style="padding-top:24px">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="kicker">화면 미리보기</span>
+      <h2>둥글둥글하게, 또렷하게.</h2>
+    </div>
+  </div>
+  <div class="gallery reveal">
+    <div class="phone"><img src="screenshots/onboarding.png" alt="온보딩"/></div>
+    <div class="phone"><img src="screenshots/home.png" alt="홈 · 현재 날씨와 브리핑"/></div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="kicker">자주 묻는 질문</span>
+      <h2>궁금한 점이 있나요?</h2>
+    </div>
+    <div class="faq reveal">
+      <details open>
+        <summary>위치 권한을 꼭 허용해야 하나요? <span class="plus">+</span></summary>
+        <p>아니요. 위치 권한을 허용하면 현재 위치의 날씨를 자동으로 보여드리지만, 거부하셔도 지역을 직접 선택하면 그대로 이용할 수 있습니다. 위치 정보는 날씨를 조회할 때만 사용되며 저장되지 않습니다.</p>
+      </details>
+      <details>
+        <summary>Live Activity(잠금화면 브리핑)가 보이지 않아요. <span class="plus">+</span></summary>
+        <p>iOS 16.2 이상에서, 설정 → Face ID 및 암호 → 잠금 상태에서 Live Activity가 켜져 있는지 확인해 주세요. 또한 브리핑으로 설정한 시간대·요일이 되어야 자동으로 시작됩니다. 앱의 “미리보기”에서 언제든 모양을 확인할 수 있어요.</p>
+      </details>
+      <details>
+        <summary>데이터는 어디에 저장되나요? <span class="plus">+</span></summary>
+        <p>브리핑 설정과 선택한 지역은 기기 안에만 저장되며 서버로 전송되지 않습니다. 회원가입도 필요 없습니다. 날씨 조회 시에만 위치 좌표가 날씨 서비스로 전송됩니다. 자세한 내용은 <a href="privacy.html" style="color:var(--blue);font-weight:600">개인정보 처리방침</a>을 참고하세요.</p>
+      </details>
+      <details>
+        <summary>날씨 정보는 어디서 오나요? <span class="plus">+</span></summary>
+        <p>무료 공개 기상 데이터(Open-Meteo)를 사용합니다. 참고용 정보이므로, 중요한 외출 판단은 기상청 등 공식 예보와 함께 확인하시길 권장합니다.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="contact" style="padding-top:24px">
+  <div class="wrap">
+    <div class="contact reveal">
+      <span class="kicker">문의</span>
+      <p style="color:var(--text2);margin-top:10px">버그 신고, 기능 제안, 그 밖의 문의를 보내주세요. 보통 2~3일 내에 답변드립니다.</p>
+      <a class="mail" href="mailto:dkrnfls@gmail.com?subject=나가기%20전%20날씨%20문의">dkrnfls@gmail.com</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-in">
+    <span class="brand" style="font-size:15px"><span class="ico">⛅</span> 나가기 전 날씨</span>
+    <div class="foot-links">
+      <a href="privacy.html">개인정보 처리방침</a>
+      <a href="terms.html">이용약관</a>
+      <a href="mailto:dkrnfls@gmail.com">문의</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
