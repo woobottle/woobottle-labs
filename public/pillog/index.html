@@ -4,50 +4,93 @@
 <meta charset="utf-8"/>
 <title>Pillog — 약 챙기는 가장 간단한 방법</title>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta name="description" content="영양제·처방약을 제때 챙기는 복약 알림 앱 Pillog. 알림에서 바로 체크, 회원가입 없이 폰에만 저장."/>
-<link rel="canonical" href="https://woo-bottle.com/pillog/index.html"/>
+<meta name="description" content="잠금화면 알림에서 바로 '먹었어요' 한 번. 복용 기간·캘린더 히트맵·월간 리포트까지, 약 챙기기가 습관이 되는 복약 관리 앱 Pillog."/>
+<link rel="canonical" href="https://woo-bottle.com/pillog/"/>
 <meta property="og:type" content="website"/>
 <meta property="og:title" content="Pillog — 약 챙기는 가장 간단한 방법"/>
-<meta property="og:description" content="영양제·처방약을 제때 챙기는 복약 알림 앱. 알림에서 바로 체크, 회원가입 없이 폰에만 저장."/>
-<meta property="og:url" content="https://woo-bottle.com/pillog/index.html"/>
+<meta property="og:description" content="약 챙기는 가장 간단한 방법. 알림에서 바로 체크, 회원가입 없이 폰에만 저장."/>
+<meta property="og:url" content="https://woo-bottle.com/pillog/"/>
 <meta property="og:image" content="https://woo-bottle.com/pillog/og-image.png"/>
 <meta property="og:site_name" content="Pillog"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://woo-bottle.com/pillog/og-image.png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
 <style>
-  :root{ --ink:#16130F; --cream:#F4EFE6; --ember:#F2542A;
-    --w70:rgba(244,239,230,.66); --w45:rgba(244,239,230,.46);
-    --mono:"Space Mono",ui-monospace,SFMono-Regular,monospace; }
+  :root{--bg:#16130F;--fg:#F4EFE6;--accent:#F2542A;--muted:rgba(244,239,230,.62)}
   *{box-sizing:border-box}
-  body{ margin:0; background:var(--ink); color:var(--cream);
-    font-family:"Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;
-    display:flex; min-height:100vh; align-items:center; justify-content:center; text-align:center;
-    letter-spacing:-0.01em; }
-  .box{ padding:40px 24px; }
-  .eyebrow{ font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--ember); margin-bottom:14px; }
-  h1{ font-size:64px; font-weight:800; letter-spacing:-0.05em; margin:0 0 10px; }
-  p.tag{ color:var(--w70); font-size:16px; margin:0 0 26px; }
-  .links{ font-family:var(--mono); font-size:12px; letter-spacing:.05em; text-transform:uppercase;
-    display:flex; gap:18px; justify-content:center; }
-  a{ color:var(--ember); text-decoration:none; }
-  a:hover{ opacity:.8; }
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:"Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;letter-spacing:-.01em}
+  a{color:inherit;text-decoration:none}
+  .nav{max-width:1000px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;font-size:14px}
+  .nav .back{color:var(--muted)}
+  .nav .back:hover{color:var(--fg)}
+  .nav .app{font-weight:700}
+  .hero{max-width:1000px;margin:0 auto;padding:56px 20px 32px;text-align:center}
+  .hero .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+  .hero h1{font-size:clamp(40px,8vw,72px);font-weight:800;letter-spacing:-.04em;margin:0 0 14px}
+  .hero p{color:var(--muted);font-size:18px;max-width:520px;margin:0 auto 30px;line-height:1.5}
+  .cta{display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 22px;border-radius:12px;font-weight:700;font-size:15px}
+  .btn.primary{background:var(--accent);color:#111}
+  .btn.primary:hover{opacity:.9}
+  .btn.ghost{border:1px solid rgba(128,128,128,.4);color:var(--fg)}
+  .btn.ghost:hover{border-color:var(--fg)}
+  .shots{max-width:1100px;margin:8px auto 0;padding:24px 20px;display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory}
+  .shots img{height:520px;border-radius:24px;scroll-snap-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .features{max-width:900px;margin:0 auto;padding:40px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .feat{padding:22px;border-radius:16px;border:1px solid rgba(128,128,128,.22);background:rgba(128,128,128,.05)}
+  .feat h3{margin:0 0 8px;font-size:17px}
+  .feat p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
+  #other-apps{border-top:1px solid rgba(128,128,128,.18)}
+  .foot{max-width:1000px;margin:0 auto;padding:28px 20px 72px;text-align:center;
+    display:flex;gap:20px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--muted);
+    border-top:1px solid rgba(128,128,128,.18)}
+  .foot a:hover{color:var(--fg)}
+  @media(max-width:600px){.shots img{height:420px}}
 </style>
 </head>
 <body>
-  <div class="box">
-    <div class="eyebrow">약 복용 알림 · 기록</div>
-    <h1>Pillog</h1>
-    <p class="tag">약 챙기는 가장 간단한 방법 / Medication reminder</p>
-    <div class="links">
-      <a href="./support.html">소개</a>
-      <a href="./privacy.html">개인정보</a>
-      <a href="./terms.html">약관</a>
-    </div>
+  <div class="nav">
+    <a class="back" href="/apps/">← WooBottle</a>
+    <span class="app">Pillog</span>
   </div>
+
+  <section class="hero">
+    <div class="eyebrow">복약 알림 · 기록</div>
+    <h1>Pillog</h1>
+    <p>약 챙기는 가장 간단한 방법. 알림에서 바로 체크, 회원가입 없이 폰에만 저장.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://apps.apple.com/app/id6775165151?ct=web_landing">App Store에서 받기</a>
+      <a class="btn ghost" href="./support.html">소개 · 지원</a>
+    </div>
+  </section>
+
+  <div class="shots">
+    <img src="./screenshots/01-home.png" alt="Pillog 홈"/>
+    <img src="./screenshots/02-record-calendar.png" alt="캘린더 히트맵"/>
+    <img src="./screenshots/03-record-timeline.png" alt="복약 타임라인"/>
+    <img src="./screenshots/04-report.png" alt="월간 리포트"/>
+    <img src="./screenshots/05-med-detail.png" alt="약 상세"/>
+  </div>
+
+  <section class="features">
+    <div class="feat"><h3>알림에서 바로 체크</h3><p>잠금화면 알림에서 '먹었어요' 한 번이면 끝. 앱을 열 필요도 없어요.</p></div>
+    <div class="feat"><h3>캘린더 히트맵</h3><p>복용 기록이 한눈에. 빠뜨린 날이 색으로 보여 습관이 잡혀요.</p></div>
+    <div class="feat"><h3>월간 리포트</h3><p>이번 달 얼마나 잘 챙겼는지 리포트로 정리해 드려요.</p></div>
+    <div class="feat"><h3>회원가입 없이</h3><p>모든 기록은 내 폰에만. 계정도, 서버 전송도 없습니다.</p></div>
+  </section>
+
+  <section id="other-apps" data-current="pillog"></section>
+
+  <footer class="foot">
+    <a href="/apps/">앱 전체</a>
+    <a href="./privacy.html">개인정보</a>
+    <a href="./terms.html">약관</a>
+    <a href="./support.html">지원</a>
+    <a href="./blog/">블로그</a>
+    <span>© WooBottle</span>
+  </footer>
+
+  <script src="/_shared/other-apps.js" defer></script>
 </body>
 </html>
