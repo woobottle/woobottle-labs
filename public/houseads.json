@@ -1,14 +1,127 @@
 {
-  "updated": "2026-07-01",
-  "_comment": "woobottle 앱 교차홍보 카탈로그. woo-bottle.com/houseads.json 로 배포됨. HouseAd 컴포넌트가 fetch. 앱 추가/문구 변경은 이 파일만 고치고 재배포하면 모든 앱에 반영(앱 재빌드 불필요). id는 각 앱의 currentAppId와 일치시켜 자기 자신은 제외됨.",
+  "updated": "2026-07-04",
+  "_comment": "woobottle 앱 교차홍보 카탈로그 겸 웹 허브/랜딩 진실의 원천. woo-bottle.com/houseads.json 로 배포됨. 인앱 HouseAd 컴포넌트가 id/name/tagline/emoji/url/platform 을 fetch(id===currentAppId 로 자기 제외). 웹(허브 그리드 + 랜딩 '다른 앱' 스트립)은 brand/category/landingUrl/status/screenshots 를 추가로 사용. 앱 추가/문구 변경은 이 파일만 고치고 재배포하면 모든 앱에 반영(앱 재빌드 불필요).",
   "apps": [
     {
-      "id": "foodMaker",
+      "id": "pillog",
+      "name": "Pillog",
+      "tagline": "약 챙기는 가장 간단한 방법",
+      "emoji": "💊",
+      "category": "건강",
+      "brand": { "bg": "#16130F", "fg": "#F4EFE6", "accent": "#F2542A" },
+      "landingUrl": "/pillog/",
+      "url": "https://apps.apple.com/app/id6775165151",
+      "platform": "ios",
+      "status": "live",
+      "screenshots": [
+        "/pillog/screenshots/01-home.png",
+        "/pillog/screenshots/02-record-calendar.png",
+        "/pillog/screenshots/03-record-timeline.png",
+        "/pillog/screenshots/04-report.png",
+        "/pillog/screenshots/05-med-detail.png"
+      ]
+    },
+    {
+      "id": "inneungeollo",
       "name": "있는걸로",
-      "tagline": "냉장고 재료 사진 한 장, AI 요리추천",
+      "tagline": "냉장고에 있는 걸로, 오늘 뭐 해먹지?",
       "emoji": "🍳",
+      "category": "요리·AI",
+      "brand": { "bg": "#1A140F", "fg": "#F7EFE2", "accent": "#F97316" },
+      "landingUrl": "/inneungeollo/",
       "url": "https://apps.apple.com/kr/app/id6784326939",
-      "platform": "ios"
+      "platform": "ios",
+      "status": "live",
+      "screenshots": [
+        "/inneungeollo/screenshots/01-home.png",
+        "/inneungeollo/screenshots/02-confirm.png",
+        "/inneungeollo/screenshots/03-recipes.png",
+        "/inneungeollo/screenshots/04-detail.png",
+        "/inneungeollo/screenshots/05-saved.png"
+      ]
+    },
+    {
+      "id": "voicealarm",
+      "name": "모닝보이스",
+      "tagline": "사랑하는 사람의 목소리로 여는 아침",
+      "emoji": "🎙️",
+      "category": "알람",
+      "brand": { "bg": "#14110E", "fg": "#F7EFE2", "accent": "#FF3B30" },
+      "landingUrl": "/voicealarm/",
+      "url": "https://apps.apple.com/kr/app/id6781772401",
+      "platform": "ios",
+      "status": "live",
+      "screenshots": [
+        "/voicealarm/screenshots/1-onboarding.png",
+        "/voicealarm/screenshots/2-library.png",
+        "/voicealarm/screenshots/3-record.png",
+        "/voicealarm/screenshots/4-alarm.png"
+      ]
+    },
+    {
+      "id": "couple-calendar",
+      "name": "Couple Calendar",
+      "tagline": "둘만의 기념일과 일정을 한 곳에",
+      "emoji": "📅",
+      "category": "커플",
+      "brand": { "bg": "#0F1A14", "fg": "#F4F0E6", "accent": "#5BBD8E" },
+      "landingUrl": "/couple-calendar/",
+      "url": "https://apps.apple.com/app/id6781283358",
+      "platform": "ios",
+      "status": "live",
+      "screenshots": []
+    },
+    {
+      "id": "doodleroom",
+      "name": "낙서방",
+      "tagline": "함께 낙서하고 그림 그리는 방",
+      "emoji": "🎨",
+      "category": "드로잉",
+      "brand": { "bg": "#14110E", "fg": "#F7EFE2", "accent": "#FBD24E" },
+      "landingUrl": "/doodleroom/",
+      "url": "https://apps.apple.com/app/id6785241751",
+      "platform": "ios",
+      "status": "live",
+      "screenshots": []
+    },
+    {
+      "id": "imap",
+      "name": "아이맵",
+      "tagline": "야간·휴일 소아과·응급실·심야약국 실시간",
+      "emoji": "🏥",
+      "category": "육아·의료",
+      "brand": { "bg": "#1A1813", "fg": "#F4EBCE", "accent": "#5EEAD4" },
+      "landingUrl": "/imap/",
+      "url": "https://apps.apple.com/app/id6779064016",
+      "platform": "ios",
+      "status": "live",
+      "screenshots": []
+    },
+    {
+      "id": "dailyignite",
+      "name": "하루불씨",
+      "tagline": "매일 한 조각씩, 오늘의 불씨",
+      "emoji": "🔥",
+      "category": "동기부여",
+      "brand": { "bg": "#1A140F", "fg": "#F7EFE2", "accent": "#D4A574" },
+      "landingUrl": "/dailyignite/",
+      "url": "https://apps.apple.com/us/app/id6753808609",
+      "platform": "ios",
+      "status": "live",
+      "screenshots": []
+    },
+    {
+      "id": "squishpop",
+      "name": "빠작말랑",
+      "tagline": "말랑말랑 터뜨리는 재미 (출시 예정)",
+      "emoji": "🫧",
+      "category": "캐주얼",
+      "brand": { "bg": "#1A140F", "fg": "#F7EFE2", "accent": "#FF8A5B" },
+      "landingUrl": "/squishpop/",
+      "url": "",
+      "platform": "ios",
+      "status": "coming-soon",
+      "screenshots": []
     }
   ]
 }
