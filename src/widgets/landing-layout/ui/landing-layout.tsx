@@ -22,6 +22,14 @@ export const LandingLayout: React.FC<LandingLayoutProps> = ({ children }) => {
               <div className="text-xs text-[#525252]">Productivity tools</div>
             </div>
           </Link>
+          <nav className="flex items-center gap-5 text-sm text-[#A3A3A3]">
+            <Link href="/" className="transition-colors hover:text-white">
+              도구
+            </Link>
+            <a href="/apps/" className="transition-colors hover:text-white">
+              앱
+            </a>
+          </nav>
         </div>
       </header>
 
