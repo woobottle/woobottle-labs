@@ -155,9 +155,9 @@
     {
       "id": "jumeokbap",
       "name": "주먹밥",
-      "tagline": "곧 만나요 (출시 예정)",
+      "tagline": "집중을 한 입씩, 포커스 타이머",
       "emoji": "🍙",
-      "category": "음식",
+      "category": "집중",
       "brand": { "bg": "#14110E", "fg": "#F7EFE2", "accent": "#E8703A" },
       "landingUrl": "/jumeokbap/",
       "url": "",
