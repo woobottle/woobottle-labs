@@ -122,6 +122,48 @@
       "platform": "ios",
       "status": "coming-soon",
       "screenshots": []
+    },
+    {
+      "id": "brewcue",
+      "name": "BrewCue",
+      "tagline": "내 손으로 내리는 완벽한 한 잔",
+      "emoji": "☕",
+      "category": "커피",
+      "brand": { "bg": "#14110E", "fg": "#F7EFE2", "accent": "#C98A5B" },
+      "landingUrl": "/brewcue/",
+      "url": "",
+      "platform": "ios",
+      "status": "coming-soon",
+      "screenshots": []
+    },
+    {
+      "id": "climate",
+      "name": "나가기 전 날씨",
+      "tagline": "나가기 전에 오늘을 챙기세요",
+      "emoji": "🌦️",
+      "category": "날씨",
+      "brand": { "bg": "#0B1120", "fg": "#E8EDF6", "accent": "#4F8CFF" },
+      "landingUrl": "/climate/",
+      "url": "",
+      "platform": "ios",
+      "status": "coming-soon",
+      "screenshots": [
+        "/climate/screenshots/home.png",
+        "/climate/screenshots/onboarding.png"
+      ]
+    },
+    {
+      "id": "jumeokbap",
+      "name": "주먹밥",
+      "tagline": "곧 만나요 (출시 예정)",
+      "emoji": "🍙",
+      "category": "음식",
+      "brand": { "bg": "#14110E", "fg": "#F7EFE2", "accent": "#E8703A" },
+      "landingUrl": "/jumeokbap/",
+      "url": "",
+      "platform": "ios",
+      "status": "coming-soon",
+      "screenshots": []
     }
   ]
 }
