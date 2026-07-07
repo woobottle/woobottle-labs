@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>잠금화면에 "우산 챙기세요"가 뜨는 날씨 앱을 만들었어요 | 나가기 전 날씨</title>
+<meta name="description" content="기온·강수확률 숫자 말고, 나가기 전에 뭘 챙길지 잠금화면에서 바로 알려주는 날씨 브리핑 앱 "나가기 전 날씨"를 출시했습니다."/>
+<meta name="keywords" content="잠금화면 날씨, 날씨 위젯, 라이브 액티비티, 다이나믹 아일랜드, 날씨 브리핑, 우산 알림, iOS 날씨 앱"/>
+<link rel="canonical" href="https://woo-bottle.com/climate/blog/lockscreen-weather-briefing/"/>
+<meta property="og:type" content="article"/>
+<meta property="og:title" content="잠금화면에 "우산 챙기세요"가 뜨는 날씨 앱을 만들었어요 | 나가기 전 날씨"/>
+<meta property="og:description" content="기온·강수확률 숫자 말고, 나가기 전에 뭘 챙길지 잠금화면에서 바로 알려주는 날씨 브리핑 앱 "나가기 전 날씨"를 출시했습니다."/>
+<meta property="og:url" content="https://woo-bottle.com/climate/blog/lockscreen-weather-briefing/"/>
+<meta property="og:image" content="https://woo-bottle.com/climate/docs/appstore/screenshots/marketing/m2-liveactivity.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="잠금화면에 "우산 챙기세요"가 뜨는 날씨 앱을 만들었어요 | 나가기 전 날씨"/>
+<meta name="twitter:description" content="기온·강수확률 숫자 말고, 나가기 전에 뭘 챙길지 잠금화면에서 바로 알려주는 날씨 브리핑 앱 "나가기 전 날씨"를 출시했습니다."/>
+<meta name="twitter:image" content="https://woo-bottle.com/climate/docs/appstore/screenshots/marketing/m2-liveactivity.png"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"잠금화면에 \"우산 챙기세요\"가 뜨는 날씨 앱을 만들었어요","description":"기온·강수확률 숫자 말고, 나가기 전에 뭘 챙길지 잠금화면에서 바로 알려주는 날씨 브리핑 앱 \"나가기 전 날씨\"를 출시했습니다.","datePublished":"2026-07-08","dateModified":"2026-07-08","image":"https://woo-bottle.com/climate/docs/appstore/screenshots/marketing/m2-liveactivity.png","author":{"@type":"Organization","name":"나가기 전 날씨"},"publisher":{"@type":"Organization","name":"나가기 전 날씨"},"mainEntityOfPage":"https://woo-bottle.com/climate/blog/lockscreen-weather-briefing/"}</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F4EBCE;color:#1A1813;font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo","Segoe UI",Roboto,sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto;padding:28px 20px 80px}
+.top{display:flex;align-items:center;gap:10px;padding:6px 0 22px}
+.top a{color:#1A1813;text-decoration:none;font-weight:800;font-size:15px}
+.brand{width:30px;height:30px;border-radius:9px;background:#4F8CFF;border:2px solid #1A1813;display:flex;align-items:center;justify-content:center;font-size:16px}
+article h1{font-size:30px;line-height:1.3;letter-spacing:-0.5px;margin:6px 0 14px;font-weight:800}
+article h2{font-size:21px;margin:34px 0 12px;font-weight:800;letter-spacing:-0.3px}
+article h3{font-size:17px;margin:22px 0 8px;font-weight:800}
+article p{margin:14px 0;font-size:16px;color:#26231c}
+article strong{font-weight:800}
+article ol,article ul{margin:12px 0 12px 4px;padding-left:22px}
+article li{margin:7px 0;font-size:16px}
+article a{color:#4F8CFF;font-weight:700;word-break:break-all}
+hr{border:none;border-top:2px solid #1A1813;opacity:.14;margin:28px 0}
+.meta{color:#6E6750;font-size:13px;font-weight:700;margin-bottom:18px}
+.cta{background:#FFFFFF;border:2px solid #1A1813;border-radius:18px;padding:22px;margin:30px 0;box-shadow:4px 4px 0 #1A1813}
+.cta p{margin:0 0 14px;font-size:16px}
+.btn{display:inline-block;background:#4F8CFF;color:#fff!important;text-decoration:none;font-weight:800;font-size:16px;padding:13px 22px;border-radius:13px;border:2px solid #1A1813;box-shadow:3px 3px 0 #1A1813}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin:26px 0 0}
+.tag{font-size:12px;font-weight:700;color:#6E6750;background:#FFFFFF;border:1.5px solid rgba(26,24,19,.18);border-radius:999px;padding:4px 11px}
+.foot{margin-top:44px;padding-top:20px;border-top:2px solid rgba(26,24,19,.14);font-size:13px;color:#6E6750}
+.foot a{color:#6E6750;font-weight:700}
+.notice{font-size:13px;color:#6E6750;font-style:italic}
+.card{display:block;background:#FFFFFF;border:2px solid #1A1813;border-radius:18px;padding:20px 22px;margin:16px 0;text-decoration:none;color:#1A1813;box-shadow:4px 4px 0 #1A1813;transition:transform .08s}
+.card:hover{transform:translate(-2px,-2px)}
+.card h2{font-size:19px;margin:0 0 8px}
+.card p{margin:0;font-size:14px;color:#6E6750}
+.hero{margin:6px 0 26px}
+.hero h1{font-size:26px;font-weight:800;letter-spacing:-0.4px}
+.hero p{color:#6E6750;margin-top:8px;font-weight:600}
+</style>
+</head>
+<body><div class="wrap">
+<div class="top"><span class="brand">🍳</span><a href="https://woo-bottle.com/climate/blog/">나가기 전 날씨 블로그</a></div>
+<article><h1>잠금화면에 "우산 챙기세요"가 뜨는 날씨 앱을 만들었어요</h1><div class="meta">2026-07-08</div>
+<p>아침마다 비슷한 장면이 반복됐습니다. 날씨 앱을 열고, "8°, 강수확률 87%"를 확인하고, 그래서 <strong>결국 우산을 챙겨야 하는지</strong> 잠깐 고민하다 그냥 나갑니다. 숫자는 봤는데 판단은 여전히 내 몫이었어요.</p>
+<p>그래서 만들었습니다. <strong>나가기 전 날씨</strong> — 날씨를 숫자가 아니라 <strong>행동</strong>으로 바꿔, 앱을 열지 않아도 잠금화면에서 바로 알려주는 앱입니다.</p>
+<hr/>
+<h2>숫자가 아니라 "지금 뭘 할지"</h2>
+<p>이 앱은 기온·강수확률을 대신 계산해서, 한 줄로 정리해 줍니다.</p>
+<ul><li>"우산 챙겨서 나가세요 · 40분 뒤 비 시작"</li><li>"겉옷이 필요해요 · 체감 2°C"</li><li>"지금 나가기 좋아요"</li></ul>
+<p>날씨 데이터를 읽는 건 앱이 하고, 여러분은 결론만 받습니다.</p>
+<h2>앱을 열지 않아도, 필요한 순간에</h2>
+<p>핵심은 <strong>잠금화면과 다이나믹 아일랜드</strong>입니다. 출근·퇴근 시간을 정해두면, 그 시간에 맞춰 Live Activity로 오늘의 브리핑이 잠금화면에 나타납니다. 확인하러 앱을 열 필요가 없어요. 폰을 들었을 때 이미 거기 있습니다.</p>
+<h2>상황에 딱 맞는 문구</h2>
+<ul><li>비 오는 날 — 비 시작 시각까지 카운트다운</li><li>쌀쌀한 날 — 겉옷 알림과 체감온도</li><li>맑은 날 — "나가기 좋아요" 한마디</li><li>비 오는 중 — 언제 그칠지까지</li></ul>
+<p>말투도 고를 수 있습니다. <strong>담백하게 / 친근하게 / 강하게</strong> 중에서요.</p>
+<h2>이번 주도 한눈에</h2>
+<p>오늘부터 주간 예보까지, 둥글둥글한 3D 아이콘으로 보기 편하게 정리했습니다. 현재 위치 기반으로 브리핑을 받거나, 원하는 지역을 직접 골라둘 수도 있어요.</p>
+<hr/>
+<h2>어떻게 만들었나</h2>
+<p>React Native로 앱을 만들고, 잠금화면 표시는 iOS의 ActivityKit(Live Activity)로 구현했습니다. 날씨는 Open-Meteo 데이터를 쓰고, 위치 정보는 날씨를 조회하는 데만 쓰며 <strong>서버에 저장하지 않습니다</strong>. 별도 회원가입도 없습니다.</p>
+<h2>지금 받을 수 있어요</h2>
+<p>iPhone(iOS 16.2 이상, Live Activity 지원 기기)에서 사용할 수 있습니다.</p>
+<div class="cta"><p></p><a class="btn" href="https://apps.apple.com/app/id6787699184?ct=blog_web" rel="noopener">App Store에서 받기</a></div>
+<p>아침에 창밖 보고 고민하는 시간, 이제 잠금화면 한 줄이면 끝. 한 번 써보시고 피드백 주시면 다음 업데이트에 반영하겠습니다.</p>
+<div class="tags"><span class="tag">#잠금화면날씨</span><span class="tag">#날씨위젯</span><span class="tag">#라이브액티비티</span><span class="tag">#다이나믹아일랜드</span><span class="tag">#날씨앱</span><span class="tag">#우산알림</span></div></article>
+<div class="foot">© 2026 나가기 전 날씨 · <a href="https://woo-bottle.com/climate/support.html">지원</a> · <a href="https://woo-bottle.com/climate/privacy.html">개인정보</a></div>
+</div></body></html>
