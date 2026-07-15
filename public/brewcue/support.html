@@ -239,10 +239,10 @@
       <h1>내 손으로 내리는<br/><em>완벽한 한 잔.</em></h1>
       <p class="sub">V60부터 에어로프레스까지, 레시피를 고르면 붓는 순간마다 큐를 알려주는 단계별 타이머가 시작됩니다. 잠금화면 Live Activity로 화면을 켜둘 필요도 없어요.</p>
       <div class="cta">
-        <a class="btn btn-primary" href="#features">기능 둘러보기</a>
-        <a class="btn btn-ghost" href="#contact">문의하기</a>
+        <a class="btn btn-primary js-appstore" href="https://apps.apple.com/app/id6786744027" target="_blank" rel="noopener"> App Store에서 받기</a>
+        <a class="btn btn-ghost" href="#features">기능 둘러보기</a>
       </div>
-      <p class="soon">곧 App Store에서 만나요 · iPhone 전용 · 무료</p>
+      <p class="soon">App Store에서 만나요 · iPhone 전용 · 무료</p>
     </div>
     <div class="hero-phone">
       <span class="halo"></span>
@@ -434,8 +434,10 @@
 <section id="contact" style="padding-top:20px">
   <div class="wrap">
     <div class="contact reveal">
-      <span class="kicker">문의</span>
-      <p style="color:var(--text2);margin-top:10px">버그 신고, 레시피 제안, 그 밖의 문의를 보내주세요. 보통 2~3일 내에 답변드립니다.</p>
+      <span class="kicker">지금 시작하기</span>
+      <h2 style="margin:12px 0 22px">오늘 한 잔, <em>제대로 내려볼까요?</em></h2>
+      <a class="btn btn-primary js-appstore" href="https://apps.apple.com/app/id6786744027" target="_blank" rel="noopener" style="font-size:16px;padding:15px 26px"> App Store에서 받기</a>
+      <p style="color:var(--text2);margin-top:28px">버그 신고, 레시피 제안, 그 밖의 문의를 보내주세요. 보통 2~3일 내에 답변드립니다.</p>
       <a class="mail" href="mailto:dkrnfls@gmail.com?subject=BrewCue%20문의">dkrnfls@gmail.com</a>
     </div>
   </div>
@@ -455,6 +457,23 @@
 <script>
   const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // App Store 버튼(아웃바운드) 클릭을 GA4 이벤트로 기록 → 소셜→스토어 전환 측정
+  document.querySelectorAll('.js-appstore').forEach(function(el){
+    el.addEventListener('click',function(){
+      if(window.gtag){ gtag('event','appstore_click',{link_url:'https://apps.apple.com/app/id6786744027'}); }
+    });
+  });
+</script>
+
+<!-- Google Analytics 4 (gtag.js) -->
+<!-- ⚠️ 배포 전: analytics.google.com에서 GA4 속성 생성 → 아래 G-PHMPDZQG5Y 2곳을 실제 측정 ID로 교체 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PHMPDZQG5Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PHMPDZQG5Y');
 </script>
 </body>
 </html>
