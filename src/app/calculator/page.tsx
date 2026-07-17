@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Trash2 } from "lucide-react";
 import AppLayout from "../../components/AppLayout";
+import { ToolHeader } from "widgets/tool-header";
 
 export default function CalculatorPage() {
   const [display, setDisplay] = useState("0");
@@ -114,13 +115,11 @@ export default function CalculatorPage() {
   return (
     <AppLayout>
       <div className="max-w-md mx-auto">
-        <div className="mb-10">
-          <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
-            CALC
-          </div>
-          <h1 className="text-3xl font-semibold text-white">계산기</h1>
-          <p className="mt-2 text-[#A3A3A3]">간단한 사칙연산</p>
-        </div>
+        <ToolHeader
+          eyebrow="CALC"
+          title="계산기"
+          description="간단한 사칙연산"
+        />
 
         <div className="bg-[#0A0A0A] border border-[#1A1A1A] rounded-2xl p-6">
           {/* Display */}

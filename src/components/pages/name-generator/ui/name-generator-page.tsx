@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { AppLayout } from "widgets/app-layout";
+import { ToolHeader } from "widgets/tool-header";
 import { Button } from "shared/ui/button";
 import { Card } from "shared/ui/card";
 import { Input } from "shared/ui/input";
@@ -290,15 +291,11 @@ export const NameGeneratorPage: React.FC = () => {
   if (showResults) {
     return (
       <AppLayout>
-        <div className="mb-10">
-          <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
-            NAME
-          </div>
-          <h1 className="text-3xl font-semibold text-white">
-            아이 이름 작명기
-          </h1>
-          <p className="mt-2 text-[#A3A3A3]">아름다운 이름 추천</p>
-        </div>
+        <ToolHeader
+          eyebrow="NAME"
+          title="아이 이름 작명기"
+          description="아름다운 이름 추천"
+        />
 
         <div className="space-y-8">
           {/* 결과 헤더 */}
@@ -455,13 +452,11 @@ export const NameGeneratorPage: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="mb-10">
-        <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
-          NAME
-        </div>
-        <h1 className="text-3xl font-semibold text-white">아이 이름 작명기</h1>
-        <p className="mt-2 text-[#A3A3A3]">아름다운 이름 추천</p>
-      </div>
+      <ToolHeader
+        eyebrow="NAME"
+        title="아이 이름 작명기"
+        description="아름다운 이름 추천"
+      />
 
       <div className="bg-[#0A0A0A] border border-[#1A1A1A] rounded-xl p-4 mb-8">
         <p className="text-sm text-[#A3A3A3]">

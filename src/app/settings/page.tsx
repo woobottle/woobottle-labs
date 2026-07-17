@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import AppLayout from "../../components/AppLayout";
 import { VersionInfo } from "../../shared/ui/version-info";
+import { ToolHeader } from "widgets/tool-header";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
@@ -113,13 +114,11 @@ export default function SettingsPage() {
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto">
-        <div className="mb-10">
-          <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
-            SETTINGS
-          </div>
-          <h1 className="text-3xl font-semibold text-white">설정</h1>
-          <p className="mt-2 text-[#A3A3A3]">앱 환경 설정</p>
-        </div>
+        <ToolHeader
+          eyebrow="SETTINGS"
+          title="설정"
+          description="앱 환경 설정"
+        />
 
         <div className="space-y-6">
           {/* Appearance Settings */}

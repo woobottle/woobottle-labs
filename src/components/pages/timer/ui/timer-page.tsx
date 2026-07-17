@@ -2,18 +2,17 @@
 
 import React from "react";
 import { AppLayout } from "widgets/app-layout";
+import { ToolHeader } from "widgets/tool-header";
 import { PomodoroTimer } from "features/pomodoro-timer";
 
 export const TimerPage: React.FC = () => {
   return (
     <AppLayout>
-      <div className="mb-10">
-        <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
-          TIMER
-        </div>
-        <h1 className="text-3xl font-semibold text-white">뽀모도로 타이머</h1>
-        <p className="mt-2 text-[#A3A3A3]">집중력을 높이는 시간 관리 기법</p>
-      </div>
+      <ToolHeader
+        eyebrow="TIMER"
+        title="뽀모도로 타이머"
+        description="집중력을 높이는 시간 관리 기법"
+      />
 
       <PomodoroTimer />
 

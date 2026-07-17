@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { AppLayout } from "widgets/app-layout";
+import { ToolHeader } from "widgets/tool-header";
 import { Button } from "shared/ui/button";
 import { validateFile } from "shared/lib/utils";
 import { iconSizes, getPlatformIcon, type Platform } from "entities/icon";
@@ -92,15 +93,11 @@ export const IconGeneratorPage: React.FC = () => {
   return (
     <AppLayout>
       <div className="max-w-6xl mx-auto">
-        <div className="mb-10">
-          <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
-            ICONS
-          </div>
-          <h1 className="text-3xl font-semibold text-white">아이콘 생성기</h1>
-          <p className="mt-2 text-[#A3A3A3]">
-            iOS · Android · Web 아이콘 자동 생성
-          </p>
-        </div>
+        <ToolHeader
+          eyebrow="ICONS"
+          title="아이콘 생성기"
+          description="iOS · Android · Web 아이콘 자동 생성"
+        />
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Upload Section */}

@@ -12,6 +12,7 @@ import {
   Mail,
 } from "lucide-react";
 import AppLayout from "../../components/AppLayout";
+import { ToolHeader } from "widgets/tool-header";
 
 export default function AboutPage() {
   const features = [
@@ -69,13 +70,11 @@ export default function AboutPage() {
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto">
-        <div className="mb-10">
-          <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
-            ABOUT
-          </div>
-          <h1 className="text-3xl font-semibold text-white">정보</h1>
-          <p className="mt-2 text-[#A3A3A3]">WooBottle Labs 소개</p>
-        </div>
+        <ToolHeader
+          eyebrow="ABOUT"
+          title="정보"
+          description="WooBottle Labs 소개"
+        />
 
         {/* Header Badge */}
         <div className="mb-10 flex items-center gap-4">

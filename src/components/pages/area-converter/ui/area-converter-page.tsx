@@ -2,22 +2,17 @@
 
 import React from "react";
 import { AppLayout } from "widgets/app-layout";
+import { ToolHeader } from "widgets/tool-header";
 import { AreaConverter } from "features/area-conversion";
 
 export const AreaConverterPage: React.FC = () => {
   return (
     <AppLayout>
-      <div className="mb-10">
-        <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
-          CONVERT
-        </div>
-        <h1 className="text-3xl font-semibold text-white">
-          아파트 평수 변환기
-        </h1>
-        <p className="mt-2 text-[#A3A3A3]">
-          평수 ↔ 제곱미터 변환 (법정 변환 계수 기반)
-        </p>
-      </div>
+      <ToolHeader
+        eyebrow="CONVERT"
+        title="아파트 평수 변환기"
+        description="평수 ↔ 제곱미터 변환 (법정 변환 계수 기반)"
+      />
 
       <AreaConverter />
 

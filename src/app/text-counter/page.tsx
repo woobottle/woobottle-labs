@@ -11,6 +11,7 @@ import {
   Clock,
 } from "lucide-react";
 import AppLayout from "../../components/AppLayout";
+import { ToolHeader } from "widgets/tool-header";
 
 export default function TextCounterPage() {
   const [text, setText] = useState("");
@@ -94,13 +95,11 @@ export default function TextCounterPage() {
 
   return (
     <AppLayout>
-      <div className="mb-10">
-        <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
-          TEXT
-        </div>
-        <h1 className="text-3xl font-semibold text-white">글자수 카운터</h1>
-        <p className="mt-2 text-[#A3A3A3]">실시간 텍스트 분석</p>
-      </div>
+      <ToolHeader
+        eyebrow="TEXT"
+        title="글자수 카운터"
+        description="실시간 텍스트 분석"
+      />
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Text Input Section */}

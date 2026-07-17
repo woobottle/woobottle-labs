@@ -3,6 +3,7 @@
 import React from "react";
 import { BarChart3, TrendingUp, PieChart, Activity } from "lucide-react";
 import AppLayout from "../../components/AppLayout";
+import { ToolHeader } from "widgets/tool-header";
 
 export default function StatisticsPage() {
   const StatCard = ({
@@ -30,13 +31,11 @@ export default function StatisticsPage() {
 
   return (
     <AppLayout>
-      <div className="mb-10">
-        <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
-          STATS
-        </div>
-        <h1 className="text-3xl font-semibold text-white">통계 분석</h1>
-        <p className="mt-2 text-[#A3A3A3]">텍스트 통계 상세</p>
-      </div>
+      <ToolHeader
+        eyebrow="STATS"
+        title="통계 분석"
+        description="텍스트 통계 상세"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard

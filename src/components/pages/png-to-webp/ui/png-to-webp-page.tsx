@@ -2,6 +2,7 @@
 
 import React from "react";
 import { AppLayout } from "widgets/app-layout";
+import { ToolHeader } from "widgets/tool-header";
 import { PngToWebpConverter } from "features/webp-conversion";
 
 interface PngToWebpPageProps {
@@ -15,13 +16,7 @@ export const PngToWebpPage: React.FC<PngToWebpPageProps> = ({
 }) => {
   return (
     <AppLayout>
-      <div className="mb-10">
-        <div className="text-xs text-[#525252] uppercase tracking-[0.2em] mb-3">
-          IMAGE
-        </div>
-        <h1 className="text-3xl font-semibold text-white">{title}</h1>
-        <p className="mt-2 text-[#A3A3A3]">{description}</p>
-      </div>
+      <ToolHeader eyebrow="IMAGE" title={title} description={description} />
 
       <PngToWebpConverter />
     </AppLayout>
