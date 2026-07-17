@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>아이폰 다이나믹 아일랜드·잠금화면에 날씨 띄우는 법 | 나가기 전 날씨</title>
+<meta name="description" content="아이폰 잠금화면과 다이나믹 아일랜드에 날씨를 띄우는 방법을 정리했습니다. 기본 위젯부터 Live Activity로 '행동' 브리핑까지, 출근 전 우산 챙길지 3초 만에 아는 법."/>
+<meta name="keywords" content="다이나믹 아일랜드 날씨, 잠금화면 날씨, 아이폰 날씨 위젯, 라이브 액티비티 날씨, iOS 날씨, 날씨 브리핑, 우산 알림"/>
+<link rel="canonical" href="https://woo-bottle.com/climate/blog/dynamic-island-lockscreen-weather/"/>
+<meta property="og:type" content="article"/>
+<meta property="og:title" content="아이폰 다이나믹 아일랜드·잠금화면에 날씨 띄우는 법 | 나가기 전 날씨"/>
+<meta property="og:description" content="아이폰 잠금화면과 다이나믹 아일랜드에 날씨를 띄우는 방법을 정리했습니다. 기본 위젯부터 Live Activity로 '행동' 브리핑까지, 출근 전 우산 챙길지 3초 만에 아는 법."/>
+<meta property="og:url" content="https://woo-bottle.com/climate/blog/dynamic-island-lockscreen-weather/"/>
+<meta property="og:image" content="https://woo-bottle.com/climate/docs/appstore/screenshots/marketing/m2-liveactivity.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="아이폰 다이나믹 아일랜드·잠금화면에 날씨 띄우는 법 | 나가기 전 날씨"/>
+<meta name="twitter:description" content="아이폰 잠금화면과 다이나믹 아일랜드에 날씨를 띄우는 방법을 정리했습니다. 기본 위젯부터 Live Activity로 '행동' 브리핑까지, 출근 전 우산 챙길지 3초 만에 아는 법."/>
+<meta name="twitter:image" content="https://woo-bottle.com/climate/docs/appstore/screenshots/marketing/m2-liveactivity.png"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"아이폰 다이나믹 아일랜드·잠금화면에 날씨 띄우는 법","description":"아이폰 잠금화면과 다이나믹 아일랜드에 날씨를 띄우는 방법을 정리했습니다. 기본 위젯부터 Live Activity로 '행동' 브리핑까지, 출근 전 우산 챙길지 3초 만에 아는 법.","datePublished":"2026-07-17","dateModified":"2026-07-17","image":"https://woo-bottle.com/climate/docs/appstore/screenshots/marketing/m2-liveactivity.png","author":{"@type":"Organization","name":"나가기 전 날씨"},"publisher":{"@type":"Organization","name":"나가기 전 날씨"},"mainEntityOfPage":"https://woo-bottle.com/climate/blog/dynamic-island-lockscreen-weather/"}</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F4EBCE;color:#1A1813;font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo","Segoe UI",Roboto,sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto;padding:28px 20px 80px}
+.top{display:flex;align-items:center;gap:10px;padding:6px 0 22px}
+.top a{color:#1A1813;text-decoration:none;font-weight:800;font-size:15px}
+.brand{width:30px;height:30px;border-radius:9px;background:#4F8CFF;border:2px solid #1A1813;display:flex;align-items:center;justify-content:center;font-size:16px}
+article h1{font-size:30px;line-height:1.3;letter-spacing:-0.5px;margin:6px 0 14px;font-weight:800}
+article h2{font-size:21px;margin:34px 0 12px;font-weight:800;letter-spacing:-0.3px}
+article h3{font-size:17px;margin:22px 0 8px;font-weight:800}
+article p{margin:14px 0;font-size:16px;color:#26231c}
+article strong{font-weight:800}
+article ol,article ul{margin:12px 0 12px 4px;padding-left:22px}
+article li{margin:7px 0;font-size:16px}
+article a{color:#4F8CFF;font-weight:700;word-break:break-all}
+hr{border:none;border-top:2px solid #1A1813;opacity:.14;margin:28px 0}
+.meta{color:#6E6750;font-size:13px;font-weight:700;margin-bottom:18px}
+.cta{background:#FFFFFF;border:2px solid #1A1813;border-radius:18px;padding:22px;margin:30px 0;box-shadow:4px 4px 0 #1A1813}
+.cta p{margin:0 0 14px;font-size:16px}
+.btn{display:inline-block;background:#4F8CFF;color:#fff!important;text-decoration:none;font-weight:800;font-size:16px;padding:13px 22px;border-radius:13px;border:2px solid #1A1813;box-shadow:3px 3px 0 #1A1813}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin:26px 0 0}
+.tag{font-size:12px;font-weight:700;color:#6E6750;background:#FFFFFF;border:1.5px solid rgba(26,24,19,.18);border-radius:999px;padding:4px 11px}
+.foot{margin-top:44px;padding-top:20px;border-top:2px solid rgba(26,24,19,.14);font-size:13px;color:#6E6750}
+.foot a{color:#6E6750;font-weight:700}
+.notice{font-size:13px;color:#6E6750;font-style:italic}
+.card{display:block;background:#FFFFFF;border:2px solid #1A1813;border-radius:18px;padding:20px 22px;margin:16px 0;text-decoration:none;color:#1A1813;box-shadow:4px 4px 0 #1A1813;transition:transform .08s}
+.card:hover{transform:translate(-2px,-2px)}
+.card h2{font-size:19px;margin:0 0 8px}
+.card p{margin:0;font-size:14px;color:#6E6750}
+.hero{margin:6px 0 26px}
+.hero h1{font-size:26px;font-weight:800;letter-spacing:-0.4px}
+.hero p{color:#6E6750;margin-top:8px;font-weight:600}
+</style>
+</head>
+<body><div class="wrap">
+<div class="top"><span class="brand">🍳</span><a href="https://woo-bottle.com/climate/blog/">나가기 전 날씨 블로그</a></div>
+<article><h1>아이폰 다이나믹 아일랜드·잠금화면에 날씨 띄우는 법</h1><div class="meta">2026-07-17</div>
+<p>폰을 들 때마다 날씨 앱을 여는 대신, <strong>잠금화면과 다이나믹 아일랜드에 날씨를 바로 띄워두면</strong> 아침이 한결 수월해집니다. 방법이 몇 가지 있는데, 기본 기능부터 한 단계 더 편한 방법까지 순서대로 정리했습니다.</p>
+<hr/>
+<h2>방법 1. 잠금화면에 날씨 위젯 추가하기 (기본 기능)</h2>
+<p>iOS 16부터 잠금화면에 위젯을 올릴 수 있습니다. 별도 앱 없이 되는 가장 기본적인 방법이에요.</p>
+<ol><li>잠금화면을 <strong>길게 누르고</strong> → 아래 <strong>사용자화</strong> 탭</li><li>시계 아래(또는 위) <strong>위젯 추가</strong> 영역을 누르기</li><li>목록에서 <strong>날씨</strong>를 골라 원하는 위젯을 배치</li><li><strong>완료</strong></li></ol>
+<p>이러면 잠금화면에서 현재 기온·상태를 바로 볼 수 있습니다. 다만 위젯은 "지금 몇 도"를 보여줄 뿐, <strong>우산을 챙길지 말지는 여전히 직접 판단</strong>해야 합니다.</p>
+<h2>방법 2. 다이나믹 아일랜드에 '실시간'으로 띄우기 — Live Activity</h2>
+<p>다이나믹 아일랜드(아이폰 14 Pro 이상 상단의 알약 모양 영역)와 잠금화면에 <strong>실시간으로 갱신되는 정보</strong>를 띄우는 기능이 <strong>Live Activity(라이브 액티비티)</strong> 입니다. 배달 도착 시간이나 경기 스코어처럼요.</p>
+<p>위젯과 다른 점은 두 가지입니다.</p>
+<ul><li><strong>실시간 갱신</strong> — 고정된 스냅샷이 아니라 상황이 바뀌면 내용이 업데이트됩니다.</li><li><strong>필요한 순간에 등장</strong> — 앱을 열지 않아도, 정해진 순간에 잠금화면 맨 위에 나타납니다.</li></ul>
+<p>날씨에 이걸 쓰면, 아침 그 시각에 오늘 날씨 브리핑이 잠금화면 위쪽에 딱 떠 있게 만들 수 있습니다.</p>
+<h2>방법 3. 숫자 말고 '행동'으로 띄우기</h2>
+<p>여기서 한 걸음 더 나가면, 날씨를 <strong>숫자가 아니라 지금 뭘 할지</strong>로 바꿀 수 있습니다. 기온·강수확률을 매번 머릿속으로 해석하는 대신, 결론만 받는 거예요.</p>
+<ul><li>☔ "우산 챙겨서 나가세요 · 40분 뒤 비 시작"</li><li>🧥 "겉옷이 필요해요 · 체감 2°C"</li><li>☀️ "지금 나가기 좋아요"</li></ul>
+<p>이걸 자동으로 해주는 앱이 <strong>나가기 전 날씨</strong>입니다. 출근 시간을 정해두면, 그 시간에 맞춰 Live Activity로 오늘의 <strong>행동 브리핑</strong>이 잠금화면·다이나믹 아일랜드에 뜹니다. 앱을 열어 숫자를 해석할 필요가 없어요. 말투(담백/친근/강하게)나 출발 몇 분 전에 받을지도 고를 수 있습니다.</p>
+<h2>어떤 방법이 나에게 맞을까</h2>
+<p><strong>기본 날씨 위젯</strong>은 현재 기온·상태(숫자)를 주기적으로 보여줍니다. iOS 기본 기능이라 바로 쓸 수 있지만, 우산을 챙길지는 여전히 내가 판단해야 해요.</p>
+<p><strong>Live Activity 브리핑</strong>은 "지금 뭘 챙길지"(행동)를 실시간으로, 정해진 시각에 맞춰 잠금화면에 띄웁니다. 판단을 앱이 대신 해주는 대신, 무료 앱 설치가 필요합니다.</p>
+<p>"숫자만 봐도 충분하다" 하면 위젯으로 충분합니다. "매번 우산 챙길지 고민하는 게 귀찮다" 하면 브리핑이 편해요.</p>
+<hr/>
+<h2>지금 받을 수 있어요</h2>
+<p><strong>나가기 전 날씨</strong>는 iPhone(iOS 16.2 이상, Live Activity 지원 기기)에서 무료로 쓸 수 있습니다. 회원가입 없이 시간만 정해두면 됩니다.</p>
+<div class="cta"><p></p><a class="btn" href="https://apps.apple.com/app/id6787699184?ct=blog_web" rel="noopener">App Store에서 받기</a></div>
+<p>아침에 창밖 보고 고민하는 시간, 잠금화면 한 줄이면 끝입니다.</p>
+<div class="tags"><span class="tag">#다이나믹아일랜드</span><span class="tag">#잠금화면날씨</span><span class="tag">#날씨위젯</span><span class="tag">#라이브액티비티</span><span class="tag">#아이폰날씨</span><span class="tag">#우산알림</span></div></article>
+<div class="foot">© 2026 나가기 전 날씨 · <a href="https://woo-bottle.com/climate/support.html">지원</a> · <a href="https://woo-bottle.com/climate/privacy.html">개인정보</a></div>
+</div></body></html>
